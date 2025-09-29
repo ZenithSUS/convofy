@@ -1,0 +1,7 @@
+- [x] Add Zod schema for email and password validation
+- [x] Update useForm to use zodResolver with the schema
+- [x] Refactor form to use shadcn Form, FormField, FormItem, FormLabel, FormControl, FormMessage
+- [x] Replace raw inputs with shadcn Input
+- [x] Replace raw checkbox with shadcn Checkbox
+- [x] Update container classes for shadcn compatibility
+- [ ] Test the form rendering and validation

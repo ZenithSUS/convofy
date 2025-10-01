@@ -1,5 +1,6 @@
 "use client";
 
+import { signIn, useSession } from "next-auth/react";
 import { ArrowBigLeft } from "lucide-react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
@@ -26,7 +27,12 @@ const schema = z.object({
 type LoginFormInputs = z.infer<typeof schema>;
 
 function LoginScreen() {
+  const { data: session } = useSession();
   const router = useRouter();
+
+  if (session) {
+    router.push("/chat");
+  }
   const form = useForm<LoginFormInputs>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -125,6 +131,22 @@ function LoginScreen() {
               className="group relative flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 ease-in-out hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             >
               Sign In
+            </Button>
+          </div>
+
+          <div>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => signIn("google")}
+              className="group relative flex w-full cursor-pointer justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
+            >
+              <img
+                src="/google-logo.png"
+                alt="Google Logo"
+                className="mr-2 h-5 w-5"
+              />
+              Sign in with Google
             </Button>
           </div>
 

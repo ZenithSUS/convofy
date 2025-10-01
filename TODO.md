@@ -1,7 +1,5 @@
-- [x] Add Zod schema for email and password validation
-- [x] Update useForm to use zodResolver with the schema
-- [x] Refactor form to use shadcn Form, FormField, FormItem, FormLabel, FormControl, FormMessage
-- [x] Replace raw inputs with shadcn Input
-- [x] Replace raw checkbox with shadcn Checkbox
-- [x] Update container classes for shadcn compatibility
-- [ ] Test the form rendering and validation
+# TODO: Add Search Bar with Debouncing to API Rooms
+
+- [x] Fix the API endpoint in app/api/rooms/route.ts to correctly read the query parameter from the request URL instead of window.location.search.
+- [x] Update the useGetRooms hook in hooks/use-rooms.ts to accept a search query parameter and pass it to the API request.
+- [x] Update the chat page in app/(views)/chat/page.tsx to use the debounced search query to fetch filtered rooms from the API instead of filtering locally.

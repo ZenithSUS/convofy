@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useParams } from "next/navigation";
 
 function RoomPage() {
+  const { roomId } = useParams();
+
   const [messages, setMessages] = useState([
     { id: 1, text: "Hello!", sender: "User1" },
     { id: 2, text: "Hi there!", sender: "User2" },

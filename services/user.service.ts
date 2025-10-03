@@ -1,5 +1,12 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
+import { User as UserType } from "@/types/user";
+
+export const createUser = async (data: UserType) => {
+  await connectToDatabase();
+  const user = await User.create(data);
+  return user;
+};
 
 export const getUsers = async () => {
   await connectToDatabase();
@@ -10,6 +17,14 @@ export const getUsers = async () => {
 export const getUserById = async (id: string) => {
   await connectToDatabase();
   const user = await User.findById(id, "-password");
+  return user;
+};
+
+export const getUserByEmail = async (
+  email: string,
+): Promise<UserType | null> => {
+  await connectToDatabase();
+  const user = await User.findOne({ email }, "-password");
   return user;
 };
 

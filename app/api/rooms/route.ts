@@ -12,6 +12,12 @@ export async function GET(request: Request) {
     );
   }
 
+  if (response.length === 0) {
+    return NextResponse.json([], {
+      status: 200,
+    });
+  }
+
   return NextResponse.json(response, {
     status: 200,
   });

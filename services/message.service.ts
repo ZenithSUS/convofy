@@ -1,17 +1,53 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import Message, { IMessage } from "@/models/Message";
+import Message from "@/models/Message";
+import Room from "@/models/Room";
 
-export const createMessage = async (data: IMessage) => {
-  await connectToDatabase();
-  const message = await Message.create({
-    ...data,
-    createdAt: new Date(),
-  });
-  return message;
+import { CreateMessage } from "@/types/message";
+import { ObjectId } from "mongodb";
+
+export const createMessage = async (data: CreateMessage) => {
+  try {
+    await connectToDatabase();
+
+    if (!data.room) return new Error("Room is required");
+
+    if (!data.sender) return new Error("Sender is required");
+
+    const message = await Message.create({
+      ...data,
+      sender: new ObjectId(data.sender),
+      createdAt: new Date(),
+    });
+
+    // Get the room and update the lastMessage field
+    const room = await Room.findById(data.room);
+
+    if (room) {
+      await Room.updateOne({ _id: room._id }, { lastMessage: message._id });
+      await room.save();
+    }
+
+    const newMessage = await Message.findById(message._id)
+      .populate("sender", "name")
+      .exec();
+
+    return newMessage;
+  } catch (error) {
+    console.error("Error creating message:", error);
+    throw error;
+  }
 };
 
 export const getMessagesByRoom = async (roomId: string) => {
-  await connectToDatabase();
-  const messages = await Message.find({ room: roomId }).sort({ createdAt: -1 });
-  return messages;
+  try {
+    await connectToDatabase();
+    const messages = await Message.find({ room: roomId })
+      .populate("sender", "name")
+      .sort({ createdAt: 1 });
+
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw error;
+  }
 };

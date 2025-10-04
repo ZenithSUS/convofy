@@ -220,7 +220,6 @@ function RegisterPage() {
                       onChange={(e) => field.onChange(e.target.files)}
                       onBlur={field.onBlur}
                       value={undefined}
-                      className="relative block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 ring-1 ring-gray-300 ring-inset placeholder:text-gray-400 focus:z-10 focus:ring-2 focus:ring-indigo-600 focus:ring-inset sm:text-sm sm:leading-6"
                     />
                   </FormControl>
                   {form.formState.errors.avatar && (
@@ -240,10 +239,12 @@ function RegisterPage() {
           <div>
             <Button
               type="submit"
-              disabled={isUploading}
+              disabled={isUploading || !form.formState.isSubmitted}
               className="group relative flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 ease-in-out hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
             >
-              {isUploading ? "Uploading..." : "Register"}
+              {isUploading || form.formState.isSubmitting
+                ? "Registering..."
+                : "Register"}
             </Button>
           </div>
 

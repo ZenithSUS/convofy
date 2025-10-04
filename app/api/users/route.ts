@@ -1,5 +1,15 @@
-import { connectToDatabase } from "@/lib/mongodb";
+import { getUsers } from "@/services/user.service";
+import { NextResponse } from "next/server";
 
-export const POST = async (req: Request) => {
-  await connectToDatabase();
+/**
+ * This route is used to get all users
+ * @param req
+ * @returns All users
+ */
+export const GET = async (req: Request) => {
+  const users = await getUsers();
+
+  if (!users) return NextResponse.json([], { status: 200 });
+
+  return NextResponse.json(users, { status: 200 });
 };

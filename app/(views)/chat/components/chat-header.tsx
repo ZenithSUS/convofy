@@ -1,3 +1,5 @@
+"use client";
+
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "next/image";
 
@@ -5,6 +7,7 @@ import LogoutModal from "./logout-modal";
 
 export interface Session {
   user: {
+    id: string;
     image: string;
     name: string;
     email: string;

@@ -1,18 +1,24 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import Room, { IRoom } from "@/models/Room";
+import Room from "@/models/Room";
+import { CreateRoom } from "@/types/room";
 
-export const createRoom = async (data: IRoom) => {
+export const createRoom = async (data: CreateRoom) => {
   await connectToDatabase();
+
   const room = await Room.create({
     ...data,
     createdAt: new Date(),
   });
+
   return room;
 };
 
 export const getRooms = async () => {
   await connectToDatabase();
-  const rooms = await Room.find().sort({ createdAt: -1 });
+  const rooms = await Room.find()
+    .populate("lastMessage")
+    .sort({ createdAt: -1 });
+
   return rooms;
 };
 

@@ -18,5 +18,11 @@ const MessageSchema = new Schema<IMessage>(
   { timestamps: true },
 );
 
-export default mongoose.models.Message ||
-  mongoose.model<IMessage>("Message", MessageSchema);
+// Delete the model if it exists to avoid OverwriteModelError
+if (mongoose.models.Message) {
+  delete mongoose.models.Message;
+}
+
+const Message = mongoose.model<IMessage>("Message", MessageSchema);
+
+export default Message;

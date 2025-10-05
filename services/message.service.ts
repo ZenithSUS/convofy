@@ -10,7 +10,6 @@ export const createMessage = async (data: CreateMessage) => {
     await connectToDatabase();
 
     if (!data.room) return new Error("Room is required");
-
     if (!data.sender) return new Error("Sender is required");
 
     const message = await Message.create({

@@ -1,1 +1,3 @@
-- [x] Update `hooks/use-rooms.ts` to change the return type of `useCreateRoom` from `CreateRoom` to `Room`.
+- [x] Fix channel name in client subscription from `room-${roomId}` to `chat-${roomId}` in app/(views)/chat/[roomId]/page.tsx
+- [x] Update Pusher event handler to add received message to react-query cache instead of calling sendLiveMessage
+- [x] Remove unused sendLiveMessage import and logic

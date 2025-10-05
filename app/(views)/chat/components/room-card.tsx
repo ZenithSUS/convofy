@@ -11,7 +11,10 @@ const RoomCard = ({ room }: { room: Room }) => {
 
   return (
     <div className="flex justify-between rounded-lg border p-4 shadow-sm transition-shadow hover:shadow-md">
-      <div className="flex items-center gap-4" onClick={handleOpenRoom}>
+      <div
+        className="flex cursor-pointer items-center gap-4"
+        onClick={handleOpenRoom}
+      >
         {room.image && (
           <Image
             src={room.image}

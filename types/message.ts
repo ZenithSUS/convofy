@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { User } from "@/types/user";
 
 export type Message = {
   _id: string;
@@ -14,4 +15,10 @@ export type Message = {
 
 export type CreateMessage = Omit<Message, "_id" | "createdAt" | "sender"> & {
   sender: string;
+};
+
+export type MessageTyping = {
+  roomId: string;
+  user: Omit<User, "_id"> & { id: string };
+  isTyping: boolean;
 };

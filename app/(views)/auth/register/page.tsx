@@ -239,7 +239,7 @@ function RegisterPage() {
           <div>
             <Button
               type="submit"
-              disabled={isUploading || !form.formState.isSubmitted}
+              disabled={isUploading || form.formState.isSubmitting}
               className="group relative flex w-full cursor-pointer justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 ease-in-out hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
             >
               {isUploading || form.formState.isSubmitting

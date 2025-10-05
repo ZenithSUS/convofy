@@ -15,8 +15,9 @@ export const createRoom = async (data: CreateRoom) => {
 
 export const getRooms = async () => {
   await connectToDatabase();
+
   const rooms = await Room.find()
-    .populate("lastMessage")
+    .populate("lastMessage", "content")
     .sort({ createdAt: -1 });
 
   return rooms;

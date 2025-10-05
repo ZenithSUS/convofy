@@ -11,7 +11,7 @@ function RoomHeader({ room }: RoomHeaderProps) {
   const router = useRouter();
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-2 border-b pb-2">
+    <div className="mb-4 flex items-center justify-between gap-2 border-b p-2">
       <div className="flex items-center gap-2">
         {room.image && (
           <Image
@@ -27,7 +27,7 @@ function RoomHeader({ room }: RoomHeaderProps) {
 
       <ArrowBigLeftDashIcon
         className="h-6 w-6 cursor-pointer"
-        onClick={() => router.back()}
+        onClick={() => router.push("/chat")}
       />
     </div>
   );

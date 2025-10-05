@@ -5,9 +5,9 @@ export interface IRoom {
   description?: string;
   isPrivate: boolean;
   image?: string;
-  members: string[]; // Array of User IDs
-  lastMessage?: Types.ObjectId;
-  createdBy: Types.ObjectId; // User ID
+  members: string[];
+  lastMessage: Types.ObjectId;
+  createdBy: Types.ObjectId;
   createdAt: Date;
 }
 
@@ -25,5 +25,11 @@ const RoomSchema = new Schema<IRoom>(
   { timestamps: true },
 );
 
-export default mongoose.models.Room ||
-  mongoose.model<IRoom>("Room", RoomSchema);
+// Delete the model if it exists to avoid OverwriteModelError
+if (mongoose.models.Room) {
+  delete mongoose.models.Room;
+}
+
+const Room = mongoose.model<IRoom>("Room", RoomSchema);
+
+export default Room;

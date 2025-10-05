@@ -8,6 +8,7 @@ import RoomCard from "@/app/(views)/chat/components/room-card";
 import { Room } from "@/types/room";
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import { useRouter } from "next/navigation";
+import Loading from "@/components/ui/loading";
 
 interface ChatListClientProps {
   session: Session;
@@ -19,11 +20,21 @@ function ChatListClient({ session }: ChatListClientProps) {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const { data: rooms, isLoading } = useGetRooms(debouncedSearchQuery);
+  const {
+    data: rooms,
+    isLoading,
+    isFetching: isFetchingRooms,
+    isError: roomError,
+    refetch,
+  } = useGetRooms(debouncedSearchQuery);
 
   const isSearchMode = useMemo<boolean>(() => {
     return debouncedSearchQuery.trim().length > 0;
   }, [debouncedSearchQuery]);
+
+  const isFetching = useMemo<boolean>(() => {
+    return isLoading || isFetchingRooms;
+  }, [isLoading, isFetchingRooms]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -61,10 +72,21 @@ function ChatListClient({ session }: ChatListClientProps) {
         <div className="space-y-4">
           {rooms && rooms.length > 0 ? (
             rooms.map((room: Room) => <RoomCard key={room._id} room={room} />)
+          ) : roomError ? (
+            <div className="flex items-center justify-center font-bold">
+              <p>Something went wrong</p>
+              <button className="ml-2 text-blue-500" onClick={() => refetch()}>
+                Retry
+              </button>
+            </div>
+          ) : isFetching ? (
+            <div className="flex items-center justify-center font-bold">
+              <Loading />
+            </div>
           ) : (
-            <p className="text-center text-gray-500">
-              No chat rooms available.
-            </p>
+            <div>
+              <p className="text-center text-gray-600">No rooms available</p>
+            </div>
           )}
         </div>
       </div>

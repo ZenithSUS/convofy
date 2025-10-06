@@ -170,12 +170,12 @@ function RoomPage() {
   };
 
   const handleTypingUser = async () => {
-    // Clear existing timeout
+    // Start typing indicator
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    // Only send typing signal if not already typing
+    // Only start the typing if not already typing
     if (!isTypingRef.current) {
       isTypingRef.current = true;
       try {
@@ -189,7 +189,7 @@ function RoomPage() {
       }
     }
 
-    // Set timeout to stop typing after 3 seconds of inactivity
+    // Add a timeout to stop typing after 3 seconds
     typingTimeoutRef.current = setTimeout(() => {
       handleStopTypingUser();
     }, 3000);

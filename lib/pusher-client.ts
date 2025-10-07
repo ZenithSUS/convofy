@@ -13,15 +13,16 @@ if (!pusherKey || !pusherCluster) {
 
 export const pusherClient = new Pusher(pusherKey!, {
   cluster: pusherCluster!,
-  forceTLS: true, // Use forceTLS instead of the default
-  enabledTransports: ["ws", "wss"], // Specify transports explicitly
+  forceTLS: true,
+  enabledTransports: ["ws", "wss"],
 });
 
-// Add connection state logging
+// Handle connection errors
 pusherClient.connection.bind("error", (err: any) => {
   console.error("Pusher connection error:", err);
 });
 
+// Handle successful connection
 pusherClient.connection.bind("connected", () => {
   console.log("Pusher connected successfully");
 });

@@ -1,13 +1,5 @@
 import Pusher from "pusher";
 
-// Debug: Check environment variables on server startup
-console.log("Pusher Server Config Check:", {
-  appId: process.env.PUSHER_APP_ID ? "✓" : "✗ MISSING",
-  key: process.env.PUSHER_KEY ? "✓" : "✗ MISSING",
-  secret: process.env.PUSHER_SECRET ? "✓" : "✗ MISSING",
-  cluster: process.env.PUSHER_CLUSTER || "✗ MISSING",
-});
-
 const appId = process.env.PUSHER_APP_ID;
 const key = process.env.PUSHER_KEY;
 const secret = process.env.PUSHER_SECRET;

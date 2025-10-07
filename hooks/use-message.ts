@@ -115,3 +115,53 @@ export const useCheckTyping = (): UseMutationResult<
     mutationFn: async (data: MessageTyping) => checkTyping(data),
   });
 };
+
+export const useDeleteMessage = (): UseMutationResult<
+  { message: string },
+  unknown,
+  string,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  const deleteMessage = async (messageId: string) => {
+    const response = await client
+      .delete(`/message/${messageId}`)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error deleting message:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["deleteMessage"],
+    mutationFn: async (messageId: string) => deleteMessage(messageId),
+    onSuccess: () => {
+      // Invalidate messages query to refetch
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
+    },
+  });
+};
+
+export const useDeleteLiveMessage = () => {
+  const queryClient = useQueryClient();
+
+  const deleteLiveMessage = async (messageId: string) => {
+    const response = await client
+      .delete(`chat/${messageId}`)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error deleting message:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["deleteMessage"],
+    mutationFn: async (messageId: string) => deleteLiveMessage(messageId),
+  });
+};

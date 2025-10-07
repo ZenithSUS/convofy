@@ -30,3 +30,25 @@ export const sendLiveMessage = async (data: IMessage) => {
     throw error;
   }
 };
+
+export const deleteLiveMessage = async (id: string) => {
+  try {
+    if (!id) throw new Error("Message ID is required");
+
+    await connectToDatabase();
+
+    // Delete the message
+    const message = await Message.findByIdAndDelete(id);
+
+    // Send to Pusher
+    const channelName = `chat-${message?.room}`;
+    await pusherServer.trigger(channelName, "delete-message", message);
+
+    console.log("Message deleted:", message);
+
+    return message;
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    throw error;
+  }
+};

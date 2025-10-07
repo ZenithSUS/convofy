@@ -50,3 +50,14 @@ export const getMessagesByRoom = async (roomId: string) => {
     throw error;
   }
 };
+
+export const deleteMessage = async (messageId: string) => {
+  try {
+    await connectToDatabase();
+    const deletedMessage = await Message.findByIdAndDelete(messageId);
+    return deletedMessage;
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    throw error;
+  }
+};

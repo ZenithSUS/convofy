@@ -31,6 +31,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
+import ErrorMessage from "@/components/ui/error-message";
+import { AxiosError } from "axios/";
+import MessageCard from "../components/message-card";
+import { Session } from "next-auth";
 
 const schema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -43,8 +47,8 @@ function RoomPage() {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const isMountedRef = useRef(true);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -57,18 +61,54 @@ function RoomPage() {
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
     new Map(),
   );
-  const { data: room } = useGetRoomById(roomId as string);
-  const { data: messages } = useGetMessagesByRoom(roomId as string);
+  const {
+    data: room,
+    isLoading: roomLoading,
+    isError: roomError,
+    error: roomErrorData,
+    refetch: refetchRoom,
+  } = useGetRoomById(roomId as string);
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    isError: messagesError,
+    error: messagesErrorData,
+    refetch: refetchMessages,
+  } = useGetMessagesByRoom(roomId as string);
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();
+
+  // Memoize data
+  const roomData = useMemo(() => room, [room]);
+  const messagesData = useMemo(() => messages, [messages]);
+
+  // Error handling
+  const isChatError = useMemo(() => {
+    return roomError || messagesError;
+  }, [roomError, messagesError]);
+
+  const chatErrorData = useMemo(() => {
+    return roomErrorData || messagesErrorData;
+  }, [roomErrorData, messagesErrorData]);
+
+  // Loading states
+  const isAllLoading = useMemo(() => {
+    if (isChatError) return false;
+
+    return roomLoading || messagesLoading;
+  }, [roomLoading, messagesLoading]);
+
+  const isAllDataLoaded = useMemo(() => {
+    if (isChatError) return true;
+
+    return roomData && messagesData;
+  }, [roomData, messages]);
 
   // Set up Pusher subscription
   useEffect(() => {
     isMountedRef.current = true;
 
     const channel = pusherClient.subscribe(`chat-${roomId}`);
-    console.log("Connecting to Pusher channel:", `chat-${roomId}`);
-    console.log("Pusher state:", pusherClient.connection.state);
 
     // Handle new messages
     channel.bind("new-message", (data: Message) => {
@@ -85,6 +125,32 @@ function RoomPage() {
             if (messageExists) return old;
 
             return [...old, data];
+          },
+        );
+
+        // Update rooms list to show latest message
+        queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      }
+    });
+
+    // Handle deleted messages
+    channel.bind("delete-message", (data: Message) => {
+      console.log(data);
+      // Only update if component is still mounted
+      if (isMountedRef.current) {
+        // Update react-query cache with the new message
+        queryClient.setQueryData(
+          ["messages", roomId],
+          (old: Message[] | undefined) => {
+            console.log("old", old);
+            if (!old) return [data];
+
+            // If exists filter out
+            const messageExists = old.some((msg) => msg._id === data._id);
+            if (messageExists)
+              return [old.filter((msg) => msg._id !== data._id)];
+
+            return old;
           },
         );
 
@@ -119,7 +185,6 @@ function RoomPage() {
     // Cleanup function
     return () => {
       isMountedRef.current = false;
-      console.log("Unsubscribing from channel:", `chat-${roomId}`);
       channel.unbind_all();
       channel.unsubscribe();
 
@@ -129,11 +194,6 @@ function RoomPage() {
       }
     };
   }, [roomId, queryClient, session?.user?.id]);
-
-  const roomData = useMemo(() => room, [room]);
-  const isAllDataLoaded = useMemo(() => {
-    return roomData && messages;
-  }, [roomData, messages]);
 
   const handleSendMessage = async (data: FormData) => {
     if (data.message.trim() === "") return;
@@ -215,7 +275,7 @@ function RoomPage() {
     }
   };
 
-  if (!isAllDataLoaded)
+  if (!isAllDataLoaded || isAllLoading)
     return (
       <div className="flex h-screen items-center justify-center">
         <Loading />
@@ -228,19 +288,24 @@ function RoomPage() {
       <div className="flex-1 overflow-y-auto p-4">
         {/* Room Header */}
 
-        {messages?.length === 0 && <p>No messages yet.</p>}
-        {messages?.map((msg: Message) => {
-          return (
-            <div
+        {messagesData?.length === 0 ? (
+          <p className="text-center font-semibold">No messages yet.</p>
+        ) : isChatError ? (
+          <ErrorMessage
+            error={chatErrorData as AxiosError}
+            onClick={refetchMessages}
+          />
+        ) : (
+          messages?.map((msg: Message) => (
+            <MessageCard
               key={msg._id}
-              className={`mb-4 w-fit rounded-md ${msg.sender._id === session?.user?.id ? "ml-auto bg-slate-200 p-2 dark:bg-slate-800" : "mr-auto bg-slate-300 p-2 dark:bg-slate-700"}`}
-            >
-              <strong>{msg.sender.name.split(" ")[0]}:</strong> {msg.content}
-            </div>
-          );
-        })}
+              message={msg}
+              session={session as Session}
+            />
+          ))
+        )}
 
-        {typingUsers.size > 0 && (
+        {!isChatError && typingUsers.size > 0 && (
           <div className="mt-2 text-sm text-gray-500 italic">
             {Array.from(typingUsers.values())
               .map((typing) => typing.user.name)

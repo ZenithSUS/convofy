@@ -9,6 +9,8 @@ import { Room } from "@/types/room";
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
+import ErrorMessage from "@/components/ui/error-message";
+import { AxiosError } from "axios/";
 
 interface ChatListClientProps {
   session: Session;
@@ -25,6 +27,7 @@ function ChatListClient({ session }: ChatListClientProps) {
     isLoading,
     isFetching: isFetchingRooms,
     isError: roomError,
+    error: roomErrorData,
     refetch,
   } = useGetRooms(debouncedSearchQuery);
 
@@ -73,12 +76,10 @@ function ChatListClient({ session }: ChatListClientProps) {
           {rooms && rooms.length > 0 ? (
             rooms.map((room: Room) => <RoomCard key={room._id} room={room} />)
           ) : roomError ? (
-            <div className="flex items-center justify-center font-bold">
-              <p>Something went wrong</p>
-              <button className="ml-2 text-blue-500" onClick={() => refetch()}>
-                Retry
-              </button>
-            </div>
+            <ErrorMessage
+              error={roomErrorData as AxiosError}
+              onClick={refetch}
+            />
           ) : isFetching ? (
             <div className="flex items-center justify-center font-bold">
               <Loading />

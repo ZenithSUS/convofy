@@ -1,3 +1,4 @@
-- [x] Fix channel name in client subscription from `room-${roomId}` to `chat-${roomId}` in app/(views)/chat/[roomId]/page.tsx
-- [x] Update Pusher event handler to add received message to react-query cache instead of calling sendLiveMessage
-- [x] Remove unused sendLiveMessage import and logic
+- [x] Add deleteMessage function in services/message.service.ts
+- [x] Add DELETE method in app/api/message/[id]/route.ts
+- [x] Add useDeleteMessage hook in hooks/use-message.ts
+- [x] Update message-card.tsx to fix hover logic and implement delete on click

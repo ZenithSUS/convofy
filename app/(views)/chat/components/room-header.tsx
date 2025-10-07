@@ -1,3 +1,5 @@
+"use client";
+
 import { Room } from "@/types/room";
 import { ArrowBigLeftDashIcon } from "lucide-react";
 import Image from "next/image";
@@ -9,6 +11,8 @@ interface RoomHeaderProps {
 
 function RoomHeader({ room }: RoomHeaderProps) {
   const router = useRouter();
+
+  if (!room) return null;
 
   return (
     <div className="mb-4 flex items-center justify-between gap-2 border-b p-2">

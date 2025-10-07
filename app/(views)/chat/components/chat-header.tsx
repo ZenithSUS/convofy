@@ -3,7 +3,7 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "next/image";
 
-import LogoutModal from "./logout-modal";
+import LogoutModal from "./../components/modals/logout-modal";
 
 export interface Session {
   user: {
@@ -16,6 +16,8 @@ export interface Session {
 
 function ChatHeader({ session }: { session: Session }) {
   const isMobile = useIsMobile();
+
+  if (!session) return null;
 
   return (
     <div className="mb-4 flex items-center justify-between gap-2 border-b pb-2">

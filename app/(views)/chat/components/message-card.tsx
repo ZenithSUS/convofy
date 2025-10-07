@@ -2,7 +2,7 @@
 
 import { Message } from "@/types/message";
 import { Session } from "next-auth";
-import { useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef, useState } from "react";
 import { useDeleteLiveMessage } from "@/hooks/use-message";
 import DeleteMessageModal from "./modals/delete-message-modal";
 
@@ -12,6 +12,8 @@ interface Props {
 }
 
 function MessageCard({ message, session }: Props) {
+  if (!message) return null;
+
   const [isDeleteVisible, setIsDeleteVisible] = useState(false);
   const [isHoveringIcon, setIsHoveringIcon] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,4 +90,4 @@ function MessageCard({ message, session }: Props) {
   );
 }
 
-export default MessageCard;
+export default memo(MessageCard);

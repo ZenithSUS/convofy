@@ -44,8 +44,6 @@ export const deleteLiveMessage = async (id: string) => {
     const channelName = `chat-${message?.room}`;
     await pusherServer.trigger(channelName, "delete-message", message);
 
-    console.log("Message deleted:", message);
-
     return message;
   } catch (error) {
     console.error("Error deleting message:", error);

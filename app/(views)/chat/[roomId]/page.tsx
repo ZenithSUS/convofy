@@ -35,6 +35,7 @@ import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
 import MessageCard from "../components/message-card";
 import { Session } from "next-auth";
+import EmojiSelection from "../components/emoji-selection";
 
 const schema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -135,22 +136,20 @@ function RoomPage() {
 
     // Handle deleted messages
     channel.bind("delete-message", (data: Message) => {
-      console.log(data);
       // Only update if component is still mounted
       if (isMountedRef.current) {
         // Update react-query cache with the new message
         queryClient.setQueryData(
           ["messages", roomId],
           (old: Message[] | undefined) => {
-            console.log("old", old);
             if (!old) return [data];
 
             // If exists filter out
             const messageExists = old.some((msg) => msg._id === data._id);
             if (messageExists)
-              return [old.filter((msg) => msg._id !== data._id)];
+              return [...old.filter((msg) => msg._id !== data._id)];
 
-            return old;
+            return [...old, data];
           },
         );
 
@@ -194,6 +193,10 @@ function RoomPage() {
       }
     };
   }, [roomId, queryClient, session?.user?.id]);
+
+  const handleEmojiAppend = (emoji: string) => {
+    form.setValue("message", form.getValues("message") + emoji);
+  };
 
   const handleSendMessage = async (data: FormData) => {
     if (data.message.trim() === "") return;
@@ -317,7 +320,7 @@ function RoomPage() {
 
       <Form {...form}>
         <form
-          className="flex gap-2 border-t p-4"
+          className="relative flex gap-2 border-t p-4"
           onSubmit={form.handleSubmit(handleSendMessage)}
         >
           <FormField
@@ -348,6 +351,7 @@ function RoomPage() {
             )}
           />
 
+          <EmojiSelection onEmojiAppend={handleEmojiAppend} />
           <Button
             type="submit"
             className="disabled:cursor-not-allowed disabled:opacity-50"

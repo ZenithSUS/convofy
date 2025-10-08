@@ -17,12 +17,12 @@ export const pusherClient = new Pusher(pusherKey!, {
   enabledTransports: ["ws", "wss"],
 });
 
-// Handle connection errors
-pusherClient.connection.bind("error", (err: any) => {
-  console.error("Pusher connection error:", err);
-});
+// // Handle connection errors
+// pusherClient.connection.bind("error", (err: any) => {
+//   console.error("Pusher connection error:", err);
+// });
 
-// Handle successful connection
-pusherClient.connection.bind("connected", () => {
-  console.log("Pusher connected successfully");
-});
+// // Handle successful connection
+// pusherClient.connection.bind("connected", () => {
+//   console.log("Pusher connected successfully");
+// });

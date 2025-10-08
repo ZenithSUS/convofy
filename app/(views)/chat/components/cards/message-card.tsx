@@ -4,7 +4,8 @@ import { Message } from "@/types/message";
 import { Session } from "next-auth";
 import { memo, useMemo, useRef, useState } from "react";
 import { useDeleteLiveMessage } from "@/hooks/use-message";
-import DeleteMessageModal from "./modals/delete-message-modal";
+import DeleteMessageModal from "@/app/(views)/chat/components/modals/delete-message-modal";
+import { toast } from "react-toastify";
 
 interface Props {
   message: Message;
@@ -22,7 +23,7 @@ function MessageCard({ message, session }: Props) {
     return message.sender._id === session?.user?.id;
   }, [message, session]);
 
-  const deleteMessage = useDeleteLiveMessage();
+  const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
   const hideDeleteIcon = () => {
     setIsDeleteVisible(false);
@@ -63,15 +64,23 @@ function MessageCard({ message, session }: Props) {
     timeoutRef.current = setTimeout(hideDeleteIcon, 1000);
   };
 
-  const handleDeleteClick = () => {
-    deleteMessage.mutate(message._id);
-    setIsDeleteVisible(false);
+  const handleDeleteClick = async () => {
+    try {
+      await deleteMessage(message._id).then(() =>
+        toast.success("Message deleted"),
+      );
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      toast.error("Failed to delete message");
+    } finally {
+      setIsDeleteVisible(false);
+    }
   };
 
   return (
     <div className="flex flex-row items-center justify-center gap-2">
       <div
-        className={`mb-4 w-fit rounded-md ${message.sender._id === session?.user?.id ? "ml-auto bg-slate-200 p-2 dark:bg-slate-800" : "mr-auto bg-slate-300 p-2 dark:bg-slate-700"}`}
+        className={`mb-4 w-fit max-w-sm rounded-md ${message.sender._id === session?.user?.id ? "ml-auto bg-slate-200 p-2 dark:bg-slate-800" : "mr-auto bg-slate-300 p-2 dark:bg-slate-700"}`}
         onMouseEnter={handleMouseEnterMessage}
         onMouseLeave={handleMouseLeaveMessage}
       >

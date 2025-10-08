@@ -15,7 +15,7 @@ function RoomHeader({ room }: RoomHeaderProps) {
   if (!room) return null;
 
   return (
-    <div className="mb-4 flex items-center justify-between gap-2 border-b p-2">
+    <div className="mb-4 flex items-center justify-between gap-2 border-b px-4 py-2">
       <div className="flex items-center gap-2">
         {room.image && (
           <Image

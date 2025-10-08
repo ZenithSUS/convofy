@@ -145,7 +145,8 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
 
             <div className="flex items-center gap-2">
               <Button
-                className="group relative flex-1 cursor-pointer justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 ease-in-out hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
+                variant="default"
+                className="flex-1 hover:scale-105 disabled:opacity-50"
                 type="submit"
                 disabled={isUploading || form.formState.isSubmitting}
               >
@@ -154,9 +155,9 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
 
               <Button
                 type="button"
+                className="flex-1 hover:scale-105 disabled:opacity-50"
                 variant="destructive"
                 onClick={() => router.push("/chat")}
-                className="flex-1 cursor-pointer bg-red-500 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50"
               >
                 Cancel
               </Button>

@@ -13,7 +13,7 @@ function ErrorMessage({ error, onClick }: ErrorMessageProps) {
       <h2 className="text-2xl font-bold text-red-600">
         Error {error.response?.status}
       </h2>
-      <p className="text-lg">{axiosErrorMessage(error)}</p>
+      <p className="text-center text-lg">{axiosErrorMessage(error)}</p>
       <Button
         variant="default"
         className="hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"

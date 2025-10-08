@@ -36,13 +36,10 @@ const RoomCard = ({ room }: { room: Room }) => {
               Last message: {room.lastMessage.content}
             </p>
           )}
+          <h2 className="text-sm font-semibold">
+            Members: <span>{room.members.length || 0}</span>
+          </h2>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
-        <h2 className="text-md font-semibold">
-          Members: {room.members.length || 0}
-        </h2>
       </div>
     </div>
   );

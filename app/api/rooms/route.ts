@@ -3,25 +3,24 @@ import { CreateRoom } from "@/types/room";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
-  const url = new URL(request.url);
-  const queryParam = url.searchParams.get("query");
-  let rooms = await getRooms();
+  try {
+    const url = new URL(request.url);
+    const queryParam = url.searchParams.get("query");
+    let rooms = await getRooms(queryParam || "");
 
-  if (queryParam) {
-    rooms = rooms.filter((room) =>
-      room.name.toLowerCase().includes(queryParam.toLowerCase()),
-    );
-  }
+    if (!rooms) {
+      return NextResponse.json([], {
+        status: 200,
+      });
+    }
 
-  if (!rooms) {
-    return NextResponse.json([], {
+    return NextResponse.json(rooms, {
       status: 200,
     });
+  } catch (error) {
+    console.error("Error fetching rooms:", error);
+    return NextResponse.json([], { status: 500 });
   }
-
-  return NextResponse.json(rooms, {
-    status: 200,
-  });
 }
 
 export async function POST(request: Request) {

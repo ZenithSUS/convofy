@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import SearchBar from "@/components/ui/searchbar";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useGetRooms } from "@/hooks/use-rooms";
-import RoomCard from "@/app/(views)/chat/components/room-card";
+import { useGetRoomByUserId } from "@/hooks/use-rooms";
+import RoomCard from "@/app/(views)/chat/components/cards/room-card";
 import { Room } from "@/types/room";
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,11 @@ function ChatListClient({ session }: ChatListClientProps) {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  const isSearchMode = useMemo<boolean>(() => {
+    return debouncedSearchQuery.trim().length > 0;
+  }, [debouncedSearchQuery]);
+
   const {
     data: rooms,
     isLoading,
@@ -29,11 +34,7 @@ function ChatListClient({ session }: ChatListClientProps) {
     isError: roomError,
     error: roomErrorData,
     refetch,
-  } = useGetRooms(debouncedSearchQuery);
-
-  const isSearchMode = useMemo<boolean>(() => {
-    return debouncedSearchQuery.trim().length > 0;
-  }, [debouncedSearchQuery]);
+  } = useGetRoomByUserId(session.user.id, isSearchMode, debouncedSearchQuery);
 
   const isFetching = useMemo<boolean>(() => {
     return isLoading || isFetchingRooms;

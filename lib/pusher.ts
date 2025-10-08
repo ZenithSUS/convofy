@@ -25,5 +25,3 @@ export const pusherServer = new Pusher({
   cluster: cluster,
   useTLS: true,
 });
-
-console.log(`✓ Pusher Server initialized for cluster: ${cluster}`);

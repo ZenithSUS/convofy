@@ -33,7 +33,7 @@ import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
-import MessageCard from "../components/message-card";
+import MessageCard from "@/app/(views)/chat/components/cards/message-card";
 import { Session } from "next-auth";
 import EmojiSelection from "../components/emoji-selection";
 
@@ -58,7 +58,7 @@ function RoomPage() {
     },
   });
 
-  const [isSending, _] = useTransition();
+  const [isSending, setIsSending] = useState<boolean>(false);
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
     new Map(),
   );
@@ -218,6 +218,7 @@ function RoomPage() {
     }
 
     try {
+      setIsSending(true);
       await sendMessage(messageData);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -229,6 +230,8 @@ function RoomPage() {
 
       toast.error("Failed to send message.");
       throw error;
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -332,7 +335,7 @@ function RoomPage() {
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="Type a message..."
+                    placeholder={isSending ? "Sending..." : "Type a message..."}
                     className="mr-2"
                     disabled={isSending}
                     onChange={(e) => {

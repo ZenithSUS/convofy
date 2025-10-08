@@ -36,6 +36,7 @@ import { AxiosError } from "axios/";
 import MessageCard from "@/app/(views)/chat/components/cards/message-card";
 import { Session } from "next-auth";
 import EmojiSelection from "../components/emoji-selection";
+import NotJoinedModal from "../components/modals/not-joined-modal";
 
 const schema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -62,6 +63,8 @@ function RoomPage() {
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
     new Map(),
   );
+  const [connectionStatus, setConnectionStatus] =
+    useState<string>("connecting");
   const {
     data: room,
     isLoading: roomLoading,
@@ -102,12 +105,50 @@ function RoomPage() {
   const isAllDataLoaded = useMemo(() => {
     if (isChatError) return true;
 
-    return roomData && messagesData;
-  }, [roomData, messages]);
+    return roomData && messagesData && session;
+  }, [roomData, messages, session]);
 
   // Set up Pusher subscription
   useEffect(() => {
     isMountedRef.current = true;
+
+    if (!roomId || !session) return;
+
+    // Bind connection status updates independent of room membership
+    const handleConnected = () => {
+      if (isMountedRef.current) {
+        toast.success("Connected to Room");
+        setConnectionStatus("connected");
+      }
+    };
+
+    const handleDisconnected = () => {
+      if (isMountedRef.current) {
+        setConnectionStatus("disconnected");
+        toast.warn("Connection lost. Reconnecting...");
+      }
+    };
+
+    const handleConnecting = () => {
+      console.log("Connecting to Pusher");
+      if (isMountedRef.current) {
+        setConnectionStatus("connecting");
+      }
+    };
+
+    const handleError = (err: any) => {
+      if (isMountedRef.current) {
+        setConnectionStatus("error");
+        toast.error("Connection error. Retrying...");
+      }
+    };
+
+    pusherClient.connection.bind("connected", handleConnected);
+    pusherClient.connection.bind("disconnected", handleDisconnected);
+    pusherClient.connection.bind("connecting", handleConnecting);
+    pusherClient.connection.bind("error", handleError);
+
+    if (!room?.members?.includes(session?.user?.id as string)) return;
 
     const channel = pusherClient.subscribe(`chat-${roomId}`);
 
@@ -187,12 +228,18 @@ function RoomPage() {
       channel.unbind_all();
       channel.unsubscribe();
 
+      // Unbind connection events
+      pusherClient.connection.unbind("connected", handleConnected);
+      pusherClient.connection.unbind("disconnected", handleDisconnected);
+      pusherClient.connection.unbind("connecting", handleConnecting);
+      pusherClient.connection.unbind("error", handleError);
+
       // Clear typing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [roomId, queryClient, session?.user?.id]);
+  }, [roomId, queryClient, session?.user?.id, room]);
 
   const handleEmojiAppend = (emoji: string) => {
     form.setValue("message", form.getValues("message") + emoji);
@@ -291,6 +338,17 @@ function RoomPage() {
   return (
     <div className="flex h-screen flex-col">
       <RoomHeader room={roomData as Room} />
+      {connectionStatus !== "connected" && (
+        <div className="border-l-4 border-yellow-500 bg-yellow-100 p-4 text-yellow-700">
+          <p className="font-bold">Connection Issue</p>
+          <p>
+            {connectionStatus === "connecting" && "Connecting..."}
+            {connectionStatus === "disconnected" &&
+              "Disconnected. Reconnecting..."}
+            {connectionStatus === "error" && "Connection error. Retrying..."}
+          </p>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Room Header */}
 
@@ -321,49 +379,60 @@ function RoomPage() {
         )}
       </div>
 
-      <Form {...form}>
-        <form
-          className="relative flex gap-2 border-t p-4"
-          onSubmit={form.handleSubmit(handleSendMessage)}
-        >
-          <FormField
-            control={form.control}
-            name="message"
-            render={({ field }) => (
-              <FormItem className="flex-1 items-center">
-                <FormLabel className="sr-only">Message</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder={isSending ? "Sending..." : "Type a message..."}
-                    className="mr-2"
-                    disabled={isSending}
-                    onChange={(e) => {
-                      field.onChange(e);
-                      if (e.target.value.length > 0) {
-                        handleTypingUser();
-                      } else {
-                        handleStopTypingUser();
-                      }
-                    }}
-                    onBlur={() => handleStopTypingUser()}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      {/* Check if the user is already joined the room */}
 
-          <EmojiSelection onEmojiAppend={handleEmojiAppend} />
-          <Button
-            type="submit"
-            className="disabled:cursor-not-allowed disabled:opacity-50"
-            disabled={isSending}
+      {room?.members.includes(session?.user?.id as string) ? (
+        <Form {...form}>
+          <form
+            className="relative flex gap-2 border-t p-4"
+            onSubmit={form.handleSubmit(handleSendMessage)}
           >
-            Send {isSending && <Loader2 className="animate-spin" />}
-          </Button>
-        </form>
-      </Form>
+            <FormField
+              control={form.control}
+              name="message"
+              render={({ field }) => (
+                <FormItem className="flex-1 items-center">
+                  <FormLabel className="sr-only">Message</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder={
+                        isSending ? "Sending..." : "Type a message..."
+                      }
+                      className="mr-2"
+                      disabled={isSending}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value.length > 0) {
+                          handleTypingUser();
+                        } else {
+                          handleStopTypingUser();
+                        }
+                      }}
+                      onBlur={() => handleStopTypingUser()}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <EmojiSelection onEmojiAppend={handleEmojiAppend} />
+            <Button
+              type="submit"
+              className="disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={isSending}
+            >
+              Send {isSending && <Loader2 className="animate-spin" />}
+            </Button>
+          </form>
+        </Form>
+      ) : (
+        <NotJoinedModal
+          roomId={roomId as string}
+          userId={session?.user?.id as string}
+        />
+      )}
     </div>
   );
 }

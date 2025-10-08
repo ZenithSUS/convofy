@@ -27,9 +27,11 @@ const RoomCard = ({ room }: { room: Room }) => {
           />
         )}
 
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 truncate md:max-w-full">
           <h2 className="text-lg font-semibold">{room.name}</h2>
-          <p className="text-sm text-gray-600">{room.description}</p>
+          <p className="line-clamp-2 overflow-hidden text-sm text-gray-600">
+            {room.description}
+          </p>
 
           {room.lastMessage && (
             <p className="text-sm text-gray-600">

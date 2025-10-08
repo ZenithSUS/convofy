@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { pusherServer } from "@/lib/pusher";
 import Message from "@/models/Message";
+import Room from "@/models/Room";
 import { Message as IMessage } from "@/types/message";
 
 export const sendLiveMessage = async (data: IMessage) => {
@@ -9,6 +10,13 @@ export const sendLiveMessage = async (data: IMessage) => {
 
     // Create the message
     const message = await Message.create(data);
+
+    const room = await Room.findById(data.room);
+
+    if (room) {
+      await Room.updateOne({ _id: room._id }, { lastMessage: message._id });
+      await room.save();
+    }
 
     // Populate the sender information before sending to Pusher
     const populatedMessage = await Message.findById(message._id)

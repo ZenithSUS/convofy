@@ -73,7 +73,7 @@ function ChatListClient({ session }: ChatListClientProps) {
           </div>
         )}
         {/* List of chat rooms */}
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-hidden">
           {rooms && rooms.length > 0 ? (
             rooms.map((room: Room) => <RoomCard key={room._id} room={room} />)
           ) : roomError ? (

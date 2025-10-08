@@ -45,7 +45,7 @@ export const getRoomById = async (id: string) => {
 export const addMemberToRoom = async (roomId: string, userId: string) => {
   await connectToDatabase();
   const room = await Room.findByIdAndUpdate(
-    roomId,
+    { _id: roomId },
     { $addToSet: { members: userId } },
     { new: true },
   );

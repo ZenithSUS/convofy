@@ -12,8 +12,6 @@ export const POST = async (req: Request) => {
       );
     }
 
-    console.log(`User ${user.id} is ${isTyping ? "typing" : "not typing"}`);
-
     // Check if roomId, user, and isTyping are defined
     await pusherServer.trigger(
       `chat-${roomId}`,

@@ -8,6 +8,11 @@ import {
   UseQueryResult,
 } from "@tanstack/react-query";
 
+interface JoinRoom {
+  roomId: string;
+  userId: string;
+}
+
 export const useGetRooms = (
   searchQuery: string = "",
 ): UseQueryResult<Room[], unknown> => {
@@ -112,6 +117,38 @@ export const useCreateRoom = (): UseMutationResult<
     onSuccess: () => {
       // Invalidate rooms query to refetch
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
+    },
+  });
+};
+
+export const useJoinRoom = (): UseMutationResult<
+  Room,
+  unknown,
+  JoinRoom,
+  Room
+> => {
+  const queryClient = useQueryClient();
+  const joinRoom = async (data: JoinRoom) => {
+    const response = await client
+      .post(`/rooms/join`, data)
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.error("Failed to join room:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation<Room, unknown, JoinRoom, Room>({
+    mutationFn: async (data: JoinRoom) => joinRoom(data),
+    mutationKey: ["joinRoom"],
+    onSuccess: () => {
+      // Invalidate rooms query to refetch
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["room"] });
     },
   });
 };

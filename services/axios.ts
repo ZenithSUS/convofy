@@ -1,10 +1,14 @@
 import axios from "axios";
 
-if (!process.env.NEXT_PUBLIC_BASE_URL)
-  throw new Error("NEXT_PUBLIC_BASE_URL is not defined");
+const baseURL =
+  process.env.NODE_ENV === "development"
+    ? process.env.NEXT_PUBLIC_BASE_URL_DEV
+    : process.env.NEXT_PUBLIC_BASE_URL_PROD;
+
+if (!baseURL) throw new Error("baseURL is not defined");
 
 const client = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_BASE_URL}/api`,
+  baseURL: `${baseURL}/api`,
   headers: {
     "Content-Type": "application/json",
   },

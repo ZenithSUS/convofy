@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "Convofy",
   description: "A platform to manage and share your conversations easily.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/convofy.png",
   },
 };
 

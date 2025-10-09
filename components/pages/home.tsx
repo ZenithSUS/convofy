@@ -31,7 +31,7 @@ function HomeScreen() {
 
         <div className="flex items-center justify-center">
           <Image
-            src="/window.svg"
+            src="/convofy.png"
             alt="Chat Interface"
             width={500}
             height={400}

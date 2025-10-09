@@ -14,7 +14,6 @@ export const POST = async (req: Request) => {
       );
     }
 
-    console.log("Room ID:", data.room);
     const response = await sendLiveMessage(data);
 
     return NextResponse.json(response, { status: 201 });

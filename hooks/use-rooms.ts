@@ -84,7 +84,7 @@ export const useGetRoomByUserId = (
   };
 
   return useQuery({
-    queryKey: ["room", id, searchQuery],
+    queryKey: ["rooms", id, searchQuery],
     queryFn: async () => getRoomByUserId(isSearch),
     enabled: !!id,
   });

@@ -13,8 +13,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 function LogoutModal() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) return null;
+
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>

@@ -3,6 +3,7 @@
 import { Room } from "@/types/room";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Users } from "lucide-react";
 
 const RoomCard = ({ room }: { room: Room }) => {
   const router = useRouter();
@@ -12,35 +13,48 @@ const RoomCard = ({ room }: { room: Room }) => {
   };
 
   return (
-    <div className="flex justify-between rounded-lg border p-4 shadow-sm transition-shadow hover:shadow-md">
-      <div
-        className="flex cursor-pointer items-center gap-4"
-        onClick={handleOpenRoom}
-      >
+    <div
+      className="flex cursor-pointer justify-between rounded-lg border bg-white p-4 shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
+      onClick={handleOpenRoom}
+    >
+      <div className="flex min-w-0 flex-1 items-start gap-4">
         {room.image && (
-          <Image
-            src={room.image}
-            alt={room.name}
-            width={75}
-            height={75}
-            className="h-12 w-12 rounded-full object-cover"
-          />
+          <div className="flex-shrink-0">
+            <Image
+              src={room.image}
+              alt={room.name}
+              width={48}
+              height={48}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+          </div>
         )}
 
-        <div className="flex flex-col gap-1 truncate md:max-w-full">
-          <h2 className="text-lg font-semibold">{room.name}</h2>
-          <p className="line-clamp-2 overflow-hidden text-sm text-gray-600">
-            {room.description}
-          </p>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <h2 className="truncate text-lg font-semibold text-gray-900">
+            {room.name}
+          </h2>
 
-          {room.lastMessage && (
-            <p className="text-sm text-gray-600">
-              Last message: {room.lastMessage.content}
+          {room.description && (
+            <p className="line-clamp-2 text-sm break-words text-gray-600">
+              {room.description}
             </p>
           )}
-          <h2 className="text-sm font-semibold">
-            Members: <span>{room.members.length || 0}</span>
-          </h2>
+
+          {room.lastMessage && (
+            <p className="truncate text-sm text-gray-500">
+              <span className="font-medium">Last message:</span>{" "}
+              {room.lastMessage.content}
+            </p>
+          )}
+
+          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+            <Users className="h-4 w-4" />
+            <span className="font-medium">{room.members.length || 0}</span>
+            <span className="text-gray-500">
+              {room.members.length === 1 ? "member" : "members"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

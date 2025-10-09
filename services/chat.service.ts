@@ -48,8 +48,23 @@ export const deleteLiveMessage = async (id: string) => {
     // Delete the message
     const message = await Message.findByIdAndDelete(id);
 
+    // Update the last message if the delete message is on the last one
+    const lastMessage = await Message.findOne({ room: message?.room }).sort({
+      createdAt: -1,
+    });
+
+    // Update the last message if the delete message is on the last one
+    if (lastMessage) {
+      await Room.updateOne(
+        { _id: message?.room },
+        { lastMessage: lastMessage._id },
+      );
+      await lastMessage.save();
+    }
+
     // Send to Pusher
     const channelName = `chat-${message?.room}`;
+
     await pusherServer.trigger(channelName, "delete-message", message);
 
     return message;

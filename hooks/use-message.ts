@@ -1,19 +1,30 @@
 import client from "@/services/axios";
 import {
+  InfiniteData,
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
   useMutation,
   UseMutationResult,
-  useQuery,
   useQueryClient,
-  UseQueryResult,
 } from "@tanstack/react-query";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
 
 export const useGetMessagesByRoom = (
   roomId: string,
-): UseQueryResult<Message[], unknown> => {
-  const getMessagesByRoom = async (roomId: string) => {
+  limit: number = 5,
+): UseInfiniteQueryResult<InfiniteData<Message[], unknown>, Error> => {
+  const getMessagesByRoom = async (
+    roomId: string,
+    limit: number,
+    offset: number,
+  ) => {
     const response = await client
-      .get(`/message/${roomId}`)
+      .get(`/message/${roomId}`, {
+        params: {
+          limit,
+          offset,
+        },
+      })
       .then((res) => {
         return res.data;
       })
@@ -25,9 +36,22 @@ export const useGetMessagesByRoom = (
     return response;
   };
 
-  return useQuery({
+  return useInfiniteQuery<Message[], Error>({
     queryKey: ["messages", roomId],
-    queryFn: async () => getMessagesByRoom(roomId),
+    queryFn: async ({ pageParam = 0 }) =>
+      getMessagesByRoom(roomId, limit, pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length < limit ? undefined : allPages.length * limit;
+    },
+    select: (data) => ({
+      // Sort Messages in reverse order
+      pages: data.pages,
+      pageParams: data.pageParams,
+    }),
+    placeholderData: { pages: [], pageParams: [] },
+    refetchOnWindowFocus: false,
+    networkMode: "offlineFirst",
   });
 };
 
@@ -59,7 +83,40 @@ export const useSendMessage = (): UseMutationResult<
       // Update the cache with the new message
       queryClient.setQueryData(
         ["messages", variables.room],
-        (old: Message[]) => [...old, data],
+        (
+          old:
+            | import("@tanstack/react-query").InfiniteData<Message[]>
+            | undefined,
+        ) => {
+          if (!old) {
+            return {
+              pages: [data],
+              pageParams: [],
+            };
+          }
+
+          // Flatten all messages from all pages
+          const allMessages = old.pages.flat();
+
+          // Prevent duplicate messages
+          const hasDuplicates = data.some((newMsg) =>
+            allMessages.some((existingMsg) => existingMsg._id === newMsg._id),
+          );
+
+          if (hasDuplicates) return old;
+
+          // Append the new messages to the last page
+          const newPages = [...old.pages];
+          newPages[newPages.length - 1] = [
+            ...newPages[newPages.length - 1],
+            ...data,
+          ];
+
+          return {
+            ...old,
+            pages: newPages,
+          };
+        },
       );
 
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
@@ -146,8 +203,6 @@ export const useDeleteMessage = (): UseMutationResult<
 };
 
 export const useDeleteLiveMessage = () => {
-  const queryClient = useQueryClient();
-
   const deleteLiveMessage = async (messageId: string) => {
     const response = await client
       .delete(`chat/${messageId}`)

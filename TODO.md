@@ -1,4 +1,1 @@
-- [x] Add deleteMessage function in services/message.service.ts
-- [x] Add DELETE method in app/api/message/[id]/route.ts
-- [x] Add useDeleteMessage hook in hooks/use-message.ts
-- [x] Update message-card.tsx to fix hover logic and implement delete on click
+- [x] Fix the "delete-message" Pusher event handler in app/(views)/chat/[roomId]/page.tsx to properly remove deleted messages from the infinite query cache by filtering each page individually.

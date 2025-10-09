@@ -27,7 +27,7 @@ import {
 } from "@/hooks/use-message";
 import { useSession } from "next-auth/react";
 import { pusherClient } from "@/lib/pusher-client";
-import { useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
@@ -40,6 +40,7 @@ import NotJoinedModal from "../components/modals/not-joined-modal";
 import showErrorConnectionMessage from "@/helper/pusher-error";
 import getPusherConnectionState from "@/helper/pusher-connection-state";
 import { PusherConnectionStatus, PusherState } from "@/types/pusher";
+import { useInView } from "react-intersection-observer";
 
 const schema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -49,7 +50,6 @@ type FormData = z.infer<typeof schema>;
 
 function RoomPage() {
   const { roomId } = useParams();
-  const router = useRouter();
   const { data: session } = useSession();
   const queryClient = useQueryClient();
   const isMountedRef = useRef(true);
@@ -57,6 +57,7 @@ function RoomPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<any>(null);
   const currentRoomIdRef = useRef<string | null>(null);
+  const { ref, inView } = useInView();
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -85,6 +86,9 @@ function RoomPage() {
     isLoading: messagesLoading,
     isError: messagesError,
     error: messagesErrorData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useGetMessagesByRoom(roomId as string);
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
@@ -92,7 +96,21 @@ function RoomPage() {
 
   // Memoize data
   const roomData = useMemo(() => room, [room]);
-  const messagesData = useMemo(() => messages, [messages]);
+
+  // Flatten pages but keep stable order and remove duplicates (preserve first occurrence)
+  const messagesData = useMemo(() => {
+    const flat = (messages?.pages ?? []).flat() as Message[];
+    const seen = new Set<string>();
+    const unique: Message[] = [];
+    for (const msg of flat) {
+      if (!msg || !msg._id) continue;
+      if (!seen.has(msg._id)) {
+        seen.add(msg._id);
+        unique.push(msg);
+      }
+    }
+    return unique.reverse();
+  }, [messages]);
 
   // Error handling
   const isChatError = useMemo(() => {
@@ -297,18 +315,28 @@ function RoomPage() {
 
       // Handle new messages
       channel.bind("new-message", (data: Message) => {
-        // console.log("Received new message:", data);
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
           queryClient.setQueryData(
             ["messages", roomId],
-            (old: Message[] | undefined) => {
-              if (!old) return [data];
+            (old: InfiniteData<Message[]> | undefined) => {
+              if (!old) {
+                return {
+                  pages: [[data]],
+                  pageParams: [],
+                };
+              }
 
-              // Prevent duplicate messages
-              const messageExists = old.some((msg) => msg._id === data._id);
+              const allMessages = old.pages.flat();
+              const messageExists = allMessages.some(
+                (msg) => msg._id === data._id,
+              );
               if (messageExists) return old;
 
-              return [...old, data];
+              // Add the new message to the FIRST page of the cache
+              const newPages = [...old.pages];
+              newPages[0] = [data, ...newPages[0]]; // prepend to page 0
+
+              return { ...old, pages: newPages };
             },
           );
 
@@ -318,16 +346,26 @@ function RoomPage() {
 
       // Handle deleted messages
       channel.bind("delete-message", (data: Message) => {
-        // console.log("Delete message event:", data);
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
+          // Update messages cache by removing the deleted message
           queryClient.setQueryData(
             ["messages", roomId],
-            (old: Message[] | undefined) => {
-              if (!old) return [];
-              return old.filter((msg) => msg._id !== data._id);
+            (old: InfiniteData<Message[]> | undefined) => {
+              if (!old) return old;
+
+              // Filter out the deleted message from all pages
+              const newPages = old.pages.map((page) =>
+                page.filter((msg) => msg._id !== data._id),
+              );
+
+              return {
+                ...old,
+                pages: newPages,
+              };
             },
           );
 
+          // Still invalidate rooms to update last message preview
           queryClient.invalidateQueries({ queryKey: ["rooms"] });
         }
       });
@@ -367,6 +405,13 @@ function RoomPage() {
       currentRoomIdRef.current = null;
     };
   }, [roomId, session?.user?.id, room?.members, queryClient]);
+
+  // Check if the chat is in view
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [fetchNextPage, inView]);
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
@@ -488,7 +533,15 @@ function RoomPage() {
           </p>
         </div>
       )}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 flex-col-reverse overflow-y-auto p-4">
+        {hasNextPage && (
+          <div className="mb-4 flex items-center justify-center" ref={ref}>
+            {isFetchingNextPage && (
+              <Loader2 size={22} className="animate-spin" />
+            )}
+          </div>
+        )}
+
         {messagesData?.length === 0 ? (
           <p className="text-center font-semibold">No messages yet.</p>
         ) : isChatError ? (
@@ -497,7 +550,7 @@ function RoomPage() {
             onClick={handleRefresh}
           />
         ) : (
-          messages?.map((msg: Message) => (
+          messagesData?.map((msg: Message) => (
             <MessageCard
               key={msg._id}
               message={msg}

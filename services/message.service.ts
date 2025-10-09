@@ -37,12 +37,19 @@ export const createMessage = async (data: CreateMessage) => {
   }
 };
 
-export const getMessagesByRoom = async (roomId: string) => {
+export const getMessagesByRoom = async (
+  roomId: string,
+  limit: number = 5,
+  offset: number = 0,
+) => {
   try {
     await connectToDatabase();
+
     const messages = await Message.find({ room: roomId })
+      .limit(limit)
+      .skip(offset)
       .populate("sender", "name")
-      .sort({ createdAt: 1 });
+      .sort({ createdAt: -1 });
 
     return messages;
   } catch (error) {

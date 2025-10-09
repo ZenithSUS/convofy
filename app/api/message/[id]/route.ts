@@ -1,4 +1,5 @@
 import { getMessagesByRoom, deleteMessage } from "@/services/message.service";
+import { url } from "inspector";
 import { NextResponse } from "next/server";
 
 export const GET = async (
@@ -6,8 +7,13 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
+    const url = new URL(req.url).searchParams;
     const roomId = (await params).id;
-    const messages = await getMessagesByRoom(roomId);
+
+    const limit = Number(url.get("limit")) || 5;
+    const offset = Number(url.get("offset")) || 0;
+
+    const messages = await getMessagesByRoom(roomId, limit, offset);
     return NextResponse.json(messages, { status: 200 });
   } catch (error) {
     console.error("Error fetching messages:", error);

@@ -4,7 +4,7 @@ import { Readable } from "stream";
 
 export const runtime = "nodejs";
 
-export const POST = async (req: Request) => {
+export async function POST(req: Request): Promise<Response> {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
@@ -16,7 +16,11 @@ export const POST = async (req: Request) => {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    return new Promise((resolve, reject) => {
+    if (buffer.length === 0) {
+      return new Response("File is empty", { status: 400 });
+    }
+
+    const response = await new Promise<Response>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: "uploads" },
         (error, result) => {
@@ -35,9 +39,11 @@ export const POST = async (req: Request) => {
       readable.push(null);
       readable.pipe(uploadStream);
     });
+
+    return response;
   } catch (err: unknown) {
     const error = err as Error;
     console.error("Error:", error);
     return new Response(error.message, { status: 500 });
   }
-};
+}

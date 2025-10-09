@@ -35,7 +35,8 @@ export const POST = async (req: Request) => {
       readable.push(null);
       readable.pipe(uploadStream);
     });
-  } catch (error: any) {
+  } catch (err: unknown) {
+    const error = err as Error;
     console.error("Error:", error);
     return new Response(error.message, { status: 500 });
   }

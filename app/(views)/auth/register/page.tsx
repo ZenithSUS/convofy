@@ -86,6 +86,7 @@ function RegisterPage() {
         setError("Registration failed");
       }
     } catch (err) {
+      console.error(err);
       setError("An error occurred during registration");
     }
   };

@@ -1,5 +1,5 @@
 import { getMessagesByRoom, deleteMessage } from "@/services/message.service";
-import { url } from "inspector";
+
 import { NextResponse } from "next/server";
 
 export const GET = async (

@@ -15,7 +15,7 @@ import { useUploadImage } from "@/hooks/use-upload";
 import { CreateRoom } from "@/types/room";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import z from "zod";
@@ -47,46 +47,49 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
     },
   });
 
-  const onSubmit = useCallback(async (data: CreateRoomForm) => {
-    try {
-      let avatarUrl: string | undefined;
+  const onSubmit = useCallback(
+    async (data: CreateRoomForm) => {
+      try {
+        let avatarUrl: string | undefined;
 
-      if (data.image) {
-        avatarUrl = await uploadImage(data.image![0]);
+        if (data.image) {
+          avatarUrl = await uploadImage(data.image![0]);
 
-        if (!avatarUrl) {
-          toast.error("Failed to upload avatar");
-          return;
-        }
-      }
-
-      const roomData: CreateRoom = {
-        name: data.name,
-        description: data.description,
-        image: avatarUrl,
-        members: [session.user.id],
-        createdBy: session.user.id,
-        createdAt: new Date(),
-      };
-
-      startTransition(async () => {
-        try {
-          const room = await createRoom(roomData);
-
-          if (room) {
-            toast.success("Room created successfully");
-            router.push(`/chat/${room._id}`);
+          if (!avatarUrl) {
+            toast.error("Failed to upload avatar");
+            return;
           }
-        } catch (error) {
-          toast.error("Failed to Create room");
-          throw error;
         }
-      });
-    } catch (error) {
-      console.error("Failed to Create room:", error);
-      toast.error("Failed to Create room");
-    }
-  }, []);
+
+        const roomData: CreateRoom = {
+          name: data.name,
+          description: data.description,
+          image: avatarUrl,
+          members: [session.user.id],
+          createdBy: session.user.id,
+          createdAt: new Date(),
+        };
+
+        startTransition(async () => {
+          try {
+            const room = await createRoom(roomData);
+
+            if (room) {
+              toast.success("Room created successfully");
+              router.push(`/chat/${room._id}`);
+            }
+          } catch (error) {
+            toast.error("Failed to Create room");
+            throw error;
+          }
+        });
+      } catch (error) {
+        console.error("Failed to Create room:", error);
+        toast.error("Failed to Create room");
+      }
+    },
+    [createRoom, router, session.user.id, startTransition, uploadImage],
+  );
 
   return (
     <div className="flex h-screen flex-col">
@@ -148,7 +151,9 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
                 variant="default"
                 className="flex-1 hover:scale-105 disabled:opacity-50"
                 type="submit"
-                disabled={isUploading || form.formState.isSubmitting}
+                disabled={
+                  isUploading || form.formState.isSubmitting || isSubmitting
+                }
               >
                 Submit
               </Button>
@@ -157,6 +162,9 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
                 type="button"
                 className="flex-1 hover:scale-105 disabled:opacity-50"
                 variant="destructive"
+                disabled={
+                  isUploading || form.formState.isSubmitting || isSubmitting
+                }
                 onClick={() => router.push("/chat")}
               >
                 Cancel

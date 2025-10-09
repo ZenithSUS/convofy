@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
  * @param req
  * @returns All users
  */
-export const GET = async (req: Request) => {
+export const GET = async () => {
   const users = await getUsers();
 
   if (!users) return NextResponse.json([], { status: 200 });

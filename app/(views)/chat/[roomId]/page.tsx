@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
 import { Room } from "@/types/room";
@@ -39,7 +39,12 @@ import EmojiSelection from "../components/emoji-selection";
 import NotJoinedModal from "../components/modals/not-joined-modal";
 import showErrorConnectionMessage from "@/helper/pusher-error";
 import getPusherConnectionState from "@/helper/pusher-connection-state";
-import { PusherConnectionStatus, PusherState } from "@/types/pusher";
+import {
+  PusherChannel,
+  PusherConnectionStatus,
+  PusherState,
+  PusherSubsciption,
+} from "@/types/pusher";
 import { useInView } from "react-intersection-observer";
 
 const schema = z.object({
@@ -55,7 +60,7 @@ function RoomPage() {
   const isMountedRef = useRef(true);
   const isTypingRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const channelRef = useRef<any>(null);
+  const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
   const { ref, inView } = useInView();
 
@@ -179,7 +184,8 @@ function RoomPage() {
       }
     };
 
-    const handleError = (err: any) => {
+    const handleError = (error: unknown) => {
+      const err = error as Error;
       console.error("Pusher connection error:", err);
       if (isMountedRef.current) {
         setConnectionStatus("error");
@@ -306,7 +312,7 @@ function RoomPage() {
       });
 
       // Get Subscription Count
-      channel.bind("pusher:subscription_count", (data: any) => {
+      channel.bind("pusher:subscription_count", (data: PusherSubsciption) => {
         console.log(
           `Subscription count for ${channelName}:`,
           data.subscription_count,
@@ -411,7 +417,7 @@ function RoomPage() {
     if (inView && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [fetchNextPage, inView]);
+  }, [fetchNextPage, inView, hasNextPage, isFetchingNextPage]);
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
@@ -425,10 +431,12 @@ function RoomPage() {
   };
 
   const handleSendMessage = async (data: FormData) => {
-    if (data.message.trim() === "") return;
+    if (data.message.trim() === "" || isSending) return;
+
+    if (!session) return;
 
     const messageData: CreateMessage = {
-      sender: session?.user?.id!,
+      sender: session.user.id as string,
       room: roomId as string,
       content: data.message,
       type: "text",
@@ -466,9 +474,11 @@ function RoomPage() {
     if (!isTypingRef.current) {
       isTypingRef.current = true;
       try {
+        if (!session) throw Error("Session is required");
+
         await typingSignal({
           roomId: roomId as string,
-          user: session?.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as Omit<User, "_id"> & { id: string },
           isTyping: true,
         });
       } catch (error) {
@@ -490,9 +500,11 @@ function RoomPage() {
     if (isTypingRef.current) {
       isTypingRef.current = false;
       try {
+        if (!session) throw Error("Session is required");
+
         await typingSignal({
           roomId: roomId as string,
-          user: session?.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as Omit<User, "_id"> & { id: string },
           isTyping: false,
         });
       } catch (error) {

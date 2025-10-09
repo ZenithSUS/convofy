@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const queryParam = url.searchParams.get("query");
-    let rooms = await getRooms(queryParam || "");
+    const rooms = await getRooms(queryParam || "");
 
     if (!rooms) {
       return NextResponse.json([], {

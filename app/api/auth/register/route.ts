@@ -22,7 +22,3 @@ export const POST = async (req: Request) => {
     return new Response("Error creating user", { status: 500 });
   }
 };
-
-export const GET = async (req: Request) => {
-  return NextResponse.json({ message: "GET" }, { status: 200 });
-};

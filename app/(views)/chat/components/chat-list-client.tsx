@@ -65,7 +65,7 @@ function ChatListClient({ session }: ChatListClientProps) {
         {isSearchMode && (
           <div className="mb-2 flex flex-col gap-0.5">
             <h2 className="text-lg font-semibold">
-              Showing results for "{debouncedSearchQuery}"
+              Showing results for {`"${debouncedSearchQuery}"`}
             </h2>
             <p className="text-sm text-gray-600">
               {rooms && rooms.length > 0 ? rooms.length : 0} results

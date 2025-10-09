@@ -71,7 +71,8 @@ export const authOptions: NextAuthOptions = {
             lastActive: u.lastActive,
             createdAt: u.createdAt,
           };
-        } catch (error: any) {
+        } catch (err: unknown) {
+          const error = err as { response: { data: string } };
           throw new Error(error.response?.data || "Invalid credentials");
         }
       },
@@ -87,7 +88,8 @@ export const authOptions: NextAuthOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    // args: (user, account, profile)
+    async signIn({ user }) {
       // Add user id to session
       if (user && user.email) {
         const response = await getUserByEmail(user.email);
@@ -106,16 +108,22 @@ export const authOptions: NextAuthOptions = {
           await client.post("/auth/register", userData);
         }
 
+        // Check if there is a response data
+        if (!response) return false;
+
         // Set user data
-        user.id = response?._id!;
-        user.status = response?.status!;
-        user.lastActive = response?.lastActive!;
-        user.createdAt = response?.createdAt!;
+        user.id = response._id;
+        user.status = response.status;
+        user.lastActive = response.lastActive;
+        user.createdAt = response.createdAt;
       }
       return true;
     },
 
     async redirect({ url, baseUrl }) {
+      if (!url) {
+        return baseUrl;
+      }
       // Redirect to /chat after successful sign in
       return baseUrl + "/chat";
     },
@@ -129,7 +137,8 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-    async jwt({ token, account, profile }) {
+    // args (token, account, profile)
+    async jwt({ token, account }) {
       // Persist additional data to token
       if (account) {
         token.accessToken = account.access_token;
@@ -150,6 +159,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/signin",
     error: "/auth/error",
-    signOut: "/auth/signout",
+    signOut: "/auth/login",
   },
 };

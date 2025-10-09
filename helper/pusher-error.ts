@@ -1,6 +1,17 @@
 import { toast } from "react-toastify";
 
-export const showErrorConnectionMessage = (err: any): void => {
+interface ErrorData {
+  error: {
+    data: {
+      code: number;
+      message: string;
+    };
+  };
+}
+
+export const showErrorConnectionMessage = (error: unknown): void => {
+  const err = error as ErrorData;
+
   // Provide more specific error messages
   if (err.error) {
     const errorData = err.error.data;

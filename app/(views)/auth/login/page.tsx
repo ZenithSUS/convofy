@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import Image from "next/image";
 
 const schema = z.object({
   email: z.string().min(1, "Email is required."),
@@ -185,7 +186,9 @@ function LoginPage() {
               disabled={isGoogleLoading}
               className="group relative flex w-full cursor-pointer justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none"
             >
-              <img
+              <Image
+                width={20}
+                height={20}
                 src="/google-logo.png"
                 alt="Google Logo"
                 className="mr-2 h-5 w-5"
@@ -224,7 +227,7 @@ function LoginPage() {
 
           <div className="text-center text-sm">
             <span className="text-gray-600 dark:text-gray-400">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
             </span>
             <button
               type="button"

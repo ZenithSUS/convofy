@@ -14,7 +14,9 @@ export function EmojiPicker({ onEmojiAppend }: EmojiPickerProps) {
       <Picker
         theme="dark"
         data={data}
-        onEmojiSelect={(emoji: any) => onEmojiAppend(emoji.native)}
+        onEmojiSelect={(emoji: { native: string }) =>
+          onEmojiAppend(emoji.native)
+        }
       />
     </div>
   );

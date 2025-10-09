@@ -1,6 +1,6 @@
 import { toast } from "react-toastify";
 
-export const getPusherConnectionState = (currentState: any) => {
+export const getPusherConnectionState = (currentState: string) => {
   // Handle different states
   switch (currentState) {
     case "connected":

@@ -8,8 +8,9 @@ export const POST = async (req: Request) => {
     const data: { email: string; password: string } = await req.json();
     const response = await loginUser(data.email, data.password);
     return NextResponse.json(response);
-  } catch (error: any) {
-    console.error("Error logging in:", error);
-    return new Response(error.message || "Error logging in", { status: 401 });
+  } catch (error: unknown) {
+    const err = error as { message: string };
+    console.error("Error logging in:", err);
+    return new Response(err.message || "Error logging in", { status: 401 });
   }
 };

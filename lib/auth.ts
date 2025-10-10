@@ -156,9 +156,4 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-    signOut: "/auth/login",
-  },
 };

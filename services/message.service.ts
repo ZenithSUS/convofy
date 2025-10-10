@@ -48,7 +48,7 @@ export const getMessagesByRoom = async (
     const messages = await Message.find({ room: roomId })
       .limit(limit)
       .skip(offset)
-      .populate("sender", "name")
+      .populate("sender", ["name", "avatar"])
       .sort({ createdAt: -1 });
 
     return messages;

@@ -1,16 +1,18 @@
 "use client";
 
-import { Room } from "@/types/room";
+import { RoomContent } from "@/types/room";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 
-const RoomCard = ({ room }: { room: Room }) => {
+const RoomCard = ({ room }: { room: RoomContent }) => {
   const router = useRouter();
 
   const handleOpenRoom = () => {
     router.push(`/chat/${room._id}`);
   };
+
+  if (!room) return null;
 
   return (
     <div
@@ -48,12 +50,43 @@ const RoomCard = ({ room }: { room: Room }) => {
             </p>
           )}
 
-          <div className="flex items-center gap-1.5 text-sm text-gray-600">
-            <Users className="h-4 w-4" />
-            <span className="font-medium">{room.members.length || 0}</span>
-            <span className="text-gray-500">
-              {room.members.length === 1 ? "member" : "members"}
-            </span>
+          <div className="flex gap-1">
+            <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <Users className="h-4 w-4" />
+              <span className="font-medium">{room.members.length || 0}</span>
+              <span className="text-gray-500">
+                {room.members.length === 1 ? "member" : "members"}
+              </span>
+
+              {room.isPrivate && (
+                <span className="ml-2 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
+                  Private
+                </span>
+              )}
+            </div>
+
+            <div className="flex w-full flex-1 flex-shrink-0 flex-row gap-1">
+              {Array.from(room.members)
+                .slice(0, 3)
+                .map((member) => (
+                  <div key={member._id} className="flex-shrink-0">
+                    <Image
+                      src={member.avatar || "/default-avatar.png"}
+                      alt={member.name}
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 rounded-full object-cover"
+                    />
+                  </div>
+                ))}
+              {room.members.length > 3 && (
+                <div className="flex flex-shrink-0 items-center">
+                  <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                    +{room.members.length - 3}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

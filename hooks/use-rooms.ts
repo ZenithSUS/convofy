@@ -1,5 +1,5 @@
 import client from "@/services/axios";
-import { CreateRoom, Room } from "@/types/room";
+import { CreateRoom, Room, RoomContent } from "@/types/room";
 import {
   useMutation,
   UseMutationResult,
@@ -63,7 +63,7 @@ export const useGetRoomByUserId = (
   id: string,
   isSearch: boolean,
   searchQuery: string = "",
-): UseQueryResult<Room[], unknown> => {
+): UseQueryResult<RoomContent[], unknown> => {
   const getRoomByUserId = async (isSearch: boolean) => {
     const route = isSearch ? `/rooms` : `/rooms/user/${id}`;
 

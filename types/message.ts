@@ -7,6 +7,7 @@ export type Message = {
   sender: {
     _id: Types.ObjectId | string;
     name: string;
+    avatar: string;
   };
   content: string;
   type: "text" | "image" | "file";

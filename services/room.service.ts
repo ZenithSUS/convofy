@@ -67,7 +67,7 @@ export const getRoomsByUserId = async (
       description: { $regex: searchQuery, $options: "i" },
       isPrivate: false,
     })
-      .populate("members", "name")
+      .populate("members", ["name", "avatar"])
       .populate("lastMessage", "content")
       .sort({ createdAt: -1 });
   } else {
@@ -75,7 +75,7 @@ export const getRoomsByUserId = async (
       members: userId,
       isPrivate: false,
     })
-      .populate("members", "name")
+      .populate("members", ["name", "avatar"])
       .populate("lastMessage", "content")
       .sort({ createdAt: -1 });
   }

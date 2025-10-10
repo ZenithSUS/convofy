@@ -1,1 +1,2 @@
-- [x] Fix the "delete-message" Pusher event handler in app/(views)/chat/[roomId]/page.tsx to properly remove deleted messages from the infinite query cache by filtering each page individually.
+- [x] Add avatar image beside sender name in message content
+- [x] Improve message card styling with shadow, padding, flex layout

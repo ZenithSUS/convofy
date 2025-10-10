@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
-import { Room } from "@/types/room";
+import { Room, RoomMembers } from "@/types/room";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,8 @@ import {
   PusherState,
   PusherSubsciption,
 } from "@/types/pusher";
-import { useInView } from "react-intersection-observer";
+import timeFormat from "@/helper/time-format";
+// import { useInView } from "react-intersection-observer";
 
 const schema = z.object({
   message: z.string().min(1, "Message is required."),
@@ -62,7 +63,7 @@ function RoomPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
-  const { ref, inView } = useInView();
+  // const { ref, inView } = useInView();
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -152,7 +153,7 @@ function RoomPage() {
 
     const handleConnected = () => {
       if (isMountedRef.current) {
-        toast.success("Connected to Room");
+        // toast.success("Connected to Room");
         setConnectionStatus("connected");
       }
     };
@@ -413,11 +414,11 @@ function RoomPage() {
   }, [roomId, session?.user?.id, room?.members, queryClient]);
 
   // Check if the chat is in view
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [fetchNextPage, inView, hasNextPage, isFetchingNextPage]);
+  // useEffect(() => {
+  //   if (inView && hasNextPage && !isFetchingNextPage) {
+  //     fetchNextPage();
+  //   }
+  // }, [fetchNextPage, inView, hasNextPage, isFetchingNextPage]);
 
   const handleRefresh = useCallback(async () => {
     await Promise.all([
@@ -547,9 +548,16 @@ function RoomPage() {
       )}
       <div className="flex-1 flex-col-reverse overflow-y-auto p-4">
         {hasNextPage && (
-          <div className="mb-4 flex items-center justify-center" ref={ref}>
-            {isFetchingNextPage && (
-              <Loader2 size={22} className="animate-spin" />
+          <div className="mb-4 flex items-center justify-center">
+            {!isFetchingNextPage ? (
+              <Button
+                onClick={() => fetchNextPage()}
+                className="cursor-pointer text-sm"
+              >
+                Load More
+              </Button>
+            ) : (
+              <Loader2 className="animate-spin" size={20} />
             )}
           </div>
         )}

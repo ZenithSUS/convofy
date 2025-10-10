@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AuthProvider from "@/components/providers/session-provider";
 import "@/styles/globals.css";
@@ -39,6 +40,7 @@ export default function RootLayout({
             <ToastProvider />
           </AuthProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
           };
 
           await client.post("/auth/register", userData);
-          existingUser = await getUserByEmail(user.email); // ✅ Re-fetch
+          existingUser = await getUserByEmail(user.email);
         }
 
         if (!existingUser) {

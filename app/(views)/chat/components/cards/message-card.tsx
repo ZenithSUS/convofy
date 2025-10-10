@@ -118,7 +118,7 @@ function MessageCard({ message, session }: Props) {
           </div>
         )}
         <div
-          className={`mb-4 flex w-fit max-w-sm items-center gap-2 rounded-md p-2 ${
+          className={`mb-4 flex w-fit max-w-sm items-center gap-1 rounded-md p-2 ${
             message.sender._id === session?.user?.id
               ? "bg-slate-200 dark:bg-slate-800"
               : "bg-slate-300 dark:bg-slate-700"
@@ -126,14 +126,16 @@ function MessageCard({ message, session }: Props) {
           onMouseEnter={handleMouseEnterMessage}
           onMouseLeave={handleMouseLeaveMessage}
         >
-          <Image
-            src={message.sender.avatar || "/default-avatar.png"}
-            alt="User Avatar"
-            width={32}
-            height={32}
-            className="h-8 w-8 rounded-full"
-          />
-          <strong>{message.sender.name.split(" ")[0]}:</strong>{" "}
+          <div className="flex items-center gap-2">
+            <Image
+              src={message.sender.avatar || "/default-avatar.png"}
+              alt="User Avatar"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full"
+            />
+            <strong>{message.sender.name.split(" ")[0]}:</strong>{" "}
+          </div>
           {message.content}
         </div>
       </div>

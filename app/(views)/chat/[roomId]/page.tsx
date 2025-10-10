@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
-import { Room, RoomMembers } from "@/types/room";
+import { Room } from "@/types/room";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,6 @@ import {
   PusherState,
   PusherSubsciption,
 } from "@/types/pusher";
-import timeFormat from "@/helper/time-format";
 // import { useInView } from "react-intersection-observer";
 
 const schema = z.object({

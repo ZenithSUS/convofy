@@ -66,6 +66,7 @@ function CreateRoomForm({ session }: ChatHeaderProps) {
           description: data.description,
           image: avatarUrl,
           members: [session.user.id],
+          isPrivate: false,
           createdBy: session.user.id,
           createdAt: new Date(),
         };

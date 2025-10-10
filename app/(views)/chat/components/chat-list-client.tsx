@@ -5,7 +5,7 @@ import SearchBar from "@/components/ui/searchbar";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import RoomCard from "@/app/(views)/chat/components/cards/room-card";
-import { Room, RoomContent } from "@/types/room";
+import { RoomContent } from "@/types/room";
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";

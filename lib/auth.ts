@@ -90,15 +90,16 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     // args: (user, account, profile)
     async signIn({ user }) {
-      // Add user id to session
-      if (user && user.email) {
-        const response = await getUserByEmail(user.email);
+      if (!user?.email) return false;
 
-        // If user is not found, create it
-        if (!response) {
+      try {
+        let existingUser = await getUserByEmail(user.email);
+
+        // If user not found, create one and re-fetch it
+        if (!existingUser) {
           const userData: Omit<User, "_id"> = {
-            name: user.name!,
-            email: user.email!,
+            name: user.name ?? "Unnamed User",
+            email: user.email,
             avatar: user.image!,
             status: "online",
             lastActive: new Date(),
@@ -106,24 +107,28 @@ export const authOptions: NextAuthOptions = {
           };
 
           await client.post("/auth/register", userData);
+          existingUser = await getUserByEmail(user.email); // ✅ Re-fetch
         }
 
-        // Check if there is a response data
-        if (!response) return false;
+        if (!existingUser) {
+          console.error("User creation failed for", user.email);
+          return false;
+        }
 
-        // Set user data
-        user.id = response._id;
-        user.status = response.status;
-        user.lastActive = response.lastActive;
-        user.createdAt = response.createdAt;
+        // Attach additional fields to session user
+        user.id = existingUser._id?.toString();
+        user.status = existingUser.status;
+        user.lastActive = existingUser.lastActive;
+        user.createdAt = existingUser.createdAt;
+
+        return true;
+      } catch (error) {
+        console.error("SignIn Error:", error);
+        return false;
       }
-      return true;
     },
-
-    async redirect({ url, baseUrl }) {
-      if (!url) {
-        return baseUrl;
-      }
+    // args (url, baseUrl)
+    async redirect({ baseUrl }) {
       // Redirect to /chat after successful sign in
       return baseUrl + "/chat";
     },
@@ -155,5 +160,10 @@ export const authOptions: NextAuthOptions = {
 
       return token;
     },
+  },
+  pages: {
+    signIn: "/auth/signin",
+    error: "/auth/error",
+    signOut: "/auth/login",
   },
 };

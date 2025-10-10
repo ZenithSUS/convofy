@@ -6,9 +6,6 @@ class JoinRoutes {
     try {
       const { roomId, userId } = await req.json();
 
-      console.log("Room ID:", roomId);
-      console.log("User ID:", userId);
-
       if (!userId || !roomId) {
         return NextResponse.json(
           { error: "Missing required fields" },

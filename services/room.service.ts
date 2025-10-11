@@ -29,7 +29,7 @@ export const getRooms = async (query: string = "") => {
 
   const rooms = await Room.find(filter)
     .populate("lastMessage", "content")
-    .populate("members", "name")
+    .populate("members", ["name", "avatar"])
     .sort({ createdAt: -1 })
     .lean();
 

@@ -107,7 +107,7 @@ function RoomPage() {
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();
-  const { uploadImage } = useUploadImage();
+  const { uploadImage, isUploading } = useUploadImage();
 
   // Memoize data
   const roomData = useMemo(() => room, [room]);
@@ -664,14 +664,19 @@ function RoomPage() {
               )}
             />
 
-            <MediaUpload onChange={handleImageUpload} />
+            <MediaUpload
+              onChange={handleImageUpload}
+              isUploading={isUploading}
+            />
             <EmojiSelection onEmojiAppend={handleEmojiAppend} />
             <Button
               type="submit"
               className="disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isSending}
+              disabled={isSending || isUploading}
             >
-              Send {isSending && <Loader2 className="animate-spin" />}
+              Send{" "}
+              {isSending ||
+                (isUploading && <Loader2 className="animate-spin" />)}
             </Button>
           </form>
         </Form>

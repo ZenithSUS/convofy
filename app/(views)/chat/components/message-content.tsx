@@ -2,6 +2,7 @@ import { Message } from "@/types/message";
 import Image from "next/image";
 import { memo } from "react";
 import MessageAvatar from "./message-avatar";
+import ViewImageModal from "./modals/view-image-modal";
 
 const MessageContent = ({ message }: { message: Message }) => {
   switch (message.type) {
@@ -21,16 +22,21 @@ const MessageContent = ({ message }: { message: Message }) => {
         <div className="flex flex-col gap-1">
           <div className="flex gap-2">
             <MessageAvatar avatar={message.sender.avatar} />
-            <strong>{message.sender.name.split(" ")[0]} (Sends Image)</strong>
+            <strong>
+              {message.sender.name.split(" ")[0]}{" "}
+              <span className="font-normal">(Sends an image)</span>
+            </strong>
           </div>
-          <Image
-            src={message.content}
-            alt="Message"
-            width={200}
-            height={200}
-            priority
-            className="h-auto w-auto"
-          />
+          <ViewImageModal content={message.content} user={message.sender.name}>
+            <Image
+              src={message.content}
+              alt="Message"
+              width={200}
+              height={200}
+              priority
+              className="h-auto w-auto flex-1"
+            />
+          </ViewImageModal>
         </div>
       );
 

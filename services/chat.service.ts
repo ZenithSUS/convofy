@@ -20,7 +20,7 @@ export const sendLiveMessage = async (data: IMessage) => {
 
     // Populate the sender information before sending to Pusher
     const populatedMessage = await Message.findById(message._id)
-      .populate("sender", "name")
+      .populate("sender", ["name", "avatar"])
       .lean();
 
     if (!populatedMessage) {

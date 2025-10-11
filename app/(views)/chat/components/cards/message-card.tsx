@@ -82,7 +82,6 @@ function MessageCard({ message, session }: Props) {
     try {
       if (message.type === "file" || message.type === "image") {
         const publicId = extractPublicId(message.content);
-        console.log(publicId);
 
         await Promise.all([deleteFile(publicId), deleteMessage(message._id)]);
         toast.success("Message deleted");

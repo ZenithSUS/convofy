@@ -23,7 +23,7 @@ const RoomSchema = new Schema<IRoom>(
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true },
-);
+).index({ name: "text", description: "text" });
 
 // Delete the model if it exists to avoid OverwriteModelError
 if (mongoose.models.Room) {

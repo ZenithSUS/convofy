@@ -17,24 +17,23 @@ export const createRoom = async (data: CreateRoom) => {
 
 export const getRooms = async (query: string = "") => {
   await connectToDatabase();
-  let rooms = [];
 
-  if (query !== "" && query !== undefined) {
-    rooms = await Room.find({
-      name: { $regex: query, $options: "i" },
-      description: { $regex: query, $options: "i" },
-    })
-      .populate("lastMessage", "content")
-      .populate("members", "name")
-      .sort({ createdAt: -1 });
-  } else {
-    rooms = await Room.find()
-      .populate("lastMessage", "content")
-      .populate("members", "name")
-      .sort({ createdAt: -1 });
-  }
+  const filter = query
+    ? {
+        $or: [
+          { name: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+        ],
+      }
+    : {};
 
-  return rooms || [];
+  const rooms = await Room.find(filter)
+    .populate("lastMessage", "content")
+    .populate("members", "name")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return rooms;
 };
 
 export const getRoomById = async (id: string) => {

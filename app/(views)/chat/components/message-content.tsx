@@ -3,7 +3,7 @@ import Image from "next/image";
 import { memo } from "react";
 import MessageAvatar from "./message-avatar";
 
-const MessageContent = memo(({ message }: { message: Message }) => {
+const MessageContent = ({ message }: { message: Message }) => {
   switch (message.type) {
     case "text":
       return (
@@ -21,7 +21,7 @@ const MessageContent = memo(({ message }: { message: Message }) => {
         <div className="flex flex-col gap-1">
           <div className="flex gap-2">
             <MessageAvatar avatar={message.sender.avatar} />
-            <strong>{message.sender.name.split(" ")[0]}</strong>
+            <strong>{message.sender.name.split(" ")[0]} (Sends Image)</strong>
           </div>
           <Image
             src={message.content}
@@ -53,6 +53,6 @@ const MessageContent = memo(({ message }: { message: Message }) => {
         </div>
       );
   }
-});
+};
 
-export default MessageContent;
+export default memo(MessageContent);

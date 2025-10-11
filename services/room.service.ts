@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Room from "@/models/Room";
+import "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
 

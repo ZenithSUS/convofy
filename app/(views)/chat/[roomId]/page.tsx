@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useParams } from "next/navigation";
 import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
@@ -45,13 +52,15 @@ import {
   PusherState,
   PusherSubsciption,
 } from "@/types/pusher";
+import MediaUpload from "../components/media-upload";
+import { useUploadImage } from "@/hooks/use-upload";
 // import { useInView } from "react-intersection-observer";
 
-const schema = z.object({
+const schemaMessage = z.object({
   message: z.string().min(1, "Message is required."),
 });
 
-type FormData = z.infer<typeof schema>;
+type FormData = z.infer<typeof schemaMessage>;
 
 function RoomPage() {
   const { roomId } = useParams();
@@ -64,8 +73,8 @@ function RoomPage() {
   const currentRoomIdRef = useRef<string | null>(null);
   // const { ref, inView } = useInView();
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(schema),
+  const messageForm = useForm<FormData>({
+    resolver: zodResolver(schemaMessage),
     defaultValues: {
       message: "",
     },
@@ -98,6 +107,7 @@ function RoomPage() {
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();
+  const { uploadImage } = useUploadImage();
 
   // Memoize data
   const roomData = useMemo(() => room, [room]);
@@ -426,8 +436,38 @@ function RoomPage() {
     ]);
   }, [queryClient, roomId]);
 
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+
+    if (!file || !session) return;
+
+    try {
+      const url = await uploadImage(file);
+      if (!url) {
+        toast.error("Failed to upload file");
+        return;
+      }
+
+      const type = file.type.startsWith("image/") ? "image" : "file";
+
+      const messageData: CreateMessage = {
+        sender: session.user.id as string,
+        room: roomId as string,
+        content: url,
+        type,
+      };
+
+      await sendMessage(messageData);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      e.target.value = "";
+    }
+  };
+
   const handleEmojiAppend = (emoji: string) => {
-    form.setValue("message", form.getValues("message") + emoji);
+    messageForm.setValue("message", messageForm.getValues("message") + emoji);
   };
 
   const handleSendMessage = async (data: FormData) => {
@@ -443,7 +483,7 @@ function RoomPage() {
     };
 
     const messageContent = data.message;
-    form.reset();
+    messageForm.reset();
 
     if (isTypingRef.current) {
       await handleStopTypingUser();
@@ -456,7 +496,7 @@ function RoomPage() {
       console.error("Failed to send message:", error);
 
       if (isMountedRef.current) {
-        form.setValue("message", messageContent);
+        messageForm.setValue("message", messageContent);
       }
 
       toast.error("Failed to send message.");
@@ -589,13 +629,13 @@ function RoomPage() {
       </div>
 
       {room?.members.includes(session?.user?.id as string) ? (
-        <Form {...form}>
+        <Form {...messageForm}>
           <form
             className="relative flex gap-2 border-t p-4"
-            onSubmit={form.handleSubmit(handleSendMessage)}
+            onSubmit={messageForm.handleSubmit(handleSendMessage)}
           >
             <FormField
-              control={form.control}
+              control={messageForm.control}
               name="message"
               render={({ field }) => (
                 <FormItem className="flex-1 items-center">
@@ -624,6 +664,7 @@ function RoomPage() {
               )}
             />
 
+            <MediaUpload onChange={handleImageUpload} />
             <EmojiSelection onEmojiAppend={handleEmojiAppend} />
             <Button
               type="submit"

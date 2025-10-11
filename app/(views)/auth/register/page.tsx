@@ -18,6 +18,8 @@ import { useRouter } from "next/navigation";
 import { useUploadImage } from "@/hooks/use-upload";
 import { useState } from "react";
 import client from "@/services/axios";
+import { useDeleteFile } from "@/hooks/use-delete-file";
+import { extractPublicId } from "cloudinary-build-url";
 
 interface RegisterFormInputs {
   name: string;
@@ -47,6 +49,7 @@ const schema = z
 function RegisterPage() {
   const router = useRouter();
   const { uploadImage, isUploading } = useUploadImage();
+  const { deleteFile } = useDeleteFile();
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<RegisterFormInputs>({
@@ -83,6 +86,9 @@ function RegisterPage() {
       if (response.status === 201) {
         router.push("/auth/login");
       } else {
+        // If registration fails, delete the uploaded avatar
+        const publicId = extractPublicId(avatarUrl);
+        await deleteFile(publicId);
         setError("Registration failed");
       }
     } catch (err) {

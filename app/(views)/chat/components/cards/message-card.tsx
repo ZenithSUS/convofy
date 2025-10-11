@@ -7,7 +7,9 @@ import { useDeleteLiveMessage } from "@/hooks/use-message";
 import DeleteMessageModal from "@/app/(views)/chat/components/modals/delete-message-modal";
 import { toast } from "react-toastify";
 import timeFormat from "@/helper/time-format";
-import Image from "next/image";
+import { useDeleteFile } from "@/hooks/use-delete-file";
+import { extractPublicId } from "cloudinary-build-url";
+import MessageContent from "../message-content";
 
 interface Props {
   message: Message | null;
@@ -26,6 +28,7 @@ function MessageCard({ message, session }: Props) {
     return message.sender._id === session?.user?.id;
   }, [message, session]);
 
+  const { deleteFile } = useDeleteFile();
   const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
   // Cleanup timeout on unmount
@@ -77,6 +80,15 @@ function MessageCard({ message, session }: Props) {
   const handleDeleteClick = async () => {
     if (!message) return;
     try {
+      if (message.type === "file" || message.type === "image") {
+        const publicId = extractPublicId(message.content);
+        console.log(publicId);
+
+        await Promise.all([deleteFile(publicId), deleteMessage(message._id)]);
+        toast.success("Message deleted");
+        return;
+      }
+
       await deleteMessage(message._id);
       toast.success("Message deleted");
     } catch (error) {
@@ -126,17 +138,8 @@ function MessageCard({ message, session }: Props) {
           onMouseEnter={handleMouseEnterMessage}
           onMouseLeave={handleMouseLeaveMessage}
         >
-          <div className="flex items-center gap-2">
-            <Image
-              src={message.sender.avatar || "/default-avatar.png"}
-              alt="User Avatar"
-              width={32}
-              height={32}
-              className="h-8 w-8 rounded-full"
-            />
-            <strong>{message.sender.name.split(" ")[0]}:</strong>{" "}
-          </div>
-          {message.content}
+          {/* Message content */}
+          <MessageContent message={message} />
         </div>
       </div>
     </div>

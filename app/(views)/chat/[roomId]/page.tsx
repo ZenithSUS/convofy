@@ -447,13 +447,13 @@ function RoomPage() {
     queryClient.removeQueries({ queryKey: ["rooms"] });
 
     await Promise.all([refetchMessages(), refetchRoom()]);
-  }, [queryClient, roomId, session?.user?.id]);
+  }, [queryClient, roomId, refetchMessages, refetchRoom]);
 
   const handleAppendFile = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       for (let i = 0; i < e.target.files.length; i++) {
-        let reader = new FileReader();
-        let file = e.target.files[i];
+        const reader = new FileReader();
+        const file = e.target.files[i];
 
         reader.onloadend = () => {
           if (reader.result) {

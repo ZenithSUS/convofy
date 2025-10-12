@@ -9,12 +9,12 @@ const MessageContent = ({ message }: { message: Message }) => {
   switch (message.type) {
     case "text":
       return (
-        <div className="flex items-center gap-1">
+        <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <MessageAvatar avatar={message.sender.avatar} />
-            <strong>{message.sender.name.split(" ")[0]}:</strong>{" "}
+            <strong>{message.sender.name.split(" ")[0]}</strong>{" "}
           </div>
-          <p>{message.content}</p>
+          <p className="break-words whitespace-pre-wrap">{message.content}</p>
         </div>
       );
 

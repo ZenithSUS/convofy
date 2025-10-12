@@ -46,7 +46,13 @@ const RoomCard = ({ room }: { room: RoomContent }) => {
           {room.lastMessage && (
             <p className="truncate text-sm text-gray-500">
               <span className="font-medium">Last message:</span>{" "}
-              {room.lastMessage.content}
+              {room.lastMessage.type === "text"
+                ? room.lastMessage.content
+                : room.lastMessage.type === "file"
+                  ? "Sends a file"
+                  : room.lastMessage.type === "image"
+                    ? "Sends an image"
+                    : "N/A"}
             </p>
           )}
 

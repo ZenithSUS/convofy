@@ -13,7 +13,7 @@ import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
 import { Room } from "@/types/room";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
-import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/ui/loading";
 import { useForm } from "react-hook-form";
@@ -696,7 +696,7 @@ function RoomPage() {
                 <FormItem className="flex-1 items-center">
                   <FormLabel className="sr-only">Message</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       {...field}
                       placeholder={
                         isSending ? "Sending..." : "Type a message..."

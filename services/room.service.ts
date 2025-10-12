@@ -28,7 +28,7 @@ export const getRooms = async (query: string = "") => {
     : {};
 
   const rooms = await Room.find(filter)
-    .populate("lastMessage", "content")
+    .populate("lastMessage", ["content", "type"])
     .populate("members", ["name", "avatar"])
     .sort({ createdAt: -1 })
     .lean();
@@ -52,33 +52,18 @@ export const addMemberToRoom = async (roomId: string, userId: string) => {
   return room || null;
 };
 
-export const getRoomsByUserId = async (
-  userId: string,
-  searchQuery: string = "",
-) => {
+export const getRoomsByUserId = async (userId: string) => {
   await connectToDatabase();
 
-  let rooms = [];
+  const rooms = await Room.find({
+    members: userId,
 
-  if (searchQuery !== "" && searchQuery !== undefined) {
-    rooms = await Room.find({
-      members: userId,
-      name: { $regex: searchQuery, $options: "i" },
-      description: { $regex: searchQuery, $options: "i" },
-      isPrivate: false,
-    })
-      .populate("members", ["name", "avatar"])
-      .populate("lastMessage", "content")
-      .sort({ createdAt: -1 });
-  } else {
-    rooms = await Room.find({
-      members: userId,
-      isPrivate: false,
-    })
-      .populate("members", ["name", "avatar"])
-      .populate("lastMessage", "content")
-      .sort({ createdAt: -1 });
-  }
+    isPrivate: false,
+  })
+    .populate("members", ["name", "avatar"])
+    .populate("lastMessage", ["content", "type", "sender"])
+    .sort({ createdAt: -1 })
+    .lean();
 
   return rooms || [];
 };

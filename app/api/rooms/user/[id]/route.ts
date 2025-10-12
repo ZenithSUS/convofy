@@ -7,15 +7,13 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const url = new URL(req.url);
     const userId = (await params).id;
-    const queryParam = url.searchParams.get("query");
 
     if (!userId) {
       throw new Error("User id is required");
     }
 
-    const rooms = await getRoomsByUserId(userId, queryParam || "");
+    const rooms = await getRoomsByUserId(userId);
 
     if (!rooms) {
       return NextResponse.json([], { status: 200 });

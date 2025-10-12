@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
+import "@/models/User";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 

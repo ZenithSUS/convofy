@@ -18,9 +18,10 @@ export function MediaUpload({ onChange, isUploading }: MediaUploadProps) {
         ref={fileRef}
         id="file-upload"
         type="file"
-        accept="image/*,.pdf,.doc,.docx,.txt,.zip"
+        accept="image/*,.pdf,.doc,.docx,.txt,.gif,.mp4,.mp3"
         className="hidden"
         onChange={onChange}
+        multiple
       />
       <Button
         disabled={isUploading}

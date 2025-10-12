@@ -7,3 +7,13 @@ export interface UploadedFile {
   isUploading: boolean;
   isDeleting: boolean;
 }
+
+export interface FileInfo {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  image: string;
+  date: Date;
+  file: File;
+}

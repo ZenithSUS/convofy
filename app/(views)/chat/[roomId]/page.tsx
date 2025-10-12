@@ -35,7 +35,7 @@ import {
 import { useSession } from "next-auth/react";
 import { pusherClient } from "@/lib/pusher-client";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { FileIcon, Loader2 } from "lucide-react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import ErrorMessage from "@/components/ui/error-message";
@@ -54,10 +54,12 @@ import {
 } from "@/types/pusher";
 import MediaUpload from "../components/media-upload";
 import { useUploadImage } from "@/hooks/use-upload";
+import Image from "next/image";
+import { FileInfo } from "@/types/file";
 // import { useInView } from "react-intersection-observer";
 
 const schemaMessage = z.object({
-  message: z.string().min(1, "Message is required."),
+  message: z.string(),
 });
 
 type FormData = z.infer<typeof schemaMessage>;
@@ -72,6 +74,8 @@ function RoomPage() {
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
   // const { ref, inView } = useInView();
+
+  const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
 
   const messageForm = useForm<FormData>({
     resolver: zodResolver(schemaMessage),
@@ -91,18 +95,22 @@ function RoomPage() {
   const {
     data: room,
     isLoading: roomLoading,
+    isFetching: isFetchingRoom,
     isError: roomError,
     error: roomErrorData,
+    refetch: refetchRoom,
   } = useGetRoomById(roomId as string);
 
   const {
     data: messages,
     isLoading: messagesLoading,
+    isFetching: isFetchingMessages,
     isError: messagesError,
     error: messagesErrorData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    refetch: refetchMessages,
   } = useGetMessagesByRoom(roomId as string);
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
@@ -141,6 +149,11 @@ function RoomPage() {
     if (isChatError) return false;
     return roomLoading || messagesLoading;
   }, [roomLoading, messagesLoading, isChatError]);
+
+  const isAllFetching = useMemo(() => {
+    if (isChatError) return false;
+    return isFetchingRoom || isFetchingMessages;
+  }, [isFetchingRoom, isFetchingMessages, isChatError]);
 
   const isAllDataLoaded = useMemo(() => {
     if (isChatError) return true;
@@ -430,57 +443,57 @@ function RoomPage() {
   // }, [fetchNextPage, inView, hasNextPage, isFetchingNextPage]);
 
   const handleRefresh = useCallback(async () => {
-    await Promise.all([
-      queryClient.refetchQueries({ queryKey: ["rooms"] }),
-      queryClient.refetchQueries({ queryKey: ["messages", roomId] }),
-    ]);
-  }, [queryClient, roomId]);
+    queryClient.removeQueries({ queryKey: ["messages", roomId] });
+    queryClient.removeQueries({ queryKey: ["rooms"] });
 
-  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    await Promise.all([refetchMessages(), refetchRoom()]);
+  }, [queryClient, roomId, session?.user?.id]);
 
-    if (!file || !session) return;
+  const handleAppendFile = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      for (let i = 0; i < e.target.files.length; i++) {
+        let reader = new FileReader();
+        let file = e.target.files[i];
 
-    try {
-      const url = await uploadImage(file);
-      if (!url) {
-        toast.error("Failed to upload file");
-        return;
+        reader.onloadend = () => {
+          if (reader.result) {
+            setSelectedFiles((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                name: file.name,
+                type: file.type,
+                image: reader.result as string,
+                date: new Date(file.lastModified),
+                size: file.size,
+                file: file,
+              },
+            ]);
+          }
+        };
+
+        reader.readAsDataURL(file);
       }
-
-      const type = file.type.startsWith("image/") ? "image" : "file";
-
-      const messageData: CreateMessage = {
-        sender: session.user.id as string,
-        room: roomId as string,
-        content: url,
-        type,
-      };
-
-      await sendMessage(messageData);
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
-    } finally {
-      e.target.value = "";
     }
   };
+
+  const handleRemoveFile = useCallback((index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   const handleEmojiAppend = (emoji: string) => {
     messageForm.setValue("message", messageForm.getValues("message") + emoji);
   };
 
   const handleSendMessage = async (data: FormData) => {
-    if (data.message.trim() === "" || isSending) return;
+    if (isSending) return;
 
     if (!session) return;
 
-    const messageData: CreateMessage = {
-      sender: session.user.id as string,
-      room: roomId as string,
-      content: data.message,
-      type: "text",
-    };
+    if (data.message.trim() === "" && selectedFiles.length === 0) {
+      toast.error("At least one input is required: message or media.");
+      return;
+    }
 
     const messageContent = data.message;
     messageForm.reset();
@@ -491,7 +504,42 @@ function RoomPage() {
 
     try {
       setIsSending(true);
-      await sendMessage(messageData);
+
+      // Send text message if present
+      if (data.message.trim() !== "") {
+        const messageData: CreateMessage = {
+          sender: session.user.id as string,
+          room: roomId as string,
+          content: data.message,
+          type: "text",
+        };
+        await sendMessage(messageData);
+      }
+
+      // Send media messages
+      if (selectedFiles.length > 0) {
+        const uploadPromises = selectedFiles.map(async (fileInfo) => {
+          const url = await uploadImage(fileInfo.file);
+          if (!url) {
+            throw new Error(`Failed to upload ${fileInfo.name}`);
+          }
+          const type = fileInfo.type.startsWith("image/") ? "image" : "file";
+
+          const messageData: CreateMessage = {
+            sender: session.user.id as string,
+            room: roomId as string,
+            content: url,
+            type,
+          };
+          return sendMessage(messageData);
+        });
+
+        // Upload all selected files at once
+        await Promise.all(uploadPromises);
+      }
+
+      // Clear selected files after successful send
+      setSelectedFiles([]);
     } catch (error) {
       console.error("Failed to send message:", error);
 
@@ -588,28 +636,35 @@ function RoomPage() {
       <div className="flex-1 flex-col-reverse overflow-y-auto p-4">
         {hasNextPage && (
           <div className="mb-4 flex items-center justify-center">
-            {!isFetchingNextPage ? (
+            {!isFetchingNextPage && !isChatError && (
               <Button
                 onClick={() => fetchNextPage()}
                 className="cursor-pointer text-sm"
               >
                 Load More
               </Button>
-            ) : (
-              <Loader2 className="animate-spin" size={20} />
             )}
           </div>
         )}
 
-        {messagesData?.length === 0 ? (
-          <p className="text-center font-semibold">No messages yet.</p>
-        ) : isChatError ? (
+        {isChatError && (
           <ErrorMessage
             error={chatErrorData as AxiosError}
             onClick={handleRefresh}
           />
+        )}
+
+        {isAllFetching && (
+          <div className="mb-4 flex items-center justify-center gap-2">
+            <Loader2 className="text-primary animate-spin" size={30} />
+            <h1 className="text-xl">Loading messages…</h1>
+          </div>
+        )}
+
+        {!isChatError && !isAllFetching && messagesData.length === 0 ? (
+          <p className="text-center font-semibold">No messages yet.</p>
         ) : (
-          messagesData?.map((msg: Message) => (
+          messagesData.map((msg: Message) => (
             <MessageCard
               key={msg._id}
               message={msg}
@@ -665,7 +720,7 @@ function RoomPage() {
             />
 
             <MediaUpload
-              onChange={handleImageUpload}
+              onChange={handleAppendFile}
               isUploading={isUploading}
             />
             <EmojiSelection onEmojiAppend={handleEmojiAppend} />
@@ -679,6 +734,57 @@ function RoomPage() {
                 (isUploading && <Loader2 className="animate-spin" />)}
             </Button>
           </form>
+
+          {selectedFiles.length > 0 && (
+            <div className="grid h-30 w-full grid-cols-2 gap-2 overflow-y-auto p-4 md:grid-cols-4">
+              {selectedFiles.map((file, index) => {
+                /* If the file type is an image */
+                if (file.type.startsWith("image")) {
+                  return (
+                    <div key={file.id} className="relative w-fit">
+                      <Image
+                        src={file.image}
+                        alt={file.name}
+                        width={0}
+                        height={0}
+                        className="h-25 w-50 object-cover"
+                        unoptimized={file.image.startsWith("data:image")}
+                        priority
+                      />
+                      <button
+                        className="absolute top-0 right-0 bg-red-500 p-2 text-white"
+                        onClick={() => handleRemoveFile(index)}
+                      >
+                        X
+                      </button>
+                    </div>
+                  );
+
+                  /* If the file type is an application */
+                } else if (file.type.startsWith("application")) {
+                  return (
+                    <div
+                      key={file.id}
+                      className="relative border-2 border-dashed"
+                    >
+                      <div className="flex h-20 max-w-xs items-center gap-2 p-2">
+                        <FileIcon className="mr-2 h-4 w-4" />
+                        <span className="truncate">{file.name}</span>
+                      </div>
+                      <button
+                        className="absolute top-0 right-0 cursor-pointer bg-red-500 px-2 text-white"
+                        onClick={() => handleRemoveFile(index)}
+                      >
+                        X
+                      </button>
+                    </div>
+                  );
+                } else {
+                  return null;
+                }
+              })}
+            </div>
+          )}
         </Form>
       ) : (
         <NotJoinedModal

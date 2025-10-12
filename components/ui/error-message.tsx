@@ -16,6 +16,7 @@ function ErrorMessage({ error, onClick }: ErrorMessageProps) {
       <p className="text-center text-lg">{axiosErrorMessage(error)}</p>
       <Button
         variant="default"
+        type="button"
         className="hover:bg-accent hover:text-accent-foreground cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
         onClick={onClick}
       >

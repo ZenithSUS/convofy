@@ -79,7 +79,10 @@ export const editMessage = async (messageId: string, content: string) => {
       .lean();
 
     return newEditedMessage;
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error editing message:", error);
+    throw error;
+  }
 };
 
 export const deleteMessage = async (messageId: string) => {

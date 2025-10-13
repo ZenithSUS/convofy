@@ -1,21 +1,7 @@
-# Chat Form Validation and Media Sending Fix
+# TODO: Fix Logical Bugs in Message Editing
 
-## Completed Tasks
+## Tasks
 
-- [x] Updated FileInfo interface to include `file: File` property
-- [x] Modified handleAppendFile to store the File object in selectedFiles
-- [x] Simplified Zod schema to remove broken refine validation
-- [x] Updated handleSendMessage to:
-  - Check for at least one input (message or media)
-  - Send text message if present
-  - Upload and send media files using Promise.all
-  - Clear selectedFiles after successful send
-  - Handle errors appropriately
-
-## Testing
-
-- [ ] Test sending text message only
-- [ ] Test sending media only (image/file)
-- [ ] Test sending both text and media
-- [ ] Test sending empty form (should show error)
-- [ ] Test removing selected files before sending
+- [x] Update `app/(views)/chat/components/cards/message-card.tsx`: Add `isEditing` to `useEffect` dependencies and modify the logic to hide options when editing.
+- [x] Update `app/(views)/chat/components/message-edit.tsx`: Change `Textarea` className to `w-full max-w-sm` and add `maxLength={500}` to prevent overflow.
+- [x] Fix `isMessageChanged` not triggering in `app/(views)/chat/components/message-edit.tsx`: Make the dependency reactive by using `watch` instead of `getValues`.

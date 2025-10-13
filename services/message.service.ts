@@ -28,7 +28,7 @@ export const createMessage = async (data: CreateMessage) => {
     }
 
     const newMessage = await Message.findById(message._id)
-      .populate("sender", "name")
+      .populate("sender", ["name", "avatar"])
       .exec();
 
     return newMessage;
@@ -57,6 +57,29 @@ export const getMessagesByRoom = async (
     console.error("Error fetching messages:", error);
     throw error;
   }
+};
+
+export const editMessage = async (messageId: string, content: string) => {
+  try {
+    await connectToDatabase();
+    const editMessage = await Message.findOneAndUpdate(
+      { _id: messageId },
+      { content },
+      { new: true },
+    );
+
+    if (!editMessage) {
+      return new Error("Message not found");
+    }
+
+    await editMessage.save();
+
+    const newEditedMessage = await Message.findById(editMessage._id)
+      .populate("sender", ["name", "avatar"])
+      .lean();
+
+    return newEditedMessage;
+  } catch (error) {}
 };
 
 export const deleteMessage = async (messageId: string) => {

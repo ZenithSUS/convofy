@@ -3,13 +3,18 @@
 import { Message } from "@/types/message";
 import { Session } from "next-auth";
 import { memo, useMemo, useRef, useState, useEffect } from "react";
-import { useDeleteLiveMessage } from "@/hooks/use-message";
+import {
+  useDeleteLiveMessage,
+  useUpdateLiveMessage,
+} from "@/hooks/use-message";
 import DeleteMessageModal from "@/app/(views)/chat/components/modals/delete-message-modal";
 import { toast } from "react-toastify";
 import timeFormat from "@/helper/time-format";
 import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import MessageContent from "../message-content";
+import { EditIcon } from "lucide-react";
+import MessageEdit from "../message-edit";
 
 interface Props {
   message: Message | null;
@@ -17,8 +22,9 @@ interface Props {
 }
 
 function MessageCard({ message, session }: Props) {
-  const [isDeleteVisible, setIsDeleteVisible] = useState(false);
+  const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   const [isTimeVisible, setIsTimeVisible] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isHoveringMessage, setIsHoveringMessage] = useState(false);
   const [isHoveringIcon, setIsHoveringIcon] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -29,6 +35,7 @@ function MessageCard({ message, session }: Props) {
   }, [message, session]);
 
   const { deleteFile } = useDeleteFile();
+  const { mutateAsync: updateMessage } = useUpdateLiveMessage();
   const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
   // Cleanup timeout on unmount
@@ -46,36 +53,57 @@ function MessageCard({ message, session }: Props) {
       clearTimeout(timeoutRef.current);
     }
 
+    if (isEditing) {
+      // Hide options immediately when editing
+      setIsTimeVisible(false);
+      setIsOptionsVisible(false);
+      return;
+    }
+
     if (isHoveringMessage || isHoveringIcon) {
       // Show immediately when hovering
       setIsTimeVisible(true);
       if (isUserMessage) {
-        setIsDeleteVisible(true);
+        setIsOptionsVisible(true);
       }
     } else {
       // Hide after delay when not hovering
       timeoutRef.current = setTimeout(() => {
         setIsTimeVisible(false);
-        setIsDeleteVisible(false);
+        setIsOptionsVisible(false);
       }, 1000);
     }
-  }, [isHoveringMessage, isHoveringIcon, isUserMessage]);
+  }, [isHoveringMessage, isHoveringIcon, isUserMessage, isEditing]);
 
   const handleMouseEnterMessage = () => {
+    if (isEditing) return;
     setIsHoveringMessage(true);
   };
 
   const handleMouseLeaveMessage = () => {
+    if (isEditing) return;
     setIsHoveringMessage(false);
   };
 
   const handleMouseEnterIcon = () => {
+    if (isEditing) return;
     setIsHoveringIcon(true);
   };
 
   const handleMouseLeaveIcon = () => {
+    if (isEditing) return;
     setIsHoveringIcon(false);
   };
+
+  const handleEditMessage = () => {
+    setIsEditing(true);
+    setIsOptionsVisible(false);
+  };
+
+  const isEditingMessage = useMemo(
+    () => message?.type === "text" && isEditing,
+    [message?.type, isEditing],
+  );
 
   const handleDeleteClick = async () => {
     if (!message) return;
@@ -94,10 +122,33 @@ function MessageCard({ message, session }: Props) {
       console.error("Error deleting message:", error);
       toast.error("Failed to delete message");
     } finally {
-      setIsDeleteVisible(false);
+      setIsOptionsVisible(false);
       setIsTimeVisible(false);
     }
   };
+
+  const onEditMessage = async (id: string, content: string) => {
+    try {
+      if (!message) return;
+      await updateMessage({ id, content });
+      setIsEditing(false);
+      toast.success("Message updated");
+    } catch (error) {
+      console.error("Error updating message:", error);
+      toast.error("Failed to update message");
+    } finally {
+      setIsOptionsVisible(false);
+      setIsTimeVisible(false);
+    }
+  };
+
+  const editMessageValues = useMemo(() => {
+    if (!message) return null;
+    return {
+      id: message._id,
+      content: message.content,
+    };
+  }, [message]);
 
   if (!message) return null;
 
@@ -119,13 +170,19 @@ function MessageCard({ message, session }: Props) {
           message.sender._id === session?.user?.id ? "ml-auto" : "mr-auto"
         }`}
       >
-        {isDeleteVisible && (
+        {isOptionsVisible && (
           <div
-            className="mb-4"
+            className="mb-4 flex items-center justify-center gap-1 rounded-md p-2 hover:bg-slate-200 dark:hover:bg-slate-800"
             onMouseEnter={handleMouseEnterIcon}
             onMouseLeave={handleMouseLeaveIcon}
           >
             <DeleteMessageModal onDelete={handleDeleteClick} />
+            {message.type === "text" && (
+              <EditIcon
+                onClick={() => handleEditMessage()}
+                className="h-6 w-6 cursor-pointer"
+              />
+            )}
           </div>
         )}
         <div
@@ -138,7 +195,15 @@ function MessageCard({ message, session }: Props) {
           onMouseLeave={handleMouseLeaveMessage}
         >
           {/* Message content */}
-          <MessageContent message={message} />
+          {isEditingMessage && editMessageValues ? (
+            <MessageEdit
+              editMessage={editMessageValues}
+              onEditMessage={onEditMessage}
+              setIsEditing={setIsEditing}
+            />
+          ) : (
+            <MessageContent message={message} />
+          )}
         </div>
       </div>
     </div>

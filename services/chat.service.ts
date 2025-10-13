@@ -34,7 +34,38 @@ export const sendLiveMessage = async (data: IMessage) => {
     // Return the populated message
     return populatedMessage;
   } catch (error) {
-    console.error("Error sending live message:", error);
+    throw error;
+  }
+};
+
+export const editLiveMessage = async (id: string, content: string) => {
+  try {
+    await connectToDatabase();
+    const editMessage = await Message.findOneAndUpdate(
+      { _id: id },
+      { content: content },
+      { new: true },
+    );
+
+    // Populate the sender information before sending to Pusher
+    if (!editMessage) {
+      return new Error("Message not found");
+    }
+
+    // Update the message
+    await editMessage.save();
+
+    // Return the populated message
+    const newEditedMessage = await Message.findById(editMessage._id)
+      .populate("sender", ["name", "avatar"])
+      .lean();
+
+    // Send to Pusher
+    const channelName = `chat-${editMessage.room}`;
+    await pusherServer.trigger(channelName, "edit-message", newEditedMessage);
+
+    return newEditedMessage;
+  } catch (error) {
     throw error;
   }
 };
@@ -69,7 +100,6 @@ export const deleteLiveMessage = async (id: string) => {
 
     return message;
   } catch (error) {
-    console.error("Error deleting message:", error);
     throw error;
   }
 };

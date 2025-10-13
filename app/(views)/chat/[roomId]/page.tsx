@@ -399,6 +399,40 @@ function RoomPage() {
         }
       });
 
+      // Handle edit messages
+      channel.bind("edit-message", (data: Message) => {
+        if (isMountedRef.current && currentRoomIdRef.current === roomId) {
+          // Update messages cache by replacing the edited message
+          queryClient.setQueryData(
+            ["messages", roomId],
+            (old: InfiniteData<Message[]> | undefined) => {
+              if (!old) return old;
+
+              // Replace the edited message in all pages
+              const newPages = old.pages.map((page) => {
+                // If the message doesn't exist in this page, return the page
+                if (!page.some((msg) => msg._id === data._id)) {
+                  return page;
+                }
+
+                // If the previous messages matches then update it
+                return page.map((msg) => {
+                  if (msg._id === data._id) {
+                    return data;
+                  }
+                  return msg;
+                });
+              });
+
+              return {
+                ...old,
+                pages: newPages,
+              };
+            },
+          );
+        }
+      });
+
       // Handle typing
       const handleTyping = (data: MessageTyping) => {
         if (
@@ -701,7 +735,7 @@ function RoomPage() {
                       placeholder={
                         isSending ? "Sending..." : "Type a message..."
                       }
-                      className="mr-2"
+                      className="mr-2 h-15 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
                       disabled={isSending}
                       onChange={(e) => {
                         field.onChange(e);

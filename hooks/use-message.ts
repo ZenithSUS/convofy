@@ -220,3 +220,22 @@ export const useDeleteLiveMessage = () => {
     mutationFn: async (messageId: string) => deleteLiveMessage(messageId),
   });
 };
+
+export const useUpdateLiveMessage = () => {
+  const updateMessage = async (id: string, content: string) => {
+    const response = await client
+      .put(`/chat/${id}`, { content })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error updating message:", err);
+        throw err;
+      });
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["updateMessage"],
+    mutationFn: async (data: { id: string; content: string }) =>
+      updateMessage(data.id, data.content),
+  });
+};

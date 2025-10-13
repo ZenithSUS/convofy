@@ -19,12 +19,24 @@ import MessageEdit from "../message-edit";
 interface Props {
   message: Message | null;
   session: Session;
+  isThisEditing: boolean;
+  isAnyEditing: boolean;
+  onEditComplete: () => void;
+  onCancelEdit: () => void;
+  setCurrentEditId: (id: string | null) => void;
 }
 
-function MessageCard({ message, session }: Props) {
+function MessageCard({
+  message,
+  session,
+  isThisEditing,
+  isAnyEditing,
+  onEditComplete,
+  onCancelEdit,
+  setCurrentEditId,
+}: Props) {
   const [isOptionsVisible, setIsOptionsVisible] = useState(false);
   const [isTimeVisible, setIsTimeVisible] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isHoveringMessage, setIsHoveringMessage] = useState(false);
   const [isHoveringIcon, setIsHoveringIcon] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -53,8 +65,8 @@ function MessageCard({ message, session }: Props) {
       clearTimeout(timeoutRef.current);
     }
 
-    if (isEditing) {
-      // Hide options immediately when editing
+    if (isAnyEditing) {
+      // Hide options immediately when any message is editing
       setIsTimeVisible(false);
       setIsOptionsVisible(false);
       return;
@@ -73,36 +85,36 @@ function MessageCard({ message, session }: Props) {
         setIsOptionsVisible(false);
       }, 1000);
     }
-  }, [isHoveringMessage, isHoveringIcon, isUserMessage, isEditing]);
+  }, [isHoveringMessage, isHoveringIcon, isUserMessage, isAnyEditing]);
 
   const handleMouseEnterMessage = () => {
-    if (isEditing) return;
+    if (isAnyEditing) return;
     setIsHoveringMessage(true);
   };
 
   const handleMouseLeaveMessage = () => {
-    if (isEditing) return;
+    if (isAnyEditing) return;
     setIsHoveringMessage(false);
   };
 
   const handleMouseEnterIcon = () => {
-    if (isEditing) return;
+    if (isAnyEditing) return;
     setIsHoveringIcon(true);
   };
 
   const handleMouseLeaveIcon = () => {
-    if (isEditing) return;
+    if (isAnyEditing) return;
     setIsHoveringIcon(false);
   };
 
-  const handleEditMessage = () => {
-    setIsEditing(true);
+  const handleEditMessage = (messageId: string) => {
+    setCurrentEditId(messageId);
     setIsOptionsVisible(false);
   };
 
   const isEditingMessage = useMemo(
-    () => message?.type === "text" && isEditing,
-    [message?.type, isEditing],
+    () => message?.type === "text" && isThisEditing,
+    [message?.type, isThisEditing],
   );
 
   const handleDeleteClick = async () => {
@@ -131,7 +143,7 @@ function MessageCard({ message, session }: Props) {
     try {
       if (!message) return;
       await updateMessage({ id, content });
-      setIsEditing(false);
+      onEditComplete();
       toast.success("Message updated");
     } catch (error) {
       console.error("Error updating message:", error);
@@ -162,7 +174,8 @@ function MessageCard({ message, session }: Props) {
             message.sender._id === session.user.id ? "self-end" : "self-start"
           }`}
         >
-          {timeFormat(new Date(message.createdAt))}
+          {timeFormat(new Date(message.createdAt))}{" "}
+          {message.isEdited && "(edited)"}
         </h1>
       )}
       <div
@@ -179,7 +192,7 @@ function MessageCard({ message, session }: Props) {
             <DeleteMessageModal onDelete={handleDeleteClick} />
             {message.type === "text" && (
               <EditIcon
-                onClick={() => handleEditMessage()}
+                onClick={() => handleEditMessage(message._id)}
                 className="h-6 w-6 cursor-pointer"
               />
             )}
@@ -199,7 +212,7 @@ function MessageCard({ message, session }: Props) {
             <MessageEdit
               editMessage={editMessageValues}
               onEditMessage={onEditMessage}
-              setIsEditing={setIsEditing}
+              onCancelEdit={onCancelEdit}
             />
           ) : (
             <MessageContent message={message} />

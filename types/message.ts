@@ -9,6 +9,7 @@ export type Message = {
     name: string;
     avatar: string;
   };
+  isEdited?: boolean;
   content: string;
   type: "text" | "image" | "file";
   createdAt: Date;

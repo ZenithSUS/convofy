@@ -43,7 +43,7 @@ export const editLiveMessage = async (id: string, content: string) => {
     await connectToDatabase();
     const editMessage = await Message.findOneAndUpdate(
       { _id: id },
-      { content: content },
+      { content: content, isEdited: true },
       { new: true },
     );
 

@@ -5,6 +5,7 @@ export interface IMessage extends Document {
   sender: Types.ObjectId;
   content: string;
   type: "text" | "image" | "file";
+  isEdited: boolean;
   createdAt: Date;
 }
 
@@ -13,6 +14,7 @@ const MessageSchema = new Schema<IMessage>(
     room: { type: Schema.Types.ObjectId, ref: "Room", required: true },
     sender: { type: Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, required: true },
+    isEdited: { type: Boolean, default: false, required: false },
     type: { type: String, enum: ["text", "image", "file"], default: "text" },
   },
   { timestamps: true },

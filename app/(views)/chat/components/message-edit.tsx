@@ -12,10 +12,10 @@ interface Props {
   };
 
   onEditMessage: (messageId: string, content: string) => void;
-  setIsEditing: (value: boolean) => void;
+  onCancelEdit: () => void;
 }
 
-function MessageEdit({ editMessage, onEditMessage, setIsEditing }: Props) {
+function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
   const editForm = useForm({
     defaultValues: {
       content: editMessage.content,
@@ -44,7 +44,7 @@ function MessageEdit({ editMessage, onEditMessage, setIsEditing }: Props) {
           render={({ field }) => (
             <Textarea
               placeholder="Edit Message"
-              className="w-full max-w-sm"
+              className="border-input/50 dark:bg-input/30 w-full max-w-sm border-2"
               maxLength={1000}
               {...field}
             />
@@ -66,7 +66,7 @@ function MessageEdit({ editMessage, onEditMessage, setIsEditing }: Props) {
             variant="destructive"
             className="flex-1 cursor-pointer px-2 py-1"
             size="icon"
-            onClick={() => setIsEditing(false)}
+            onClick={onCancelEdit}
           >
             <X className="h-4 w-4" />
           </Button>

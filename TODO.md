@@ -1,7 +1,3 @@
-# TODO: Fix Logical Bugs in Message Editing
-
-## Tasks
-
-- [x] Update `app/(views)/chat/components/cards/message-card.tsx`: Add `isEditing` to `useEffect` dependencies and modify the logic to hide options when editing.
-- [x] Update `app/(views)/chat/components/message-edit.tsx`: Change `Textarea` className to `w-full max-w-sm` and add `maxLength={500}` to prevent overflow.
-- [x] Fix `isMessageChanged` not triggering in `app/(views)/chat/components/message-edit.tsx`: Make the dependency reactive by using `watch` instead of `getValues`.
+- [x] Update app/(views)/chat/[roomId]/page.tsx: Add isAnyEditing = !!currentEditId, pass isThisEditing={currentEditId === msg.\_id}, isAnyEditing, onEditComplete={() => setCurrentEditId(null)}, onCancelEdit={() => setCurrentEditId(null)}. Change handleSelectEdit to setCurrentEditId(messageId).
+- [x] Update app/(views)/chat/components/cards/message-card.tsx: Change props to include isThisEditing, isAnyEditing, onEditComplete, onCancelEdit. Use isAnyEditing in effect for hiding options. In handleEditMessage, call selectEditMessage(messageId). In onEditMessage, call onEditComplete. In MessageEdit, pass onCancelEdit.
+- [x] Update app/(views)/chat/components/message-edit.tsx: Add onCancelEdit prop, call it on cancel button.

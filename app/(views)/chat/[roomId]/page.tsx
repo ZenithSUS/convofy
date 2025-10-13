@@ -84,6 +84,7 @@ function RoomPage() {
     },
   });
 
+  const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
     new Map(),
@@ -544,6 +545,7 @@ function RoomPage() {
         const messageData: CreateMessage = {
           sender: session.user.id as string,
           room: roomId as string,
+          isEdited: false,
           content: data.message,
           type: "text",
         };
@@ -703,6 +705,11 @@ function RoomPage() {
               key={msg._id}
               message={msg}
               session={session as Session}
+              isThisEditing={currentEditId === msg._id}
+              isAnyEditing={!!currentEditId}
+              onEditComplete={() => setCurrentEditId(null)}
+              onCancelEdit={() => setCurrentEditId(null)}
+              setCurrentEditId={setCurrentEditId}
             />
           ))
         )}

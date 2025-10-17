@@ -1,14 +1,7 @@
-import { Session } from "next-auth";
-import AnonymousRoomHeader from "../components/anon-room-header";
+"use client";
 
-function AnonymousPageClient({ session }: { session: Session }) {
-  if (!session) return null;
-
-  return (
-    <div className="flex flex-1 flex-col gap-2">
-      <AnonymousRoomHeader />
-    </div>
-  );
+function AnonymousHomePage() {
+  return <div>Anonymous Home Page</div>;
 }
 
-export default AnonymousPageClient;
+export default AnonymousHomePage;

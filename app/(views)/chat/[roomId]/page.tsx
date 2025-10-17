@@ -473,7 +473,7 @@ function RoomPage() {
       cleanupChannel();
       currentRoomIdRef.current = null;
     };
-  }, [roomId, session?.user?.id, room?.members, queryClient]);
+  }, [roomId, session?.user?.id, room?.members, queryClient, isMember]);
 
   // Check if the chat is in view
   // useEffect(() => {

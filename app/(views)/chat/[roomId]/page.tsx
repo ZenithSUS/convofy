@@ -161,6 +161,11 @@ function RoomPage() {
     return roomData && messagesData && session;
   }, [roomData, messagesData, session, isChatError]);
 
+  const isMember = useMemo(
+    () => roomData?.members.some((member) => member === session?.user?.id),
+    [roomData, session],
+  );
+
   // Handle connection events (independent of room)
   useEffect(() => {
     if (!session) return;
@@ -286,7 +291,7 @@ function RoomPage() {
       return;
     }
 
-    if (!room?.members?.includes(session.user.id)) {
+    if (!isMember) {
       console.log(`User ${session.user.id} is not a member of room ${roomId}`);
       cleanupChannel();
       currentRoomIdRef.current = null;
@@ -672,7 +677,7 @@ function RoomPage() {
       <div className="flex-1 flex-col-reverse overflow-y-auto p-4">
         {hasNextPage && (
           <div className="mb-4 flex items-center justify-center">
-            {!isFetchingNextPage && !isChatError && (
+            {!isFetchingNextPage && !isChatError && isMember && (
               <Button
                 onClick={() => fetchNextPage()}
                 className="cursor-pointer text-sm"
@@ -724,7 +729,7 @@ function RoomPage() {
         )}
       </div>
 
-      {room?.members.includes(session?.user?.id as string) ? (
+      {isMember ? (
         <Form {...messageForm}>
           <form
             className="relative flex gap-2 border-t p-4"

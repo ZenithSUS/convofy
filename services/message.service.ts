@@ -38,6 +38,26 @@ export const createMessage = async (data: CreateMessage) => {
   }
 };
 
+export const getMessages = async (
+  roomId: string,
+  limit: number,
+  offset: number,
+) => {
+  try {
+    await connectToDatabase();
+
+    const messages = await Message.find({ room: roomId })
+      .limit(limit)
+      .skip(offset)
+      .populate("sender", ["name", "avatar"])
+      .sort({ createdAt: -1 });
+
+    return messages;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const getMessagesByRoom = async (
   roomId: string,
   limit: number = 5,
@@ -54,7 +74,6 @@ export const getMessagesByRoom = async (
 
     return messages;
   } catch (error) {
-    console.error("Error fetching messages:", error);
     throw error;
   }
 };
@@ -80,7 +99,6 @@ export const editMessage = async (messageId: string, content: string) => {
 
     return newEditedMessage;
   } catch (error) {
-    console.error("Error editing message:", error);
     throw error;
   }
 };
@@ -91,7 +109,6 @@ export const deleteMessage = async (messageId: string) => {
     const deletedMessage = await Message.findByIdAndDelete(messageId);
     return deletedMessage;
   } catch (error) {
-    console.error("Error deleting message:", error);
     throw error;
   }
 };

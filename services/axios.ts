@@ -15,7 +15,6 @@ const client = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  // You can add authorization headers or other custom headers here
   return config;
 });
 

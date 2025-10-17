@@ -8,6 +8,9 @@ export interface IUser extends Document {
   status: "online" | "offline";
   lastActive?: Date;
   createdAt: Date;
+  isAnonymous?: boolean;
+  anonAlias?: string;
+  anonAvatar?: string | null;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -18,6 +21,9 @@ const UserSchema = new Schema<IUser>(
     avatar: { type: String },
     status: { type: String, enum: ["online", "offline"], default: "offline" },
     lastActive: { type: Date },
+    isAnonymous: { type: Boolean, default: false },
+    anonAlias: { type: String },
+    anonAvatar: { type: String },
   },
   { timestamps: true },
 );

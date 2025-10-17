@@ -1,0 +1,9 @@
+import { authOptions } from "@/lib/auth";
+import { getServerSession, Session } from "next-auth";
+import AnonymousPageClient from "../pages";
+
+export default async function AnonymousChatPage() {
+  const session = await getServerSession(authOptions);
+
+  return <AnonymousPageClient session={session as Session} />;
+}

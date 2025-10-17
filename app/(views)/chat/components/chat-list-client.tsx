@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
+import { useSession } from "next-auth/react";
 
 interface ChatListClientProps {
   session: Session;
@@ -19,6 +20,8 @@ interface ChatListClientProps {
 function ChatListClient({ session }: ChatListClientProps) {
   const DEBOUNCE_MS = 500;
   const router = useRouter();
+  const { data: sessions } = useSession();
+  console.log(sessions);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");

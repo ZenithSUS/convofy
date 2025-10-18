@@ -1,16 +1,8 @@
 "use client";
 
 import { Session } from "@/app/(views)/chat/components/chat-header";
-import { Button } from "@/components/ui/button";
-import {
-  ChevronRightIcon,
-  ArrowRightIcon,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { ChevronRightIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import ProfileLogoutModal from "@/app/(views)/chat/profile/components/modals/profile-logout-modal";
 import { useGetUserDataStats } from "@/hooks/use-user";
 import { useMemo } from "react";
 import Link from "next/link";
@@ -18,7 +10,6 @@ import profileSettings from "@/constants/profile-settings";
 import ProfileHeader from "../components/profile-header";
 
 function ProfilePageClient({ session }: { session: Session }) {
-  const router = useRouter();
   const {
     data: userStats,
     isLoading,

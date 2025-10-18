@@ -10,10 +10,8 @@ import {
   Download,
   Grid3x3,
   Grid2x2,
-  ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import MediaCard from "../components/media-card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +22,6 @@ interface MediaPageProps {
 }
 
 function MediaPageClient({ session }: MediaPageProps) {
-  const router = useRouter();
   const [gridColumns, setGridColumns] = useState<2 | 3>(3);
 
   const {

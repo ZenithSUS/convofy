@@ -1,6 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
-import { User as UserType } from "@/types/user";
+import { UserDataStats, User as UserType } from "@/types/user";
+import Message from "@/models/Message";
+import Room from "@/models/Room";
 
 export const createUser = async (data: UserType) => {
   await connectToDatabase();
@@ -26,6 +28,26 @@ export const getUserByEmail = async (
   await connectToDatabase();
   const user = await User.findOne({ email }, "-password");
   return user;
+};
+
+export const getUserDataStats = async (userId: string) => {
+  try {
+    await connectToDatabase();
+    const [messages, medias, rooms] = await Promise.all([
+      Message.countDocuments({ sender: userId, type: "text" }),
+      Message.countDocuments({
+        sender: userId,
+        $or: [{ type: "image" }, { type: "file" }],
+      }),
+      Room.countDocuments({ members: userId }),
+    ]);
+
+    const data: UserDataStats = { messages, medias, contacts: rooms };
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
 };
 
 export const updateUserStatus = async (

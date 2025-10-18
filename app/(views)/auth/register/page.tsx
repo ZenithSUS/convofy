@@ -81,7 +81,6 @@ function RegisterPage() {
       };
 
       const response = await client.post("/auth/register", userData);
-      console.log(response);
 
       if (response.status === 201) {
         router.push("/auth/login");

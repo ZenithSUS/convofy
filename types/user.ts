@@ -8,3 +8,9 @@ export type User = {
   lastActive: Date;
   createdAt: Date;
 };
+
+export type UserDataStats = {
+  messages: number;
+  medias: number;
+  contacts: number;
+};

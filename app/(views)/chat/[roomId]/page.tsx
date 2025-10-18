@@ -35,7 +35,14 @@ import {
 import { useSession } from "next-auth/react";
 import { pusherClient } from "@/lib/pusher-client";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { FileIcon, Loader2 } from "lucide-react";
+import {
+  FileIcon,
+  Loader2,
+  Send,
+  AlertCircle,
+  WifiOff,
+  RefreshCw,
+} from "lucide-react";
 import { User } from "@/types/user";
 import { toast } from "react-toastify";
 import ErrorMessage from "@/components/ui/error-message";
@@ -56,7 +63,6 @@ import MediaUpload from "../components/media-upload";
 import { useUploadImage } from "@/hooks/use-upload";
 import Image from "next/image";
 import { FileInfo } from "@/types/file";
-// import { useInView } from "react-intersection-observer";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -73,7 +79,6 @@ function RoomPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
-  // const { ref, inView } = useInView();
 
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
 
@@ -118,10 +123,8 @@ function RoomPage() {
   const { mutateAsync: typingSignal } = useCheckTyping();
   const { uploadImage, isUploading } = useUploadImage();
 
-  // Memoize data
   const roomData = useMemo(() => room, [room]);
 
-  // Flatten pages but keep stable order and remove duplicates (preserve first occurrence)
   const messagesData = useMemo(() => {
     const flat = (messages?.pages ?? []).flat() as Message[];
     const seen = new Set<string>();
@@ -136,7 +139,6 @@ function RoomPage() {
     return unique.reverse();
   }, [messages]);
 
-  // Error handling
   const isChatError = useMemo(() => {
     return roomError || messagesError;
   }, [roomError, messagesError]);
@@ -145,7 +147,6 @@ function RoomPage() {
     return roomErrorData || messagesErrorData;
   }, [roomErrorData, messagesErrorData]);
 
-  // Loading states
   const isAllLoading = useMemo(() => {
     if (isChatError) return false;
     return roomLoading || messagesLoading;
@@ -166,12 +167,10 @@ function RoomPage() {
     [roomData, session],
   );
 
-  // Handle connection events (independent of room)
   useEffect(() => {
     if (!session) return;
 
     const handleStateChange = (states: PusherState) => {
-      console.log("Pusher state changed:", states);
       if (isMountedRef.current) {
         const currentState = states.current as PusherConnectionStatus;
         setConnectionStatus(currentState);
@@ -181,7 +180,6 @@ function RoomPage() {
 
     const handleConnected = () => {
       if (isMountedRef.current) {
-        // toast.success("Connected to Room");
         setConnectionStatus("connected");
       }
     };
@@ -222,7 +220,6 @@ function RoomPage() {
       }
     };
 
-    // Bind connection events
     pusherClient.connection.bind("state_change", handleStateChange);
     pusherClient.connection.bind("connected", handleConnected);
     pusherClient.connection.bind("disconnected", handleDisconnected);
@@ -231,11 +228,9 @@ function RoomPage() {
     pusherClient.connection.bind("failed", handleFailed);
     pusherClient.connection.bind("error", handleError);
 
-    // Get initial connection state
     const initialState = pusherClient.connection.state;
     setConnectionStatus(initialState);
 
-    // Cleanup connection events
     return () => {
       pusherClient.connection.unbind("state_change", handleStateChange);
       pusherClient.connection.unbind("connected", handleConnected);
@@ -247,44 +242,35 @@ function RoomPage() {
     };
   }, [session]);
 
-  // Handle channel subscription
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Helper function to cleanup existing channel
     const cleanupChannel = () => {
       if (channelRef.current) {
         const channelName = channelRef.current.name;
         console.log(`Cleaning up channel: ${channelName}`);
 
-        // Unbind all events first
         channelRef.current.unbind_all();
 
-        // Unsubscribe from the channel
         try {
           pusherClient.unsubscribe(channelName);
         } catch (error) {
           console.error("Error unsubscribing from channel:", error);
         }
 
-        // Clear reference
         channelRef.current = null;
       }
 
-      // Clear typing users
       setTypingUsers(new Map());
 
-      // Clear typing timeout
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = null;
       }
 
-      // Reset typing state
       isTypingRef.current = false;
     };
 
-    // Early returns with proper cleanup
     if (!roomId || !session?.user?.id) {
       cleanupChannel();
       currentRoomIdRef.current = null;
@@ -298,7 +284,6 @@ function RoomPage() {
       return;
     }
 
-    // Check if we're changing rooms
     if (currentRoomIdRef.current && currentRoomIdRef.current !== roomId) {
       console.log(
         `Changing from room ${currentRoomIdRef.current} to ${roomId}`,
@@ -306,17 +291,13 @@ function RoomPage() {
       cleanupChannel();
     }
 
-    // Update current room reference
     currentRoomIdRef.current = roomId as string;
 
-    // Create channel name
     const channelName = `chat-${roomId}`;
 
-    // Only subscribe if we don't already have this channel
     if (!channelRef.current || channelRef.current.name !== channelName) {
       console.log(`Subscribing to channel: ${channelName}`);
 
-      // Make sure to unsubscribe any existing subscription first
       const existingChannel = pusherClient.channel(channelName);
       if (existingChannel) {
         console.log(`Found existing channel ${channelName}, cleaning up...`);
@@ -327,7 +308,6 @@ function RoomPage() {
       const channel = pusherClient.subscribe(channelName);
       channelRef.current = channel;
 
-      // Handle subscription errors
       channel.bind("pusher:subscription_error", (status: PusherState) => {
         console.error("Subscription error:", status);
         if (isMountedRef.current) {
@@ -335,12 +315,10 @@ function RoomPage() {
         }
       });
 
-      // Handle successful subscription
       channel.bind("pusher:subscription_succeeded", () => {
-        console.log(`✅ Successfully subscribed to channel: ${channelName}`);
+        console.log(`Successfully subscribed to channel: ${channelName}`);
       });
 
-      // Get Subscription Count
       channel.bind("pusher:subscription_count", (data: PusherSubsciption) => {
         console.log(
           `Subscription count for ${channelName}:`,
@@ -348,7 +326,6 @@ function RoomPage() {
         );
       });
 
-      // Handle new messages
       channel.bind("new-message", (data: Message) => {
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
           queryClient.setQueryData(
@@ -367,9 +344,8 @@ function RoomPage() {
               );
               if (messageExists) return old;
 
-              // Add the new message to the FIRST page of the cache
               const newPages = [...old.pages];
-              newPages[0] = [data, ...newPages[0]]; // prepend to page 0
+              newPages[0] = [data, ...newPages[0]];
 
               return { ...old, pages: newPages };
             },
@@ -379,16 +355,13 @@ function RoomPage() {
         }
       });
 
-      // Handle deleted messages
       channel.bind("delete-message", (data: Message) => {
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          // Update messages cache by removing the deleted message
           queryClient.setQueryData(
             ["messages", roomId],
             (old: InfiniteData<Message[]> | undefined) => {
               if (!old) return old;
 
-              // Filter out the deleted message from all pages
               const newPages = old.pages.map((page) =>
                 page.filter((msg) => msg._id !== data._id),
               );
@@ -400,28 +373,22 @@ function RoomPage() {
             },
           );
 
-          // Still invalidate rooms to update last message preview
           queryClient.invalidateQueries({ queryKey: ["rooms"] });
         }
       });
 
-      // Handle edit messages
       channel.bind("edit-message", (data: Message) => {
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          // Update messages cache by replacing the edited message
           queryClient.setQueryData(
             ["messages", roomId],
             (old: InfiniteData<Message[]> | undefined) => {
               if (!old) return old;
 
-              // Replace the edited message in all pages
               const newPages = old.pages.map((page) => {
-                // If the message doesn't exist in this page, return the page
                 if (!page.some((msg) => msg._id === data._id)) {
                   return page;
                 }
 
-                // If the previous messages matches then update it
                 return page.map((msg) => {
                   if (msg._id === data._id) {
                     return data;
@@ -439,7 +406,6 @@ function RoomPage() {
         }
       });
 
-      // Handle typing
       const handleTyping = (data: MessageTyping) => {
         if (
           isMountedRef.current &&
@@ -450,7 +416,6 @@ function RoomPage() {
         }
       };
 
-      // Handle stop typing
       const handleStop = (data: MessageTyping) => {
         if (isMountedRef.current && currentRoomIdRef.current === roomId) {
           setTypingUsers((prev) => {
@@ -461,12 +426,10 @@ function RoomPage() {
         }
       };
 
-      // Bind typing events
       channel.bind("typing-start", handleTyping);
       channel.bind("typing-end", handleStop);
     }
 
-    // Cleanup function
     return () => {
       console.log(`Unmounting room ${roomId}, cleaning up...`);
       isMountedRef.current = false;
@@ -474,13 +437,6 @@ function RoomPage() {
       currentRoomIdRef.current = null;
     };
   }, [roomId, session?.user?.id, room?.members, queryClient, isMember]);
-
-  // Check if the chat is in view
-  // useEffect(() => {
-  //   if (inView && hasNextPage && !isFetchingNextPage) {
-  //     fetchNextPage();
-  //   }
-  // }, [fetchNextPage, inView, hasNextPage, isFetchingNextPage]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -545,7 +501,6 @@ function RoomPage() {
     try {
       setIsSending(true);
 
-      // Send text message if present
       if (data.message.trim() !== "") {
         const messageData: CreateMessage = {
           sender: session.user.id as string,
@@ -557,7 +512,6 @@ function RoomPage() {
         await sendMessage(messageData);
       }
 
-      // Send media messages
       if (selectedFiles.length > 0) {
         const uploadPromises = selectedFiles.map(async (fileInfo) => {
           const url = await uploadImage(fileInfo.file);
@@ -575,11 +529,9 @@ function RoomPage() {
           return sendMessage(messageData);
         });
 
-        // Upload all selected files at once
         await Promise.all(uploadPromises);
       }
 
-      // Clear selected files after successful send
       setSelectedFiles([]);
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -644,200 +596,327 @@ function RoomPage() {
 
   if (!isAllDataLoaded || isAllLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loading />
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="flex flex-col items-center gap-4">
+          <Loading />
+          <p className="text-sm text-gray-600">Loading conversation...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <RoomHeader room={roomData as Room} />
+
+      {/* Enhanced Connection Status Banner */}
       {connectionStatus !== "connected" && (
         <div
-          className={`border-l-4 p-4 ${
+          className={`flex items-center justify-between border-l-4 px-6 py-3 shadow-sm ${
             connectionStatus === "failed"
-              ? "border-red-500 bg-red-100 text-red-700"
-              : "border-yellow-500 bg-yellow-100 text-yellow-700"
+              ? "border-red-500 bg-red-50 text-red-800"
+              : connectionStatus === "unavailable"
+                ? "border-orange-500 bg-orange-50 text-orange-800"
+                : "border-yellow-500 bg-yellow-50 text-yellow-800"
           }`}
         >
-          <p className="font-bold">Connection Issue</p>
-          <p>
-            {connectionStatus === "connecting" && "Connecting..."}
-            {connectionStatus === "disconnected" &&
-              "Disconnected. Reconnecting..."}
-            {connectionStatus === "unavailable" &&
-              "Network unavailable. Check your connection."}
-            {connectionStatus === "failed" &&
-              "Connection failed. Please refresh."}
-            {connectionStatus === "error" && "Connection error. Retrying..."}
-          </p>
+          <div className="flex items-center gap-3">
+            {connectionStatus === "failed" ? (
+              <WifiOff size={20} />
+            ) : (
+              <AlertCircle size={20} />
+            )}
+            <div>
+              <p className="text-sm font-semibold">
+                {connectionStatus === "connecting" && "Connecting to chat..."}
+                {connectionStatus === "disconnected" && "Connection Lost"}
+                {connectionStatus === "unavailable" && "Network Unavailable"}
+                {connectionStatus === "failed" && "Connection Failed"}
+                {connectionStatus === "error" && "Connection Error"}
+              </p>
+              <p className="text-xs opacity-90">
+                {connectionStatus === "connecting" && "Please wait"}
+                {connectionStatus === "disconnected" &&
+                  "Attempting to reconnect..."}
+                {connectionStatus === "unavailable" &&
+                  "Check your internet connection"}
+                {connectionStatus === "failed" && "Please refresh the page"}
+                {connectionStatus === "error" && "Retrying connection..."}
+              </p>
+            </div>
+          </div>
+          {connectionStatus === "failed" && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.location.reload()}
+              className="bg-white hover:bg-gray-50"
+            >
+              <RefreshCw size={16} className="mr-1" />
+              Refresh
+            </Button>
+          )}
         </div>
       )}
-      <div className="flex-1 flex-col-reverse overflow-y-auto p-4">
+
+      {/* Enhanced Messages Area */}
+      <div className="flex-1 flex-col-reverse overflow-y-auto p-4 md:p-6">
         {hasNextPage && (
-          <div className="mb-4 flex items-center justify-center">
+          <div className="mb-6 flex items-center justify-center">
             {!isFetchingNextPage && !isChatError && isMember && (
               <Button
                 onClick={() => fetchNextPage()}
-                className="cursor-pointer text-sm"
+                variant="outline"
+                className="border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md"
               >
-                Load More
+                {isFetchingNextPage ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  "Load Previous Messages"
+                )}
               </Button>
             )}
           </div>
         )}
 
         {isChatError && (
-          <ErrorMessage
-            error={chatErrorData as AxiosError}
-            onClick={handleRefresh}
-          />
+          <div className="my-8">
+            <ErrorMessage
+              error={chatErrorData as AxiosError}
+              onClick={handleRefresh}
+            />
+          </div>
         )}
 
         {isAllFetching && (
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <Loader2 className="text-primary animate-spin" size={30} />
-            <h1 className="text-xl">Loading messages…</h1>
+          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4">
+            <Loader2 className="animate-spin text-blue-600" size={24} />
+            <h1 className="text-base font-medium text-blue-900">
+              Loading messages...
+            </h1>
           </div>
         )}
 
         {!isChatError && !isAllFetching && messagesData.length === 0 ? (
-          <p className="text-center font-semibold">No messages yet.</p>
+          <div className="flex flex-col items-center justify-center px-4 py-20">
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-purple-100">
+              <Send size={40} className="text-blue-500" />
+            </div>
+            <h3 className="mb-2 text-xl font-semibold text-gray-700">
+              No messages yet
+            </h3>
+            <p className="max-w-xs text-center text-sm text-gray-500">
+              Start the conversation by sending the first message
+            </p>
+          </div>
         ) : (
-          messagesData.map((msg: Message) => (
-            <MessageCard
-              key={msg._id}
-              message={msg}
-              session={session as Session}
-              isThisEditing={currentEditId === msg._id}
-              isAnyEditing={!!currentEditId}
-              onEditComplete={() => setCurrentEditId(null)}
-              onCancelEdit={() => setCurrentEditId(null)}
-              setCurrentEditId={setCurrentEditId}
-            />
-          ))
+          <div className="space-y-2">
+            {messagesData.map((msg: Message, index: number) => (
+              <div
+                key={msg._id}
+                style={{
+                  animation: `slideUp 0.4s ease-out ${index * 0.05}s both`,
+                }}
+              >
+                <MessageCard
+                  message={msg}
+                  session={session as Session}
+                  isThisEditing={currentEditId === msg._id}
+                  isAnyEditing={!!currentEditId}
+                  onEditComplete={() => setCurrentEditId(null)}
+                  onCancelEdit={() => setCurrentEditId(null)}
+                  setCurrentEditId={setCurrentEditId}
+                />
+              </div>
+            ))}
+          </div>
         )}
 
+        {/* Enhanced Typing Indicator */}
         {!isChatError && typingUsers.size > 0 && (
-          <div className="mt-2 text-sm text-gray-500 italic">
-            {Array.from(typingUsers.values())
-              .map((typing) => typing.user.name)
-              .join(", ")}{" "}
-            {typingUsers.size > 1 ? "are" : "is"} typing...
+          <div className="mt-4 flex w-fit items-center gap-2 rounded-full bg-gray-100 px-4 py-2">
+            <div className="flex gap-1">
+              <span
+                className="h-2 w-2 animate-bounce rounded-full bg-blue-500"
+                style={{ animationDelay: "0ms" }}
+              ></span>
+              <span
+                className="h-2 w-2 animate-bounce rounded-full bg-blue-500"
+                style={{ animationDelay: "150ms" }}
+              ></span>
+              <span
+                className="h-2 w-2 animate-bounce rounded-full bg-blue-500"
+                style={{ animationDelay: "300ms" }}
+              ></span>
+            </div>
+            <span className="text-sm text-gray-700">
+              <span className="font-medium">
+                {Array.from(typingUsers.values())
+                  .map((typing) => typing.user.name)
+                  .join(", ")}
+              </span>{" "}
+              {typingUsers.size > 1 ? "are" : "is"} typing...
+            </span>
           </div>
         )}
       </div>
 
+      {/* Enhanced Input Area */}
       {isMember ? (
-        <Form {...messageForm}>
-          <form
-            className="relative flex gap-2 border-t p-4"
-            onSubmit={messageForm.handleSubmit(handleSendMessage)}
-          >
-            <FormField
-              control={messageForm.control}
-              name="message"
-              render={({ field }) => (
-                <FormItem className="flex-1 items-center">
-                  <FormLabel className="sr-only">Message</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      placeholder={
-                        isSending ? "Sending..." : "Type a message..."
-                      }
-                      className="mr-2 h-15 rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
-                      disabled={isSending}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        if (e.target.value.length > 0) {
-                          handleTypingUser();
-                        } else {
-                          handleStopTypingUser();
-                        }
-                      }}
-                      onBlur={() => handleStopTypingUser()}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <MediaUpload
-              onChange={handleAppendFile}
-              isUploading={isUploading}
-            />
-            <EmojiSelection onEmojiAppend={handleEmojiAppend} />
-            <Button
-              type="submit"
-              className="disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={isSending || isUploading}
-            >
-              Send{" "}
-              {isSending ||
-                (isUploading && <Loader2 className="animate-spin" />)}
-            </Button>
-          </form>
-
+        <div className="border-t bg-white shadow-lg">
+          {/* Enhanced File Preview Section */}
           {selectedFiles.length > 0 && (
-            <div className="grid h-30 w-full grid-cols-2 gap-2 overflow-y-auto p-4 md:grid-cols-4">
-              {selectedFiles.map((file, index) => {
-                /* If the file type is an image */
-                if (file.type.startsWith("image")) {
-                  return (
-                    <div key={file.id} className="relative w-fit">
-                      <Image
-                        src={file.image}
-                        alt={file.name}
-                        width={0}
-                        height={0}
-                        className="h-25 w-50 object-cover"
-                        unoptimized={file.image.startsWith("data:image")}
-                        priority
-                      />
-                      <button
-                        className="absolute top-0 right-0 bg-red-500 p-2 text-white"
-                        onClick={() => handleRemoveFile(index)}
+            <div className="border-b bg-gray-50 p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-gray-700">
+                  Selected Files ({selectedFiles.length})
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedFiles([])}
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                >
+                  Clear All
+                </Button>
+              </div>
+              <div className="grid max-h-48 grid-cols-2 gap-3 overflow-y-auto md:grid-cols-4 lg:grid-cols-6">
+                {selectedFiles.map((file, index) => {
+                  if (file.type.startsWith("image")) {
+                    return (
+                      <div
+                        key={file.id}
+                        className="group relative overflow-hidden rounded-lg shadow-sm transition-all hover:shadow-md"
                       >
-                        X
-                      </button>
-                    </div>
-                  );
-
-                  /* If the file type is an application */
-                } else if (file.type.startsWith("application")) {
-                  return (
-                    <div
-                      key={file.id}
-                      className="relative border-2 border-dashed"
-                    >
-                      <div className="flex h-20 max-w-xs items-center gap-2 p-2">
-                        <FileIcon className="mr-2 h-4 w-4" />
-                        <span className="truncate">{file.name}</span>
+                        <Image
+                          src={file.image}
+                          alt={file.name}
+                          width={0}
+                          height={0}
+                          className="h-24 w-full object-cover"
+                          unoptimized={file.image.startsWith("data:image")}
+                          priority
+                        />
+                        <button
+                          className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                          onClick={() => handleRemoveFile(index)}
+                        >
+                          <span className="text-xs font-bold">✕</span>
+                        </button>
                       </div>
-                      <button
-                        className="absolute top-0 right-0 cursor-pointer bg-red-500 px-2 text-white"
-                        onClick={() => handleRemoveFile(index)}
+                    );
+                  } else if (file.type.startsWith("application")) {
+                    return (
+                      <div
+                        key={file.id}
+                        className="group relative rounded-lg border-2 border-dashed border-gray-300 bg-white transition-all hover:border-blue-400"
                       >
-                        X
-                      </button>
-                    </div>
-                  );
-                } else {
+                        <div className="flex h-24 items-center gap-2 p-3">
+                          <FileIcon className="h-6 w-6 flex-shrink-0 text-gray-500" />
+                          <span className="flex-1 truncate text-xs">
+                            {file.name}
+                          </span>
+                        </div>
+                        <button
+                          className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                          onClick={() => handleRemoveFile(index)}
+                        >
+                          <span className="text-xs font-bold">✕</span>
+                        </button>
+                      </div>
+                    );
+                  }
                   return null;
-                }
-              })}
+                })}
+              </div>
             </div>
           )}
-        </Form>
+
+          <Form {...messageForm}>
+            <form
+              className="flex gap-2 p-4"
+              onSubmit={messageForm.handleSubmit(handleSendMessage)}
+            >
+              <FormField
+                control={messageForm.control}
+                name="message"
+                render={({ field }) => (
+                  <FormItem className="flex-1">
+                    <FormLabel className="sr-only">Message</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        {...field}
+                        placeholder={
+                          isSending ? "Sending..." : "Type your message..."
+                        }
+                        className="max-h-32 min-h-[48px] resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                        disabled={isSending}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          if (e.target.value.length > 0) {
+                            handleTypingUser();
+                          } else {
+                            handleStopTypingUser();
+                          }
+                        }}
+                        onBlur={() => handleStopTypingUser()}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex items-end gap-2">
+                <MediaUpload
+                  onChange={handleAppendFile}
+                  isUploading={isUploading}
+                />
+                <EmojiSelection onEmojiAppend={handleEmojiAppend} />
+                <Button
+                  type="submit"
+                  className="h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
+                  disabled={isSending || isUploading}
+                >
+                  {isSending || isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={18} className="mr-2" />
+                      Send
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       ) : (
         <NotJoinedModal
           roomId={roomId as string}
           userId={session?.user?.id as string}
         />
       )}
+
+      {/* Animations */}
+      <style jsx>{`
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }

@@ -25,8 +25,6 @@ export const GET = async (req: Request) => {
     const limit = Number(url.get("limit")) || 5;
     const offset = Number(url.get("offset")) || 0;
 
-    console.log(roomId, limit, offset);
-
     if (!roomId) {
       return NextResponse.json({ error: "Missing required field: roomId" });
     }

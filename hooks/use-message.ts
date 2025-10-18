@@ -7,7 +7,12 @@ import {
   UseMutationResult,
   useQueryClient,
 } from "@tanstack/react-query";
-import { CreateMessage, Message, MessageTyping } from "@/types/message";
+import {
+  CreateMessage,
+  MediaMessage,
+  Message,
+  MessageTyping,
+} from "@/types/message";
 
 export const useGetMessagesByRoom = (
   roomId: string,
@@ -44,14 +49,52 @@ export const useGetMessagesByRoom = (
     getNextPageParam: (lastPage, allPages) => {
       return lastPage.length < limit ? undefined : allPages.length * limit;
     },
-    select: (data) => ({
-      // Sort Messages in reverse order
-      pages: data.pages,
-      pageParams: data.pageParams,
-    }),
+    select: (data) => ({ pages: data.pages, pageParams: data.pageParams }),
     placeholderData: { pages: [], pageParams: [] },
     refetchOnWindowFocus: false,
     networkMode: "offlineFirst",
+  });
+};
+
+export const useGetMessagesByUserAndMedia = (
+  userId: string,
+  limit: number,
+): UseInfiniteQueryResult<InfiniteData<MediaMessage[], unknown>, Error> => {
+  const getMessagesByUserAndMedia = async (
+    userId: string,
+    limit: number,
+    offset: number,
+  ) => {
+    const response = await client
+      .get(`message/media/${userId}`, {
+        params: {
+          limit,
+          offset,
+        },
+      })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.error("Error fetching messages:", err);
+        throw err;
+      });
+    return response;
+  };
+
+  return useInfiniteQuery<MediaMessage[], Error>({
+    queryKey: ["mediaMessages", userId],
+    queryFn: async ({ pageParam = 0 }) =>
+      getMessagesByUserAndMedia(userId, limit, pageParam as number),
+    initialPageParam: 0,
+    select: (data) => ({ pages: data.pages, pageParams: data.pageParams }),
+    placeholderData: { pages: [], pageParams: [] },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length < limit ? undefined : allPages.length * limit;
+    },
+    refetchOnWindowFocus: false,
+    networkMode: "offlineFirst",
+    enabled: !!userId,
   });
 };
 

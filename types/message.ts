@@ -15,6 +15,10 @@ export type Message = {
   createdAt: Date;
 };
 
+export type MediaMessage = Omit<Message, "type"> & {
+  type: "image" | "file";
+};
+
 export type CreateMessage = Omit<Message, "_id" | "createdAt" | "sender"> & {
   sender: string;
 };

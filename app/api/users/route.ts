@@ -1,4 +1,4 @@
-import { getUsers } from "@/services/user.service";
+import userService from "@/services/user.service";
 import { NextResponse } from "next/server";
 
 /**
@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
  * @returns All users
  */
 export const GET = async () => {
-  const users = await getUsers();
+  const users = await userService.getUsers();
 
   if (!users) return NextResponse.json([], { status: 200 });
 

@@ -1,4 +1,4 @@
-import { getRoomById } from "@/services/room.service";
+import roomService from "@/services/room.service";
 import { NextResponse } from "next/server";
 
 export const GET = async (
@@ -7,7 +7,7 @@ export const GET = async (
 ) => {
   try {
     const slug = (await params).id;
-    const room = await getRoomById(slug);
+    const room = await roomService.getRoomById(slug);
 
     return NextResponse.json(room, { status: 200 });
   } catch (error) {

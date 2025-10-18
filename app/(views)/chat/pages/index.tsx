@@ -37,6 +37,17 @@ function ChatListClient({ session }: ChatListClientProps) {
     refetch,
   } = useGetRoomByUserId(session.user.id, isSearchMode, debouncedSearchQuery);
 
+  const roomsList = useMemo<RoomContent[]>(() => {
+    if (!rooms) return [];
+
+    return rooms.sort((a, b) => {
+      const aLastMessage = new Date(a.lastMessage?.createdAt || 0);
+      const bLastMessage = new Date(b.lastMessage?.createdAt || 0);
+
+      return bLastMessage.getTime() - aLastMessage.getTime();
+    });
+  }, [rooms]);
+
   const isFetching = useMemo<boolean>(() => {
     return isLoading || isFetchingRooms;
   }, [isLoading, isFetchingRooms]);
@@ -103,7 +114,7 @@ function ChatListClient({ session }: ChatListClientProps) {
 
         {/* List of chat rooms */}
         <div className="space-y-3 p-4">
-          {rooms && rooms.length > 0 ? (
+          {roomsList.length > 0 ? (
             <>
               {!isSearchMode && (
                 <div className="mb-4 flex items-center justify-between">
@@ -112,12 +123,12 @@ function ChatListClient({ session }: ChatListClientProps) {
                     Recent Conversations
                   </h3>
                   <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500">
-                    {rooms.length} active
+                    {roomsList.length} active
                   </span>
                 </div>
               )}
               <div className="space-y-2">
-                {rooms.map((room: RoomContent, index: number) => (
+                {roomsList.map((room: RoomContent, index: number) => (
                   <div
                     key={room._id}
                     style={{

@@ -1,7 +1,7 @@
 "use server";
 
 import { getServerSession } from "next-auth/next";
-import HomeScreen from "@/components/pages/home";
+import HomeScreen from "@/app/(views)/pages";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 

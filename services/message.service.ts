@@ -127,6 +127,7 @@ export const getMessagesByUserAndFileType = async (
     })
       .limit(limit)
       .skip(offset)
+      .populate("sender", "name")
       .sort({ createdAt: -1 });
 
     return messages;

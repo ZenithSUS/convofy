@@ -1,5 +1,5 @@
 import client from "@/services/axios";
-import { getUserByEmail } from "@/services/user.service";
+import userService from "@/services/user.service";
 import { User } from "@/types/user";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
@@ -93,7 +93,7 @@ export const authOptions: NextAuthOptions = {
       if (!user?.email) return false;
 
       try {
-        let existingUser = await getUserByEmail(user.email);
+        let existingUser = await userService.getUserByEmail(user.email);
 
         // If user not found, create one and re-fetch it
         if (!existingUser) {
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
           };
 
           await client.post("/auth/register", userData);
-          existingUser = await getUserByEmail(user.email);
+          existingUser = await userService.getUserByEmail(user.email);
         }
 
         if (!existingUser) {
@@ -150,7 +150,7 @@ export const authOptions: NextAuthOptions = {
       }
       // Fetch user data to set additional fields
       if (token.email) {
-        const user = await getUserByEmail(token.email);
+        const user = await userService.getUserByEmail(token.email);
         if (user) {
           token.status = user.status;
           token.lastActive = user.lastActive;

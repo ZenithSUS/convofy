@@ -1,4 +1,4 @@
-import { getRoomsByUserId } from "@/services/room.service";
+import roomService from "@/services/room.service";
 
 import { NextResponse } from "next/server";
 
@@ -13,7 +13,7 @@ export const GET = async (
       throw new Error("User id is required");
     }
 
-    const rooms = await getRoomsByUserId(userId);
+    const rooms = await roomService.getRoomsByUserId(userId);
 
     if (!rooms) {
       return NextResponse.json([], { status: 200 });

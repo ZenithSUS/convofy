@@ -1,9 +1,9 @@
+import "@/styles/globals.css";
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import AuthProvider from "@/components/providers/session-provider";
-import "@/styles/globals.css";
 import QueryProvider from "@/components/providers/query-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
 

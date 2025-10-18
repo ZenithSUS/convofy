@@ -1,4 +1,4 @@
-import { sendLiveMessage } from "@/services/chat.service";
+import chatService from "@/services/chat.service";
 import { Message } from "@/types/message";
 import { NextResponse } from "next/server";
 
@@ -14,7 +14,7 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const response = await sendLiveMessage(data);
+    const response = await chatService.sendLiveMessage(data);
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

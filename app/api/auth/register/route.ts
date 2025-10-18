@@ -1,4 +1,4 @@
-import { registerUser } from "@/services/auth.service";
+import authService from "@/services/auth.service";
 import { User as UserType } from "@/types/user";
 import { NextResponse } from "next/server";
 
@@ -11,7 +11,7 @@ export const POST = async (req: Request) => {
       return new Response("Unprocessable entity", { status: 422 });
     }
 
-    const user = await registerUser(data);
+    const user = await authService.registerUser(data);
 
     return NextResponse.json(
       { message: "User created successfully", user },

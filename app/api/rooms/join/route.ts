@@ -1,4 +1,4 @@
-import { addMemberToRoom } from "@/services/room.service";
+import roomService from "@/services/room.service";
 import { NextResponse } from "next/server";
 
 class JoinRoutes {
@@ -13,7 +13,7 @@ class JoinRoutes {
         );
       }
 
-      const response = await addMemberToRoom(roomId, userId);
+      const response = await roomService.addMemberToRoom(roomId, userId);
 
       return NextResponse.json(response, { status: 200 });
     } catch (error) {

@@ -1,12 +1,12 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import { loginUser } from "@/services/auth.service";
+import authService from "@/services/auth.service";
 import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {
   try {
     await connectToDatabase();
     const data: { email: string; password: string } = await req.json();
-    const response = await loginUser(data.email, data.password);
+    const response = await authService.loginUser(data.email, data.password);
     return NextResponse.json(response);
   } catch (error: unknown) {
     const err = error as { message: string };

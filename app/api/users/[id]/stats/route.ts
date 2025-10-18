@@ -1,4 +1,4 @@
-import { getUserDataStats } from "@/services/user.service";
+import userService from "@/services/user.service";
 import { NextResponse } from "next/server";
 
 export const GET = async (
@@ -15,7 +15,7 @@ export const GET = async (
       );
     }
 
-    const response = await getUserDataStats(id);
+    const response = await userService.getUserDataStats(id);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error fetching user stats:", error);

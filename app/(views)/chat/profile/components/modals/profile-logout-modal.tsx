@@ -28,8 +28,11 @@ function ProfileLogoutModal() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" className="flex-1">
-          <PowerCircle className="mr-2 h-6 w-6 cursor-pointer" />
+        <Button
+          variant="destructive"
+          className="flex flex-1 cursor-pointer items-center"
+        >
+          <PowerCircle className="h-6 w-6 cursor-pointer" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

@@ -1,4 +1,4 @@
-import { createRoom, getRooms } from "@/services/room.service";
+import roomService from "@/services/room.service";
 import { CreateRoom } from "@/types/room";
 import { NextResponse } from "next/server";
 
@@ -6,7 +6,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const queryParam = url.searchParams.get("query");
-    const rooms = await getRooms(queryParam || "");
+    const rooms = await roomService.getRooms(queryParam || "");
 
     if (!rooms) {
       return NextResponse.json([], {
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const data: CreateRoom = await request.json();
-    const response = await createRoom(data);
+    const response = await roomService.createRoom(data);
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {

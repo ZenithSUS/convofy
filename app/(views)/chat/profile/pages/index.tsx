@@ -3,58 +3,19 @@
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { Button } from "@/components/ui/button";
 import {
-  EditIcon,
-  FileImageIcon,
-  LockIcon,
-  SearchIcon,
-  User2Icon,
   ChevronRightIcon,
   ArrowRightIcon,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ProfileLogoutModal from "@/app/(views)/chat/profile/components/modals/profile-logout-modal";
 import { useGetUserDataStats } from "@/hooks/use-user";
 import { useMemo } from "react";
-
-const profileSettings = [
-  {
-    name: "Edit Profile",
-    description: "Update your personal information",
-    icon: <EditIcon size={20} />,
-    href: "#",
-    color: "from-blue-500 to-blue-600",
-  },
-  {
-    name: "Search Messages",
-    description: "Find conversations quickly",
-    icon: <SearchIcon size={20} />,
-    href: "#",
-    color: "from-purple-500 to-purple-600",
-  },
-  {
-    name: "Privacy & Security",
-    description: "Manage your privacy settings",
-    icon: <LockIcon size={20} />,
-    href: "#",
-    color: "from-green-500 to-green-600",
-  },
-  {
-    name: "Media & Files",
-    description: "View shared photos and files",
-    icon: <FileImageIcon size={20} />,
-    href: "#",
-    color: "from-orange-500 to-orange-600",
-  },
-  {
-    name: "Account Settings",
-    description: "Manage your account preferences",
-    icon: <User2Icon size={20} />,
-    href: "#",
-    color: "from-pink-500 to-pink-600",
-  },
-];
+import Link from "next/link";
+import profileSettings from "@/constants/profile-settings";
+import ProfileHeader from "../components/profile-header";
 
 function ProfilePageClient({ session }: { session: Session }) {
   const router = useRouter();
@@ -63,8 +24,6 @@ function ProfilePageClient({ session }: { session: Session }) {
     isLoading,
     isFetching,
   } = useGetUserDataStats(session.user.id);
-
-  console.log(userStats);
 
   const isStatsProcessing = useMemo(
     () => isLoading || isFetching,
@@ -76,9 +35,7 @@ function ProfilePageClient({ session }: { session: Session }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Background */}
-      <div className="relative h-40 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
-        <div className="absolute inset-0 bg-black/10"></div>
-      </div>
+      <ProfileHeader />
 
       {/* Profile Content */}
       <div className="relative px-4 pb-8">
@@ -120,7 +77,7 @@ function ProfilePageClient({ session }: { session: Session }) {
           </h2>
 
           {profileSettings.map((setting, index) => (
-            <a
+            <Link
               href={setting.href}
               key={setting.name}
               className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-gray-300 hover:shadow-md"
@@ -149,14 +106,14 @@ function ProfilePageClient({ session }: { session: Session }) {
                   className="text-gray-400 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-600"
                 />
               </div>
-            </a>
+            </Link>
           ))}
         </div>
 
         {/* Stats Section */}
         <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="grid grid-cols-3 gap-4">
-            <div className="text-center">
+            <div className="flex flex-col items-center text-center">
               <div className="text-2xl font-bold text-gray-900">
                 {isStatsProcessing ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -166,7 +123,7 @@ function ProfilePageClient({ session }: { session: Session }) {
               </div>
               <div className="mt-1 text-xs text-gray-500">Messages</div>
             </div>
-            <div className="border-x border-gray-200 text-center">
+            <div className="flex flex-col items-center border-x border-gray-200 text-center">
               <div className="text-2xl font-bold text-gray-900">
                 {isStatsProcessing ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -176,7 +133,7 @@ function ProfilePageClient({ session }: { session: Session }) {
               </div>
               <div className="mt-1 text-xs text-gray-500">Media</div>
             </div>
-            <div className="text-center">
+            <div className="flex flex-col items-center text-center">
               <div className="text-2xl font-bold text-gray-900">
                 {isStatsProcessing ? (
                   <Loader2 size={20} className="animate-spin" />
@@ -188,14 +145,6 @@ function ProfilePageClient({ session }: { session: Session }) {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex items-center justify-center gap-2 p-4">
-        <ProfileLogoutModal />
-        <Button className="flex-1" onClick={() => router.push("/chat")}>
-          <ArrowRightIcon size={20} />
-        </Button>
       </div>
 
       {/* CSS Animation */}

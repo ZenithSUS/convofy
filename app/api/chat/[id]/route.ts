@@ -1,4 +1,4 @@
-import { deleteLiveMessage, editLiveMessage } from "@/services/chat.service";
+import chatService from "@/services/chat.service";
 import { NextResponse } from "next/server";
 
 export const DELETE = async (
@@ -15,7 +15,7 @@ export const DELETE = async (
   }
 
   try {
-    const response = await deleteLiveMessage(messageId);
+    const response = await chatService.deleteLiveMessage(messageId);
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
@@ -43,7 +43,7 @@ export const PUT = async (
   }
 
   try {
-    const response = await editLiveMessage(messageId, content);
+    const response = await chatService.editLiveMessage(messageId, content);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Failed to edit live message:", error);

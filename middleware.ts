@@ -32,39 +32,49 @@ export async function middleware(request: NextRequest) {
     pathname.includes("/api/auth/login") ||
     pathname.includes("/api/auth/register")
   ) {
-    const { success, limit, reset, remaining } = await authRatelimit.limit(ip);
-    if (!success) {
-      return new NextResponse("Too many requests", {
-        status: 429,
-        headers: {
-          "X-RateLimit-Limit": limit.toString(),
-          "X-RateLimit-Remaining": remaining.toString(),
-          "X-RateLimit-Reset": reset.toString(),
-        },
-      });
-    }
+    try {
+      const { success, limit, reset, remaining } =
+        await authRatelimit.limit(ip);
+      if (!success) {
+        return new NextResponse("Too many requests", {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        });
+      }
 
-    console.log(`Auth rate limit for ${ip}: ${remaining}/${limit} remaining`);
+      console.log(`Auth rate limit for ${ip}: ${remaining}/${limit} remaining`);
+    } catch (error) {
+      console.error("Error applying rate limit:", error);
+      return NextResponse.json("Please try again later", { status: 500 });
+    }
   }
 
   // Apply rate limiting for the upload route
-  else if (pathname.startsWith("/api/upload")) {
-    const { success, limit, reset, remaining } = await uploadLimit.limit(ip);
-    if (!success) {
-      return new NextResponse("Too many requests", {
-        status: 429,
-        headers: {
-          "X-RateLimit-Limit": limit.toString(),
-          "X-RateLimit-Remaining": remaining.toString(),
-          "X-RateLimit-Reset": reset.toString(),
-        },
-      });
-    }
+  if (pathname.startsWith("/api/upload")) {
+    try {
+      const { success, limit, reset, remaining } = await uploadLimit.limit(ip);
+      if (!success) {
+        return new NextResponse("Too many requests", {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        });
+      }
 
-    console.log(`Upload rate limit for ${ip}: ${remaining}/${limit} remaining`);
-  } else {
-    // For other routes, no rate limiting applied
-    console.log(`No rate limiting applied for ${pathname}`);
+      console.log(
+        `Upload rate limit for ${ip}: ${remaining}/${limit} remaining`,
+      );
+    } catch (error) {
+      console.error("Error applying rate limit:", error);
+      return NextResponse.json("Please try again later", { status: 500 });
+    }
   }
 
   // Redirect to login if not authenticated

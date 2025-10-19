@@ -39,7 +39,9 @@ export const useGetRooms = (
   });
 };
 
-export const useGetRoomById = (id: string): UseQueryResult<Room, unknown> => {
+export const useGetRoomById = (
+  id: string,
+): UseQueryResult<RoomContent, unknown> => {
   const getRoomById = async () => {
     const response = await client
       .get(`/rooms/${id}`)
@@ -65,11 +67,12 @@ export const useGetRoomByUserId = (
   searchQuery: string = "",
 ): UseQueryResult<RoomContent[], unknown> => {
   const getRoomByUserId = async (isSearch: boolean) => {
-    const route = isSearch ? `/rooms` : `/rooms/user/${id}`;
+    const route = isSearch ? `/search` : `/rooms/user/${id}`;
 
     const response = await client
       .get(route, {
         params: {
+          userId: id,
           query: searchQuery,
         },
       })
@@ -117,6 +120,41 @@ export const useCreateRoom = (): UseMutationResult<
     onSuccess: () => {
       // Invalidate rooms query to refetch
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
+    },
+  });
+};
+
+export const useGetOrCreatePrivateRoom = (): UseMutationResult<
+  Room,
+  unknown,
+  { userA: string; userB: string },
+  Room
+> => {
+  const queryClient = useQueryClient();
+  const getOrCreatePrivateRoom = async (data: {
+    userA: string;
+    userB: string;
+  }) => {
+    const response = await client
+      .post("/rooms/private", data)
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.error("Failed to get or create private room:", err);
+        throw err;
+      });
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["privateRoom"],
+    mutationFn: async (data: { userA: string; userB: string }) =>
+      getOrCreatePrivateRoom(data),
+    onSuccess: () => {
+      // Invalidate rooms query to refetch
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["room"] });
     },
   });
 };

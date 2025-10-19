@@ -6,8 +6,8 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const slug = (await params).id;
-    const room = await roomService.getRoomById(slug);
+    const { id } = await params;
+    const room = await roomService.getRoomAndUsersById(id);
 
     return NextResponse.json(room, { status: 200 });
   } catch (error) {

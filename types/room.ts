@@ -25,6 +25,10 @@ export type RoomMembers = {
   avatar: string;
 };
 
-export type RoomContent = Omit<Room, "members"> & { members: RoomMembers[] };
+export type RoomContent = Omit<Room, "members"> & {
+  members: RoomMembers[];
+  type: "room" | "user";
+  avatar?: string;
+};
 
 export type CreateRoom = Omit<Room, "_id">;

@@ -11,7 +11,7 @@ import {
 import { useParams } from "next/navigation";
 import RoomHeader from "../components/room-header";
 import { useGetRoomById } from "@/hooks/use-rooms";
-import { Room } from "@/types/room";
+import { RoomContent } from "@/types/room";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -163,7 +163,7 @@ function RoomPage() {
   }, [roomData, messagesData, session, isChatError]);
 
   const isMember = useMemo(
-    () => roomData?.members.some((member) => member === session?.user?.id),
+    () => roomData?.members.some((member) => member._id === session?.user?.id),
     [roomData, session],
   );
 
@@ -607,7 +607,10 @@ function RoomPage() {
 
   return (
     <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <RoomHeader room={roomData as Room} />
+      <RoomHeader
+        room={roomData as RoomContent}
+        userId={session?.user.id as string}
+      />
 
       {/* Enhanced Connection Status Banner */}
       {connectionStatus !== "connected" && (

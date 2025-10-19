@@ -12,6 +12,7 @@ import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
 import { Plus, MessageSquare, Sparkles, TrendingUp } from "lucide-react";
+import UserCard from "../components/cards/user-card";
 
 interface ChatListClientProps {
   session: Session;
@@ -128,14 +129,26 @@ function ChatListClient({ session }: ChatListClientProps) {
                 </div>
               )}
               <div className="space-y-2">
-                {roomsList.map((room: RoomContent, index: number) => (
+                {roomsList.map((item: RoomContent, index: number) => (
                   <div
-                    key={room._id}
+                    key={item._id}
                     style={{
                       animation: `slideInRight 0.4s ease-out ${index * 0.05}s both`,
                     }}
                   >
-                    <RoomCard room={room} />
+                    {item.type === "user" ? (
+                      <UserCard
+                        key={item._id}
+                        user={item}
+                        userId={session.user.id}
+                      />
+                    ) : (
+                      <RoomCard
+                        key={item._id}
+                        room={item}
+                        currentUserId={session.user.id}
+                      />
+                    )}
                   </div>
                 ))}
               </div>

@@ -13,7 +13,7 @@ export const GET = async (
       throw new Error("User id is required");
     }
 
-    const rooms = await roomService.getRoomsByUserId(userId);
+    const rooms = await roomService.getRoomsAndUsersByUserId(userId);
 
     if (!rooms) {
       return NextResponse.json([], { status: 200 });

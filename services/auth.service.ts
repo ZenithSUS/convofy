@@ -48,6 +48,21 @@ export const authService = {
 
     return user;
   },
+
+  async logoutUser(id: string) {
+    const user = await User.findByIdAndUpdate(
+      { _id: id },
+      { status: "offline", lastActive: new Date() },
+      { new: true },
+    );
+
+    // Exclude password from response
+    user.password = undefined;
+
+    if (!user) throw new Error("User not found");
+
+    return user;
+  },
 };
 
 export default authService;

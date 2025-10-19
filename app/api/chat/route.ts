@@ -1,3 +1,4 @@
+import messageLimit from "@/lib/redis/redis-message-send-limit";
 import chatService from "@/services/chat.service";
 import { Message } from "@/types/message";
 import { NextResponse } from "next/server";
@@ -5,6 +6,23 @@ import { NextResponse } from "next/server";
 export const POST = async (req: Request) => {
   try {
     const data: Message = await req.json();
+    const ip =
+      data.sender.toString() ||
+      req.headers.get("x-forwarded-for") ||
+      "127.0.0.1";
+
+    const { success, limit, remaining, reset } = await messageLimit.limit(ip);
+
+    if (!success) {
+      return new NextResponse("Too many requests", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
+    }
 
     // Validate required fields
     if (!data.room || !data.sender || !data.content) {

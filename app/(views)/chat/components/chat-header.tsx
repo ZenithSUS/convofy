@@ -29,25 +29,26 @@ function ChatHeader({ session }: { session: Session }) {
       </div>
 
       {session && (
-        <div
-          className="flex cursor-pointer items-center space-x-2"
-          onClick={() => router.push("/chat/profile")}
-        >
+        <div className="flex cursor-pointer items-center space-x-2">
           <Image
             src={session.user.image || "/default-avatar.png"}
             alt="User Avatar"
             width={40}
             height={40}
             className="h-10 w-10 rounded-full"
+            onClick={() => router.push("/chat/profile")}
           />
 
-          <div className="text-md text-black">
+          <div
+            className="text-md text-black"
+            onClick={() => router.push("/chat/profile")}
+          >
             {(isMobile
               ? session.user.name?.split(" ")[0]
               : session.user.name) || session.user.email}
           </div>
 
-          <LogoutModal />
+          <LogoutModal userId={session.user.id} />
         </div>
       )}
     </div>

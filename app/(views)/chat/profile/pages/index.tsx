@@ -26,7 +26,7 @@ function ProfilePageClient({ session }: { session: Session }) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header Background */}
-      <ProfileHeader />
+      <ProfileHeader userId={session.user.id} />
 
       {/* Profile Content */}
       <div className="relative px-4 pb-8">

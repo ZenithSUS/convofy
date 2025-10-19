@@ -1,5 +1,7 @@
+import { authOptions } from "@/lib/auth";
+import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
 import { getMessagesByRoom, deleteMessage } from "@/services/message.service";
-
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 export const GET = async (
@@ -7,6 +9,31 @@ export const GET = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
+    const session = await getServerSession(authOptions);
+    const ip =
+      session?.user?.id ||
+      req.headers.get("x-forwarded-for") ||
+      "127.0.0.1" ||
+      "localhost";
+
+    const {
+      success,
+      limit: sendLimit,
+      remaining,
+      reset,
+    } = await messageFetchLimit.limit(ip);
+
+    if (!success) {
+      return new NextResponse("Too many requests", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": sendLimit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
+    }
+
     const url = new URL(req.url).searchParams;
     const roomId = (await params).id;
 

@@ -54,11 +54,11 @@ function MediaPageClient({ session }: MediaPageProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
-      <ProfileHeader />
+      <ProfileHeader userId={session.user.id} />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* Enhanced Profile Card */}
-        <div className="relative -mt-24 mb-8">
+        <div className="relative -mt-20 mb-8">
           <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl backdrop-blur-lg">
             <div className="flex flex-col items-center gap-4">
               <div className="group relative">

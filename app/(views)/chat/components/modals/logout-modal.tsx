@@ -11,16 +11,29 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import client from "@/services/axios";
 import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-function LogoutModal() {
+function LogoutModal({ userId }: { userId: string }) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleLogout = () => {
+    signOut()
+      .then(async () => {
+        const response = await client.post("/auth/logout", { id: userId });
+        console.log("Logout response:", response);
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error logging out:", error);
+      });
+  };
 
   if (!isClient) return null;
 
@@ -38,7 +51,7 @@ function LogoutModal() {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-red-600" onClick={() => signOut()}>
+          <AlertDialogAction className="bg-red-600" onClick={handleLogout}>
             Log out
           </AlertDialogAction>
         </AlertDialogFooter>

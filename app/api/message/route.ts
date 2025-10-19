@@ -1,13 +1,34 @@
 import { createMessage, getMessages } from "@/services/message.service";
 import { NextResponse } from "next/server";
-import { Message } from "react-hook-form";
+import { CreateMessage } from "@/types/message";
+import messageSendLimit from "@/lib/redis/redis-message-send-limit";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const POST = async (req: Request) => {
   try {
-    const data: Message = await req.json();
+    const data: CreateMessage = await req.json();
+    const ip =
+      data.sender.toString() ||
+      req.headers.get("x-forwarded-for") ||
+      "127.0.0.1";
+
+    const { success, limit, remaining, reset } =
+      await messageSendLimit.limit(ip);
+
+    if (!success) {
+      return new NextResponse("Too many requests", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
+    }
 
     if (!data || typeof data !== "object") {
-      return new Response("Unprocessable entity", { status: 422 });
+      return NextResponse.json("Unprocessable entity", { status: 422 });
     }
 
     const response = await createMessage(data);
@@ -20,6 +41,34 @@ export const POST = async (req: Request) => {
 
 export const GET = async (req: Request) => {
   try {
+    const session = await getServerSession(authOptions);
+    const ip =
+      session?.user?.id ||
+      req.headers.get("x-forwarded-for") ||
+      "127.0.0.1" ||
+      "localhost";
+
+    const {
+      success,
+      limit: sendLimit,
+      remaining,
+      reset,
+    } = await messageSendLimit.limit(ip);
+
+    console.log(
+      `IP: ${ip} - Rate Limit: ${sendLimit}, Remaining: ${remaining}, Reset: ${reset}`,
+    );
+    if (!success) {
+      return new NextResponse("Too many requests", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": sendLimit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
+    }
+
     const url = new URL(req.url).searchParams;
     const roomId = url.get("roomId") || "";
     const limit = Number(url.get("limit")) || 5;

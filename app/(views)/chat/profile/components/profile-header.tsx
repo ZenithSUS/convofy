@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ProfileLogoutModal from "@/app/(views)/chat/profile/components/modals/profile-logout-modal";
 
-function ProfileHeader() {
+function ProfileHeader({ userId }: { userId: string }) {
   const router = useRouter();
 
   return (
@@ -26,7 +26,7 @@ function ProfileHeader() {
 
       {/* Logout Button - Positioned in header */}
       <div className="absolute top-6 right-6 z-10">
-        <ProfileLogoutModal />
+        <ProfileLogoutModal userId={userId} />
       </div>
     </div>
   );

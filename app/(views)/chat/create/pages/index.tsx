@@ -298,7 +298,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
                   <div className="flex-1">
                     <p className="text-sm text-gray-700">
                       <span className="font-semibold">Room Settings:</span> Your
-                      room will be created as public by default. You'll be
+                      room will be created as public by default. You&apos;ll be
                       automatically added as the first member and can invite
                       others later.
                     </p>

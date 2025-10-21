@@ -2,18 +2,29 @@ import { PusherConnectionStatus, PusherState } from "@/types/pusher";
 import { toast } from "react-toastify";
 
 class ConnectionStatusHandler {
+  /**
+   * Constructor for the ConnectionStatusHandler class
+   * @param isMountedRef - reference to track if component is mounted
+   * @param setConnectionStatus - callback to update connection status state
+   * @param onConnectionStateChange - callback when connection state changes
+   * @param showErrorConnectionMessage - callback to display connection errors
+   */
   constructor(
     private isMountedRef: React.MutableRefObject<boolean>,
     private setConnectionStatus: (status: PusherConnectionStatus) => void,
-    private getPusherConnectionState: (status: PusherConnectionStatus) => void,
+    private onConnectionStateChange: (status: PusherConnectionStatus) => void,
     private showErrorConnectionMessage: (error: Error) => void,
   ) {}
 
+  /**
+   * Handles Pusher connection state changes
+   * Updates local state and notifies listeners of the change
+   */
   handleStateChange = (states: PusherState) => {
     if (this.isMountedRef.current) {
       const currentState = states.current as PusherConnectionStatus;
       this.setConnectionStatus(currentState);
-      this.getPusherConnectionState(currentState);
+      this.onConnectionStateChange(currentState);
     }
   };
 
@@ -51,10 +62,14 @@ class ConnectionStatusHandler {
   };
 
   handleError = (error: unknown) => {
-    const err = error as Error;
-    console.error("Pusher connection error:", err);
+    console.error("Pusher connection error:", error);
+
     if (this.isMountedRef.current) {
       this.setConnectionStatus("error");
+
+      // Safely convert unknown error to Error type
+      const err = error instanceof Error ? error : new Error(String(error));
+
       this.showErrorConnectionMessage(err);
     }
   };

@@ -7,6 +7,7 @@ export type PusherConnectionStatus =
   | "connected"
   | "connecting"
   | "disconnected"
+  | "failed"
   | "error"
   | "unavailable";
 

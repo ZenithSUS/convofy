@@ -27,6 +27,7 @@ import { pusherClient } from "@/lib/pusher-client";
 // Helpers
 import showErrorConnectionMessage from "@/helper/pusher-error";
 import getPusherConnectionState from "@/helper/pusher-connection-state";
+import ConnectionStatusHandler from "@/helper/pusher-connection-status-handler";
 
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
@@ -78,8 +79,6 @@ function RoomPageClient({ session }: { session: Session }) {
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
 
-  const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
-
   const messageForm = useForm<FormData>({
     resolver: zodResolver(schemaMessage),
     defaultValues: {
@@ -87,6 +86,7 @@ function RoomPageClient({ session }: { session: Session }) {
     },
   });
 
+  const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
@@ -95,6 +95,13 @@ function RoomPageClient({ session }: { session: Session }) {
   const [connectionStatus, setConnectionStatus] = useState<
     PusherConnectionStatus | string
   >("connecting");
+
+  const conHandler = new ConnectionStatusHandler(
+    isMountedRef,
+    setConnectionStatus,
+    getPusherConnectionState,
+    showErrorConnectionMessage,
+  );
 
   const {
     data: room,
@@ -168,75 +175,34 @@ function RoomPageClient({ session }: { session: Session }) {
   useEffect(() => {
     if (!session) return;
 
-    const handleStateChange = (states: PusherState) => {
-      if (isMountedRef.current) {
-        const currentState = states.current as PusherConnectionStatus;
-        setConnectionStatus(currentState);
-        getPusherConnectionState(currentState);
-      }
-    };
-
-    const handleConnected = () => {
-      if (isMountedRef.current) {
-        setConnectionStatus("connected");
-      }
-    };
-
-    const handleDisconnected = () => {
-      if (isMountedRef.current) {
-        setConnectionStatus("disconnected");
-        toast.warn("Connection lost. Reconnecting...");
-      }
-    };
-
-    const handleConnecting = () => {
-      if (isMountedRef.current) {
-        setConnectionStatus("connecting");
-      }
-    };
-
-    const handleUnavailable = () => {
-      if (isMountedRef.current) {
-        setConnectionStatus("unavailable");
-        toast.error("Connection unavailable. Check your network.");
-      }
-    };
-
-    const handleFailed = () => {
-      if (isMountedRef.current) {
-        setConnectionStatus("failed");
-        toast.error("Failed to connect. Please refresh the page.");
-      }
-    };
-
-    const handleError = (error: unknown) => {
-      const err = error as Error;
-      console.error("Pusher connection error:", err);
-      if (isMountedRef.current) {
-        setConnectionStatus("error");
-        showErrorConnectionMessage(err);
-      }
-    };
-
-    pusherClient.connection.bind("state_change", handleStateChange);
-    pusherClient.connection.bind("connected", handleConnected);
-    pusherClient.connection.bind("disconnected", handleDisconnected);
-    pusherClient.connection.bind("connecting", handleConnecting);
-    pusherClient.connection.bind("unavailable", handleUnavailable);
-    pusherClient.connection.bind("failed", handleFailed);
-    pusherClient.connection.bind("error", handleError);
+    pusherClient.connection.bind("state_change", conHandler.handleStateChange);
+    pusherClient.connection.bind("connected", conHandler.handleConnected);
+    pusherClient.connection.bind("disconnected", conHandler.handleDisconnected);
+    pusherClient.connection.bind("connecting", conHandler.handleConnecting);
+    pusherClient.connection.bind("unavailable", conHandler.handleUnavailable);
+    pusherClient.connection.bind("failed", conHandler.handleFailed);
+    pusherClient.connection.bind("error", conHandler.handleError);
 
     const initialState = pusherClient.connection.state;
     setConnectionStatus(initialState);
 
     return () => {
-      pusherClient.connection.unbind("state_change", handleStateChange);
-      pusherClient.connection.unbind("connected", handleConnected);
-      pusherClient.connection.unbind("disconnected", handleDisconnected);
-      pusherClient.connection.unbind("connecting", handleConnecting);
-      pusherClient.connection.unbind("unavailable", handleUnavailable);
-      pusherClient.connection.unbind("failed", handleFailed);
-      pusherClient.connection.unbind("error", handleError);
+      pusherClient.connection.unbind(
+        "state_change",
+        conHandler.handleStateChange,
+      );
+      pusherClient.connection.unbind("connected", conHandler.handleConnected);
+      pusherClient.connection.unbind(
+        "disconnected",
+        conHandler.handleDisconnected,
+      );
+      pusherClient.connection.unbind("connecting", conHandler.handleConnecting);
+      pusherClient.connection.unbind(
+        "unavailable",
+        conHandler.handleUnavailable,
+      );
+      pusherClient.connection.unbind("failed", conHandler.handleFailed);
+      pusherClient.connection.unbind("error", conHandler.handleError);
     };
   }, [session]);
 

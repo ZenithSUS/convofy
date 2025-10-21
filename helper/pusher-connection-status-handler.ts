@@ -10,7 +10,7 @@ class ConnectionStatusHandler {
    * @param showErrorConnectionMessage - callback to display connection errors
    */
   constructor(
-    private isMountedRef: React.MutableRefObject<boolean>,
+    private isMountedRef: React.RefObject<boolean>,
     private setConnectionStatus: (status: PusherConnectionStatus) => void,
     private onConnectionStateChange: (status: PusherConnectionStatus) => void,
     private showErrorConnectionMessage: (error: Error) => void,

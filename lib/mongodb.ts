@@ -9,7 +9,11 @@ declare global {
   var mongoose: GlobalMongoose | undefined;
 }
 
-const MONGO_DB_URI = process.env.MONOGO_DB_URI || "";
+const MONGO_DB_URI = (() => {
+  return process.env.NODE_ENV === "production"
+    ? process.env.MONOGO_DB_URI_PROD!
+    : process.env.MONOGO_DB_URI_DEV!;
+})();
 
 let cached = global.mongoose || { conn: null, promise: null };
 

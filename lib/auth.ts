@@ -140,10 +140,27 @@ export const authOptions: NextAuthOptions = {
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
       }
+
+      // Check first if the user still exists in the database
+      const existingUser = await userService.getUserByEmail(
+        session.user.email!,
+      );
+      if (!existingUser) {
+        // If user no longer exists, invalidate the session
+        throw new Error("User no longer exists");
+      }
+
       return session;
     },
     // args (token, account, profile)
     async jwt({ token, account }) {
+      // Check first if the user still exists in the database
+      const existingUser = await userService.getUserByEmail(token.email!);
+      if (!existingUser) {
+        // If user no longer exists, invalidate the token
+        throw new Error("User no longer exists");
+      }
+
       // Persist additional data to token
       if (account) {
         token.accessToken = account.access_token;

@@ -9,7 +9,7 @@ export const GET = async (
   try {
     const userId = (await params).id;
 
-    if (!userId) {
+    if (!userId && typeof userId !== "string") {
       throw new Error("User id is required");
     }
 

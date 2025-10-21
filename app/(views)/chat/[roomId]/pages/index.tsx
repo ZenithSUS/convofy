@@ -1,5 +1,5 @@
 "use client";
-
+// React
 import {
   ChangeEvent,
   useCallback,
@@ -8,46 +8,60 @@ import {
   useRef,
   useState,
 } from "react";
-import { useParams } from "next/navigation";
-import RoomHeader from "@/app/(views)/chat/components/room-header";
-import { useGetRoomById } from "@/hooks/use-rooms";
-import { RoomContent } from "@/types/room";
-import { CreateMessage, Message, MessageTyping } from "@/types/message";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+
+// Zod, Tanstack and React Hook Form
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+
+// Next
+import { useParams } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { Session } from "next-auth";
+
+// Lib Imports
+import { pusherClient } from "@/lib/pusher-client";
+
+// Helpers
+import showErrorConnectionMessage from "@/helper/pusher-error";
+import getPusherConnectionState from "@/helper/pusher-connection-state";
+
+// Hooks
+import { useUploadImage } from "@/hooks/use-upload";
+import { useGetRoomById } from "@/hooks/use-rooms";
 import {
   useCheckTyping,
   useGetMessagesByRoom,
   useSendLiveMessage,
 } from "@/hooks/use-message";
-import { pusherClient } from "@/lib/pusher-client";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+
+// Types
 import { User } from "@/types/user";
-import { toast } from "react-toastify";
-import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
-import MessageCard from "@/app/(views)/chat/components/cards/message-card";
-import { Session } from "next-auth";
-import NotJoinedModal from "@/app/(views)/chat/components/modals/not-joined-modal";
-import showErrorConnectionMessage from "@/helper/pusher-error";
-import getPusherConnectionState from "@/helper/pusher-connection-state";
+import { CreateMessage, Message, MessageTyping } from "@/types/message";
+import { FileInfo } from "@/types/file";
 import {
   PusherChannel,
   PusherConnectionStatus,
   PusherState,
   PusherSubsciption,
 } from "@/types/pusher";
-import { useUploadImage } from "@/hooks/use-upload";
-import { FileInfo } from "@/types/file";
+import { RoomContent } from "@/types/room";
+
+// Components
+import { Button } from "@/components/ui/button";
+import NotJoinedModal from "@/app/(views)/chat/components/modals/not-joined-modal";
+import MessageCard from "@/app/(views)/chat/components/cards/message-card";
+import ErrorMessage from "@/components/ui/error-message";
+import RoomHeader from "@/app/(views)/chat/components/room-header";
 import TypingIndicator from "@/app/(views)/chat/[roomId]/components/typing-indicator";
 import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
 import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
 import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
-import LoadingConvo from "../components/loading-convo";
-import StartMessage from "../components/start-message";
+import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
+import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
 
 const schemaMessage = z.object({
   message: z.string(),

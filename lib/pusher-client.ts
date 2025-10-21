@@ -16,22 +16,3 @@ export const pusherClient = new Pusher(pusherKey!, {
   forceTLS: true,
   enabledTransports: ["ws", "wss"],
 });
-
-// // Handle connection states
-// pusherClient.connection.bind("connected", () => {
-//   console.log("Pusher connected successfully");
-// });
-
-// pusherClient.connection.bind("disconnected", () => {
-//   console.log("Pusher disconnected, attempting to reconnect...");
-//   // Pusher automatically attempts reconnection, but we can log it
-// });
-
-// pusherClient.connection.bind("error", (err: any) => {
-//   console.error("Pusher connection error:", err);
-//   // Pusher will automatically retry connection on errors
-// });
-
-// pusherClient.connection.bind("connecting", () => {
-//   console.log("Pusher connecting...");
-// });

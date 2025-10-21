@@ -1,4 +1,3 @@
-// services/pusher/channel-event-handler.ts
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
 import { Message, MessageTyping } from "@/types/message";
 import { PusherChannel, PusherState, PusherSubsciption } from "@/types/pusher";

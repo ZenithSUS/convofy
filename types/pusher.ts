@@ -1,3 +1,5 @@
+import { Message, MessageTyping } from "@/types/message";
+
 export type PusherState = {
   previous: string;
   current: string;
@@ -15,7 +17,44 @@ export type PusherSubsciption = {
   subscription_count: number;
 };
 
+export type PusherEventData =
+  | PusherState
+  | MessageTyping
+  | Message
+  | PusherSubsciption;
+
+export type PusherCallback<T = unknown> = (data: T) => void;
+
+export type PusherEventMap = {
+  "pusher:subscription_error": PusherState;
+  "pusher:subscription_succeeded": void;
+  "pusher:subscription_count": PusherSubsciption;
+  "new-message": Message;
+  "delete-message": Message;
+  "edit-message": Message;
+  "typing-start": MessageTyping;
+  "typing-end": MessageTyping;
+  state_change: PusherState;
+  connected: void;
+  disconnected: void;
+  connecting: void;
+  unavailable: void;
+  failed: void;
+  error: Error;
+};
+
 export type PusherChannel = {
   name: string;
-  unbind_all: () => void;
+
+  // Generic bind for flexibility
+  bind<K extends keyof PusherEventMap>(
+    eventName: K,
+    callback: (data: PusherEventMap[K]) => void,
+  ): void;
+
+  // Allow binding to custom events
+  bind(eventName: string, callback: PusherCallback): void;
+  unbind(eventName: string, callback?: PusherCallback): void;
+  unbind_all(): void;
+  trigger(eventName: string, data: unknown): void;
 };

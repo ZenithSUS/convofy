@@ -14,7 +14,7 @@ import { toast } from "react-toastify";
 import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Next
 import { useParams } from "next/navigation";
@@ -27,7 +27,9 @@ import { pusherClient } from "@/lib/pusher-client";
 // Helpers
 import showErrorConnectionMessage from "@/helper/pusher-error";
 import getPusherConnectionState from "@/helper/pusher-connection-state";
-import ConnectionStatusHandler from "@/helper/pusher-connection-status-handler";
+
+// Services
+import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
@@ -43,12 +45,7 @@ import { User } from "@/types/user";
 import { AxiosError } from "axios/";
 import { CreateMessage, Message, MessageTyping } from "@/types/message";
 import { FileInfo } from "@/types/file";
-import {
-  PusherChannel,
-  PusherConnectionStatus,
-  PusherState,
-  PusherSubsciption,
-} from "@/types/pusher";
+import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
 
 // Components
@@ -63,6 +60,7 @@ import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
 import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
 import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
+import { ChannelEventHandler } from "@/services/pusher/channel-event-handler";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -96,11 +94,28 @@ function RoomPageClient({ session }: { session: Session }) {
     PusherConnectionStatus | string
   >("connecting");
 
-  const conHandler = new ConnectionStatusHandler(
-    isMountedRef,
-    setConnectionStatus,
-    getPusherConnectionState,
-    showErrorConnectionMessage,
+  const conHandler = useMemo(
+    () =>
+      new ConnectionStatusHandler(
+        isMountedRef,
+        setConnectionStatus,
+        getPusherConnectionState,
+        showErrorConnectionMessage,
+      ),
+    [],
+  );
+
+  const channelEventHandler = useMemo(
+    () =>
+      new ChannelEventHandler(
+        queryClient,
+        roomId as string,
+        session?.user?.id as string,
+        isMountedRef,
+        currentRoomIdRef,
+        setTypingUsers,
+      ),
+    [queryClient, roomId, session?.user?.id],
   );
 
   const {
@@ -204,7 +219,16 @@ function RoomPageClient({ session }: { session: Session }) {
       pusherClient.connection.unbind("failed", conHandler.handleFailed);
       pusherClient.connection.unbind("error", conHandler.handleError);
     };
-  }, [session]);
+  }, [
+    session,
+    conHandler.handleStateChange,
+    conHandler.handleConnected,
+    conHandler.handleDisconnected,
+    conHandler.handleConnecting,
+    conHandler.handleUnavailable,
+    conHandler.handleFailed,
+    conHandler.handleError,
+  ]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -272,126 +296,7 @@ function RoomPageClient({ session }: { session: Session }) {
       const channel = pusherClient.subscribe(channelName);
       channelRef.current = channel;
 
-      channel.bind("pusher:subscription_error", (status: PusherState) => {
-        console.error("Subscription error:", status);
-        if (isMountedRef.current) {
-          toast.error("Failed to subscribe to room. Please refresh.");
-        }
-      });
-
-      channel.bind("pusher:subscription_succeeded", () => {
-        console.log(`Successfully subscribed to channel: ${channelName}`);
-      });
-
-      channel.bind("pusher:subscription_count", (data: PusherSubsciption) => {
-        console.log(
-          `Subscription count for ${channelName}:`,
-          data.subscription_count,
-        );
-      });
-
-      channel.bind("new-message", (data: Message) => {
-        if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          queryClient.setQueryData(
-            ["messages", roomId],
-            (old: InfiniteData<Message[]> | undefined) => {
-              if (!old) {
-                return {
-                  pages: [[data]],
-                  pageParams: [],
-                };
-              }
-
-              const allMessages = old.pages.flat();
-              const messageExists = allMessages.some(
-                (msg) => msg._id === data._id,
-              );
-              if (messageExists) return old;
-
-              const newPages = [...old.pages];
-              newPages[0] = [data, ...newPages[0]];
-
-              return { ...old, pages: newPages };
-            },
-          );
-
-          queryClient.invalidateQueries({ queryKey: ["rooms"] });
-        }
-      });
-
-      channel.bind("delete-message", (data: Message) => {
-        if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          queryClient.setQueryData(
-            ["messages", roomId],
-            (old: InfiniteData<Message[]> | undefined) => {
-              if (!old) return old;
-
-              const newPages = old.pages.map((page) =>
-                page.filter((msg) => msg._id !== data._id),
-              );
-
-              return {
-                ...old,
-                pages: newPages,
-              };
-            },
-          );
-
-          queryClient.invalidateQueries({ queryKey: ["rooms"] });
-        }
-      });
-
-      channel.bind("edit-message", (data: Message) => {
-        if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          queryClient.setQueryData(
-            ["messages", roomId],
-            (old: InfiniteData<Message[]> | undefined) => {
-              if (!old) return old;
-
-              const newPages = old.pages.map((page) => {
-                if (!page.some((msg) => msg._id === data._id)) {
-                  return page;
-                }
-
-                return page.map((msg) => {
-                  if (msg._id === data._id) {
-                    return data;
-                  }
-                  return msg;
-                });
-              });
-
-              return {
-                ...old,
-                pages: newPages,
-              };
-            },
-          );
-        }
-      });
-
-      const handleTyping = (data: MessageTyping) => {
-        if (
-          isMountedRef.current &&
-          currentRoomIdRef.current === roomId &&
-          data.user.id !== session.user.id
-        ) {
-          setTypingUsers((prev) => new Map(prev).set(data.user.id, data));
-        }
-      };
-
-      const handleStop = (data: MessageTyping) => {
-        if (isMountedRef.current && currentRoomIdRef.current === roomId) {
-          setTypingUsers((prev) => {
-            const newMap = new Map(prev);
-            newMap.delete(data.user.id);
-            return newMap;
-          });
-        }
-      };
-
-      channel.bind("typing-start", handleTyping);
-      channel.bind("typing-end", handleStop);
+      channelEventHandler.bindAllEvents(channel);
     }
 
     return () => {
@@ -400,7 +305,14 @@ function RoomPageClient({ session }: { session: Session }) {
       cleanupChannel();
       currentRoomIdRef.current = null;
     };
-  }, [roomId, session?.user?.id, room?.members, queryClient, isMember]);
+  }, [
+    roomId,
+    session?.user?.id,
+    room?.members,
+    queryClient,
+    isMember,
+    channelEventHandler,
+  ]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });

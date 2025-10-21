@@ -6,7 +6,7 @@ export const POST = async (req: Request) => {
     const data: { id: string } = await req.json();
     const { id } = data;
 
-    if (!id && typeof id !== "string") {
+    if (!id) {
       return NextResponse.json(
         { error: "Missing required field: id" },
         { status: 400 },

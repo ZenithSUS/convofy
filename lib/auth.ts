@@ -1,5 +1,5 @@
-import client from "@/services/axios";
-import userService from "@/services/user.service";
+import client from "@/lib/axios";
+import userService from "@/services/mongodb/user.service";
 import { User } from "@/types/user";
 import { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";

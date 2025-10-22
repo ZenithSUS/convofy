@@ -28,7 +28,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUploadImage } from "@/hooks/use-upload";
 import { useState } from "react";
-import client from "@/services/axios";
+import client from "@/lib/axios";
 import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import Image from "next/image";

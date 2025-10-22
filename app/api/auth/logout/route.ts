@@ -1,4 +1,4 @@
-import authService from "@/services/auth.service";
+import authService from "@/services/mongodb/auth.service";
 import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {

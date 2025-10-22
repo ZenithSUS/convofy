@@ -1,4 +1,4 @@
-import { createMessage, getMessages } from "@/services/message.service";
+import { createMessage, getMessages } from "@/services/mongodb/message.service";
 import { NextResponse } from "next/server";
 import { CreateMessage } from "@/types/message";
 import messageSendLimit from "@/lib/redis/redis-message-send-limit";

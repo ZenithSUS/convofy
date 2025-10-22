@@ -1,4 +1,4 @@
-import chatService from "@/services/chat.service";
+import chatService from "@/services/mongodb/chat.service";
 import { NextResponse } from "next/server";
 
 export const DELETE = async (

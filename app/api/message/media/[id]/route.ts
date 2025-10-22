@@ -1,4 +1,4 @@
-import { getMessagesByUserAndFileType } from "@/services/message.service";
+import { getMessagesByUserAndFileType } from "@/services/mongodb/message.service";
 import { NextResponse } from "next/server";
 
 export const GET = async (

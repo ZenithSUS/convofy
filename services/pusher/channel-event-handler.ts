@@ -4,12 +4,21 @@ import { PusherChannel, PusherState, PusherSubsciption } from "@/types/pusher";
 import { toast } from "react-toastify";
 
 export class ChannelEventHandler {
+  /**
+   * Constructor for the ChannelEventHandler class
+   * @param queryClient - The tanstack query client instance
+   * @param roomId - The chat room ID
+   * @param currentUserId - The current user ID logged in
+   * @param isMountedRef - Reference to track if the component is mounted
+   * @param currentRoomIdRef - Reference to track the current room ID
+   * @param setTypingUsers - Callback to update the typing users state
+   */
   constructor(
     private queryClient: QueryClient,
     private roomId: string,
     private currentUserId: string,
-    private isMountedRef: React.MutableRefObject<boolean>,
-    private currentRoomIdRef: React.MutableRefObject<string | null>,
+    private isMountedRef: React.RefObject<boolean>,
+    private currentRoomIdRef: React.RefObject<string | null>,
     private setTypingUsers: React.Dispatch<
       React.SetStateAction<Map<string, MessageTyping>>
     >,

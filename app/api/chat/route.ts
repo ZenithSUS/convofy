@@ -1,5 +1,5 @@
 import messageLimit from "@/lib/redis/redis-message-send-limit";
-import chatService from "@/services/chat.service";
+import chatService from "@/services/mongodb/chat.service";
 import { Message } from "@/types/message";
 import { NextResponse } from "next/server";
 

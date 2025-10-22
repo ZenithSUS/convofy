@@ -1,4 +1,4 @@
-import client from "@/services/axios";
+import client from "@/lib/axios";
 import { useState } from "react";
 
 interface UploadResponse {

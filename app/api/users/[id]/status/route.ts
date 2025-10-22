@@ -1,12 +1,13 @@
 import userService from "@/services/mongodb/user.service";
 import { NextResponse } from "next/server";
 
-export const GET = async (
+export const PUT = async (
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const id = (await params).id;
+    const { id } = await params;
+    const { status } = await req.json();
 
     if (!id) {
       return NextResponse.json(
@@ -15,12 +16,12 @@ export const GET = async (
       );
     }
 
-    const response = await userService.getUserDataStats(id);
+    const response = await userService.updateUserStatus(id, status);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error("Error fetching user stats:", error);
+    console.error("Failed to update user status:", error);
     return NextResponse.json(
-      { error: `Failed to fetch user stats: ${error}` },
+      { error: "Failed to update user status" },
       { status: 500 },
     );
   }

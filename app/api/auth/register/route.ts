@@ -1,4 +1,4 @@
-import authService from "@/services/auth.service";
+import authService from "@/services/mongodb/auth.service";
 import { User as UserType } from "@/types/user";
 import { NextResponse } from "next/server";
 

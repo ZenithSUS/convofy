@@ -1,4 +1,4 @@
-import userService from "@/services/user.service";
+import userService from "@/services/mongodb/user.service";
 import { NextResponse } from "next/server";
 
 /**

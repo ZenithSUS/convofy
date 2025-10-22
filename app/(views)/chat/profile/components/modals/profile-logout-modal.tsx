@@ -12,7 +12,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import client from "@/services/axios";
+import client from "@/lib/axios";
 import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";

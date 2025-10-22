@@ -1,6 +1,9 @@
 import { authOptions } from "@/lib/auth";
 import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
-import { getMessagesByRoom, deleteMessage } from "@/services/message.service";
+import {
+  getMessagesByRoom,
+  deleteMessage,
+} from "@/services/mongodb/message.service";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 

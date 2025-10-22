@@ -1,4 +1,4 @@
-import roomService from "@/services/room.service";
+import roomService from "@/services/mongodb/room.service";
 import { NextResponse } from "next/server";
 
 export const GET = async (

@@ -1,4 +1,4 @@
-import client from "@/services/axios";
+import client from "@/lib/axios";
 import { CreateRoom, Room, RoomContent } from "@/types/room";
 import {
   useMutation,
@@ -58,6 +58,7 @@ export const useGetRoomById = (
   return useQuery({
     queryKey: ["room", id],
     queryFn: async () => getRoomById(),
+    enabled: !!id,
   });
 };
 
@@ -121,6 +122,10 @@ export const useCreateRoom = (): UseMutationResult<
       // Invalidate rooms query to refetch
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
     },
+    onError: (err) => {
+      console.error("Error creating room:", err);
+      throw err;
+    },
   });
 };
 
@@ -156,6 +161,10 @@ export const useGetOrCreatePrivateRoom = (): UseMutationResult<
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
       queryClient.invalidateQueries({ queryKey: ["room"] });
     },
+    onError: (err) => {
+      console.error("Error getting or creating private room:", err);
+      throw err;
+    },
   });
 };
 
@@ -187,6 +196,10 @@ export const useJoinRoom = (): UseMutationResult<
       // Invalidate rooms query to refetch
       queryClient.invalidateQueries({ queryKey: ["rooms"] });
       queryClient.invalidateQueries({ queryKey: ["room"] });
+    },
+    onError: (err) => {
+      console.error("Error joining room:", err);
+      throw err;
     },
   });
 };

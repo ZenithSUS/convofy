@@ -13,6 +13,8 @@ import ErrorMessage from "@/components/ui/error-message";
 import { AxiosError } from "axios/";
 import { Plus, MessageSquare, Sparkles, TrendingUp } from "lucide-react";
 import UserCard from "../components/cards/user-card";
+import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
+import useUserConnectionStatus from "@/hooks/use-presence";
 
 interface ChatListClientProps {
   session: Session;
@@ -24,6 +26,7 @@ function ChatListClient({ session }: ChatListClientProps) {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const { connectionStatus } = useUserConnectionStatus({ session });
 
   const isSearchMode = useMemo<boolean>(() => {
     return debouncedSearchQuery.trim().length > 0;
@@ -69,6 +72,11 @@ function ChatListClient({ session }: ChatListClientProps) {
     <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div className="flex-1 overflow-y-auto">
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-md">
+          {/* Connection Status */}
+          {connectionStatus !== "connected" && (
+            <ConnectionStatus connectionStatus={connectionStatus} />
+          )}
+
           {/* Header */}
           <div className="p-4 pb-3">
             <ChatHeader session={session} />

@@ -16,7 +16,14 @@ export const PUT = async (
       );
     }
 
-    const response = await userService.updateUserStatus(id, status);
+    if (!status) {
+      return NextResponse.json(
+        { error: "Missing required field: status" },
+        { status: 400 },
+      );
+    }
+
+    const response = await userService.updateLiveUserStatus(id, status);
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Failed to update user status:", error);

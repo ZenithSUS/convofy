@@ -1,20 +1,27 @@
 "use client";
 
+// React
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Plus, MessageSquare, Sparkles, TrendingUp } from "lucide-react";
+import { AxiosError } from "axios/";
+
+// Next
+import { useRouter } from "next/navigation";
+
+// Components
 import { Button } from "@/components/ui/button";
 import SearchBar from "@/components/ui/searchbar";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useGetRoomByUserId } from "@/hooks/use-rooms";
+import UserCard from "@/app/(views)/chat/components/cards/user-card";
 import RoomCard from "@/app/(views)/chat/components/cards/room-card";
-import { RoomContent } from "@/types/room";
+import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
-import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
-import { AxiosError } from "axios/";
-import { Plus, MessageSquare, Sparkles, TrendingUp } from "lucide-react";
-import UserCard from "../components/cards/user-card";
-import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
+
+// Hooks
 import useUserConnectionStatus from "@/hooks/use-presence";
+import { useGetRoomByUserId } from "@/hooks/use-rooms";
+import { RoomContent } from "@/types/room";
 
 interface ChatListClientProps {
   session: Session;

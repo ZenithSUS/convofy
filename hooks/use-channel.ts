@@ -6,8 +6,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Session } from "next-auth";
 
 // Helpers
-import getPusherConnectionState from "@/helper/pusher-connection-state";
-import showErrorConnectionMessage from "@/helper/pusher-error";
+import getPusherConnectionState from "@/helper/pusher/chat-connection-state";
+import showErrorConnectionMessage from "@/helper/pusher/error";
 
 // Services
 import { ChannelEventHandler } from "@/services/pusher/channel-event-handler";
@@ -21,7 +21,7 @@ import { MessageTyping } from "@/types/message";
 import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
 
-export interface useChannelProps {
+interface useChannelProps {
   session: Session;
   roomId: string;
   room: RoomContent | undefined;
@@ -213,3 +213,5 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     queryClient,
   };
 };
+
+export default useChannel;

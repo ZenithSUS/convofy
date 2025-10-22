@@ -21,6 +21,7 @@ import {
   useGetMessagesByRoom,
   useSendLiveMessage,
 } from "@/hooks/use-message";
+import useChannel from "@/hooks/use-channel";
 
 // Types
 import { User } from "@/types/user";
@@ -41,7 +42,6 @@ import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
 import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
 import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
-import { useChannel } from "@/hooks/use-channel";
 
 const schemaMessage = z.object({
   message: z.string(),

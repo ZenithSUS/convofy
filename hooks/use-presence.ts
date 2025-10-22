@@ -1,5 +1,4 @@
-import getPusherConnectionState from "@/helper/pusher-connection-state";
-import showErrorConnectionMessage from "@/helper/pusher-error";
+import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
@@ -7,6 +6,7 @@ import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
 import { Session } from "@/app/(views)/chat/components/chat-header";
+import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 
 interface userConnectionStatusProps {
   session: Session;
@@ -27,7 +27,7 @@ const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
       new ConnectionStatusHandler(
         isMountedRef,
         setConnectionStatus,
-        getPusherConnectionState,
+        getHomePusherConnectionState,
         showErrorConnectionMessage,
       ),
     [],

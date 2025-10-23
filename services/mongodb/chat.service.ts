@@ -59,8 +59,6 @@ export const chatService = {
           (member) => {
             const memberId = member._id.toString();
 
-            console.log(`Triggering room-updated for user-${memberId}`);
-
             return pusherServer.trigger(
               `user-${memberId}`,
               "room-updated",

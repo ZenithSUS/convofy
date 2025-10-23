@@ -32,9 +32,10 @@ function GlobalPusherProvider() {
 
     const channelName = `user-${session.user.id}`;
 
+    console.log("Subscribing to channel:", channelName);
+
     // Unsubscribe from previous channel if it exists
     if (channelRef.current) {
-      console.warn("Cleanup: Unsubscribing from", channelName);
       channelRef.current.unbind_all();
       pusherClient.unsubscribe(channelName);
     }
@@ -54,7 +55,6 @@ function GlobalPusherProvider() {
           if (!oldRooms) return oldRooms;
 
           const idx = oldRooms.findIndex((room) => room._id === data._id);
-          console.log("Room index:", idx);
           if (idx === -1) return oldRooms;
 
           const newRooms = [...oldRooms];
@@ -66,12 +66,10 @@ function GlobalPusherProvider() {
 
     // Ensure Pusher is connected
     if (pusherClient.connection.state !== "connected") {
-      console.warn("Connecting to Pusher...");
       pusherClient.connection.connect();
     }
 
     return () => {
-      console.warn("Cleanup: Unsubscribing from", channelName);
       channel.unbind_all();
       pusherClient.unsubscribe(channelName);
       channelRef.current = null;

@@ -191,6 +191,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     return () => {
       console.log(`Unmounting room ${roomId}, cleaning up...`);
       isMountedRef.current = false;
+      queryClient.removeQueries({ queryKey: ["messages", roomId] });
       cleanupChannel();
       currentRoomIdRef.current = null;
     };

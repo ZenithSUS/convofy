@@ -6,6 +6,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import AuthProvider from "@/components/providers/session-provider";
 import QueryProvider from "@/components/providers/query-provider";
 import { ToastProvider } from "@/components/providers/toast-provider";
+import GlobalPusherProvider from "@/components/providers/global-pusher-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,6 +38,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
+            <GlobalPusherProvider />
             <main>{children}</main>
             <ToastProvider />
           </AuthProvider>

@@ -3,6 +3,7 @@ import { pusherServer } from "@/lib/pusher";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { Message as IMessage } from "@/types/message";
+import { RoomMembers } from "@/types/room";
 
 export const chatService = {
   async sendLiveMessage(data: IMessage) {
@@ -12,12 +13,22 @@ export const chatService = {
       // Create the message
       const message = await Message.create(data);
 
-      const room = await Room.findById(data.room);
+      const room = await Room.findById(data.room).populate("members", [
+        "avatar",
+        "_id",
+        "status",
+        "name",
+      ]);
 
       if (room) {
         await Room.updateOne({ _id: room._id }, { lastMessage: message._id });
         await room.save();
       }
+
+      // Get the new last message
+      const lastMessage = await Message.findById(message._id)
+        .populate("sender", ["name", "avatar"])
+        .lean();
 
       // Populate the sender information before sending to Pusher
       const populatedMessage = await Message.findById(message._id)
@@ -32,6 +43,34 @@ export const chatService = {
       const channelName = `chat-${data.room}`;
       await pusherServer.trigger(channelName, "new-message", populatedMessage);
 
+      // Update the room last message of all related members
+      if (room?.members && room.members.length > 0) {
+        const roomContentData = {
+          _id: room._id.toString(),
+          members: room.members as unknown as RoomMembers[],
+          name: room.isPrivate ? undefined : room.name,
+          description: room.isPrivate ? undefined : room.description,
+          lastMessage: lastMessage,
+          isPrivate: room.isPrivate,
+          image: room.isPrivate ? undefined : room.image,
+        };
+
+        const pusherPromises = (room.members as unknown as RoomMembers[]).map(
+          (member) => {
+            const memberId = member._id.toString();
+
+            console.log(`Triggering room-updated for user-${memberId}`);
+
+            return pusherServer.trigger(
+              `user-${memberId}`,
+              "room-updated",
+              roomContentData,
+            );
+          },
+        );
+
+        await Promise.all(pusherPromises);
+      }
       // Return the populated message
       return populatedMessage;
     } catch (error) {

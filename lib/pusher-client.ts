@@ -11,8 +11,32 @@ if (!pusherKey || !pusherCluster) {
   });
 }
 
-export const pusherClient = new Pusher(pusherKey!, {
-  cluster: pusherCluster!,
-  forceTLS: true,
-  enabledTransports: ["ws", "wss"],
-});
+let pusherInstance: Pusher | null = null;
+
+export const getPusherClient = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  if (!pusherInstance) {
+    pusherInstance = new Pusher(pusherKey!, {
+      cluster: pusherCluster!,
+      authEndpoint: "/api/pusher/auth",
+      enabledTransports: ["ws", "wss"],
+      forceTLS: true,
+    });
+  }
+
+  return pusherInstance;
+};
+
+export const pusherClient = getPusherClient()!;
+
+// Force reconnect function
+export const reconnectPusher = () => {
+  if (pusherInstance) {
+    console.log("🔵 Force reconnecting Pusher");
+    pusherInstance.disconnect();
+    pusherInstance.connect();
+  }
+};

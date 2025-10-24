@@ -34,6 +34,7 @@ export type PusherEventMap = {
   "edit-message": Message;
   "typing-start": MessageTyping;
   "typing-end": MessageTyping;
+  "status-update": string;
   state_change: PusherState;
   connected: void;
   disconnected: void;

@@ -1,7 +1,7 @@
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
-import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
+import { PusherConnectionStatus } from "@/types/pusher";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
@@ -13,7 +13,6 @@ interface userConnectionStatusProps {
 }
 
 const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
-  const channelRef = useRef<PusherChannel | null>(null);
   const isMountedRef = useRef(false);
 
   const [connectionStatus, setConnectionStatus] = useState<
@@ -81,62 +80,14 @@ const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
     if (!session.user.id) return;
 
     const getUserStatus = async () => {
-      return connectionStatus !== "connected"
-        ? await updateUserStatus({
-            userId: session.user.id,
-            status: "offline",
-          })
-        : await updateUserStatus({
-            userId: session.user.id,
-            status: "online",
-          });
+      return await updateUserStatus({
+        userId: session.user.id,
+        status: connectionStatus !== "connected" ? "offline" : "online",
+      }).catch((err) => console.error("Error updating user status:", err));
     };
 
     getUserStatus();
   }, [connectionStatus, session.user.id, updateUserStatus]);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    const cleanupChannel = () => {
-      if (channelRef.current) {
-        console.log("Cleaning up channel", channelRef.current.name);
-        const channelName = channelRef.current.name;
-        channelRef.current.unbind_all();
-        try {
-          pusherClient.unsubscribe(channelName);
-        } catch (error) {
-          console.error("Error unsubscribing from channel:", error);
-        }
-        channelRef.current = null;
-      }
-    };
-    if (!session.user.id) {
-      cleanupChannel();
-      return;
-    }
-
-    const channelName = `user-${session.user.id}`;
-
-    if (!channelRef.current || channelRef.current.name !== channelName) {
-      const existingChannel = pusherClient.channel(channelName);
-      if (existingChannel) {
-        existingChannel.unbind_all();
-        pusherClient.unsubscribe(channelName);
-      }
-
-      const channel = pusherClient.subscribe(channelName);
-      channelRef.current = channel;
-
-      channel.bind("status-update", (data: string) => {
-        console.log("Status update:", data);
-      });
-    }
-
-    return () => {
-      isMountedRef.current = false;
-      cleanupChannel();
-    };
-  }, [session.user.id]);
 
   return { connectionStatus };
 };

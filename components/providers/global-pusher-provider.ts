@@ -32,8 +32,6 @@ function GlobalPusherProvider() {
 
     const channelName = `user-${session.user.id}`;
 
-    console.log("Subscribing to channel:", channelName);
-
     // Unsubscribe from previous channel if it exists
     if (channelRef.current) {
       channelRef.current.unbind_all();
@@ -70,6 +68,7 @@ function GlobalPusherProvider() {
     }
 
     return () => {
+      console.warn("Unsubscribing from channel");
       channel.unbind_all();
       pusherClient.unsubscribe(channelName);
       channelRef.current = null;

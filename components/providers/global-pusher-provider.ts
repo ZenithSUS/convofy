@@ -16,7 +16,6 @@ function GlobalPusherProvider() {
   // Handle Pusher connection state changes to ensure reconnection
   useEffect(() => {
     const handleDisconnected = () => {
-      console.warn("Pusher disconnected, attempting to reconnect...");
       pusherClient.connection.connect();
     };
 
@@ -68,7 +67,6 @@ function GlobalPusherProvider() {
     }
 
     return () => {
-      console.warn("Unsubscribing from channel");
       channel.unbind_all();
       pusherClient.unsubscribe(channelName);
       channelRef.current = null;

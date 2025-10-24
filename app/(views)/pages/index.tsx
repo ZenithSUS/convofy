@@ -1,6 +1,6 @@
 "use client";
 
-import { Header } from "@/app/(views)/components/header";
+import Header from "@/app/(views)/components/header";
 import HowItWorks from "../components/how-it-works";
 import Features from "../components/features";
 import QA from "@/app/(views)/components/qa";

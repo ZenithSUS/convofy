@@ -9,7 +9,6 @@ export const subscribeToUserStatus = (
 ) => {
   if (!userId) return;
   if (currentChannel) {
-    console.log("Already subscribed to", currentChannel.name);
     return currentChannel;
   }
 
@@ -17,13 +16,11 @@ export const subscribeToUserStatus = (
   currentChannel = pusherClient.subscribe(channelName);
 
   currentChannel.bind("status-update", callback);
-  console.log("✅ Subscribed to", channelName);
   return currentChannel;
 };
 
 export const unsubscribeFromUserStatus = () => {
   if (!currentChannel) return;
-  console.log("🧹 Unsubscribing from", currentChannel.name);
 
   currentChannel.unbind_all();
   pusherClient.unsubscribe(currentChannel.name);

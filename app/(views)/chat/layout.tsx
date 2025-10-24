@@ -1,17 +1,14 @@
-"use client";
-
-import useUserStatusChannel from "@/hooks/use-user-status-channel";
+import ChatWrapper from "./components/chat-wrapper";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { Session } from "@/app/(views)/chat/components/chat-header";
-import { useSession } from "next-auth/react";
 
-export default function ChatLayout({
+export default async function ChatLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { data: session } = useSession();
+  const session = await getServerSession(authOptions);
 
-  useUserStatusChannel(session as Session);
-
-  return <>{children}</>;
+  return <ChatWrapper session={session as Session}>{children}</ChatWrapper>;
 }

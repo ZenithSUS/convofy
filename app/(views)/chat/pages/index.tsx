@@ -34,7 +34,6 @@ function ChatListClient({ session }: ChatListClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const { connectionStatus } = useUserConnectionStatus({ session });
-  console.log(connectionStatus);
 
   const isSearchMode = useMemo<boolean>(() => {
     return debouncedSearchQuery.trim().length > 0;

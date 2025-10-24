@@ -4,6 +4,9 @@ import { Readable } from "stream";
 
 export const runtime = "nodejs";
 
+const folder =
+  process.env.NODE_ENV === "development" ? "dev-uploads" : "uploads";
+
 export async function POST(req: Request): Promise<Response> {
   try {
     const formData = await req.formData();
@@ -22,7 +25,7 @@ export async function POST(req: Request): Promise<Response> {
 
     const response = await new Promise<Response>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: "uploads" },
+        { folder: folder },
         (error, result) => {
           if (error) {
             console.error("Upload error:", error);

@@ -5,6 +5,11 @@ import "@/models/Message";
 import { CreateRoom } from "@/types/room";
 
 export const roomService = {
+  /**
+   * Creates a new room in the database
+   * @param {CreateRoom} data - The data to create the room with
+   * @returns {Promise<Room>} The newly created room
+   */
   async createRoom(data: CreateRoom) {
     await connectToDatabase();
 
@@ -16,6 +21,11 @@ export const roomService = {
     return room;
   },
 
+  /**
+   * Fetches all rooms in the database that match the given query.
+   * @param {string} [query] - The query to filter the rooms by.
+   * @returns {Promise<Room[]>} The rooms that match the query.
+   */
   async getRooms(query: string = "") {
     await connectToDatabase();
 
@@ -37,6 +47,11 @@ export const roomService = {
     return rooms;
   },
 
+  /**
+   * Fetches a room by its ID.
+   * @param {string} id - The ID of the room to fetch.
+   * @returns {Promise<Room>} The room with the given ID.
+   */
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
     const room = await Room.findById(id).populate("members", [
@@ -47,6 +62,13 @@ export const roomService = {
     return room;
   },
 
+  /**
+   * Searches for rooms and users by name that match the given query.
+   * Excludes the current user from the search results.
+   * @param {string} userId - The ID of the current user.
+   * @param {string} query - The query to filter the rooms and users by.
+   * @returns {Promise<{type: 'room' | 'user', ...Room | ...User}[]>} An array of rooms and users that match the query.
+   */
   async getRoomsAndUsersBySearchQuery(userId: string, query: string) {
     await connectToDatabase();
 
@@ -76,6 +98,14 @@ export const roomService = {
     return results;
   },
 
+  /**
+   * Creates a new private room in the database if it doesn't already exist,
+   * or fetches an existing private room with the given members.
+   * The members are sorted to ensure consistent order.
+   * @param {string} userIdA - The ID of the first user.
+   * @param {string} userIdB - The ID of the second user.
+   * @returns {Promise<Room>} The newly created or existing private room.
+   */
   async getOrCreatePrivateRoom(userIdA: string, userIdB: string) {
     await connectToDatabase();
 
@@ -106,6 +136,13 @@ export const roomService = {
 
     return room;
   },
+
+  /**
+   * Adds a new member to an existing room if the room doesn't already contain the given user.
+   * @param {string} roomId - The ID of the room to add the member to.
+   * @param {string} userId - The ID of the user to add to the room.
+   * @returns {Promise<Room | null>} The updated room, or null if no room was found.
+   */
   async addMemberToRoom(roomId: string, userId: string) {
     await connectToDatabase();
     const room = await Room.findByIdAndUpdate(
@@ -116,6 +153,12 @@ export const roomService = {
     return room || null;
   },
 
+  /**
+   * Fetches all rooms that the given user is a member of, sorted by createdAt in descending order.
+   * If no rooms are found, an empty array is returned.
+   * @param {string} userId - The ID of the user to fetch rooms for.
+   * @returns {Promise<Room[]>} A promise that resolves with an array of rooms that the given user is a member of.
+   */
   async getRoomsAndUsersByUserId(userId: string) {
     await connectToDatabase();
 
@@ -130,6 +173,11 @@ export const roomService = {
     return rooms || [];
   },
 
+  /**
+   * Drops the problematic indexes from the Room collection and recreates the correct ones.
+   * Useful for debugging purposes when the indexes become corrupted.
+   * @returns {Promise<void>} A promise that resolves when the indexes have been fixed.
+   */
   async fixIndexes() {
     await connectToDatabase();
 

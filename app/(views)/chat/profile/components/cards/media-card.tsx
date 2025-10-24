@@ -1,3 +1,5 @@
+"use client";
+
 import { MediaMessage } from "@/types/message";
 import { FileIcon } from "lucide-react";
 import Image from "next/image";

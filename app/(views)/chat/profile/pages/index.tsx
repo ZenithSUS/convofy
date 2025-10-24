@@ -2,12 +2,12 @@
 
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { ChevronRightIcon, Loader2 } from "lucide-react";
-import Image from "next/image";
 import { useGetUserDataStats } from "@/hooks/use-user";
 import { useMemo } from "react";
 import Link from "next/link";
 import profileSettings from "@/constants/profile-settings";
-import ProfileHeader from "../components/profile-header";
+import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
+import UserImage from "@/app/(views)/chat/profile/components/user-image";
 
 function ProfilePageClient({ session }: { session: Session }) {
   const {
@@ -29,23 +29,12 @@ function ProfilePageClient({ session }: { session: Session }) {
       <ProfileHeader userId={session.user.id} />
 
       {/* Profile Content */}
-      <div className="relative px-4 pb-8">
+      <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* User Avatar Card */}
-        <div className="relative -mt-20 mb-6">
+        <div className="relative -mt-20 mb-8">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl backdrop-blur-lg">
             <div className="flex flex-col items-center gap-3">
-              <div className="group relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 opacity-50 blur-md transition-opacity group-hover:opacity-75"></div>
-                <Image
-                  src={session.user.image || "/default-avatar.png"}
-                  alt="User Avatar"
-                  height={100}
-                  width={100}
-                  priority
-                  className="relative h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg"
-                />
-              </div>
-
+              <UserImage userImage={session.user.image} />
               <div className="flex flex-col items-center gap-1 text-center">
                 <h1 className="text-2xl font-bold text-gray-900">
                   {session.user.name}

@@ -12,6 +12,7 @@ import {
   MediaMessage,
   Message,
   MessageTyping,
+  UserMessage,
 } from "@/types/message";
 
 export const useGetMessagesByRoom = (
@@ -53,6 +54,43 @@ export const useGetMessagesByRoom = (
     placeholderData: { pages: [], pageParams: [] },
     refetchOnWindowFocus: false,
     networkMode: "offlineFirst",
+  });
+};
+
+export const useGetMessagesByUserId = (
+  userId: string,
+  limit: number,
+): UseInfiniteQueryResult<InfiniteData<UserMessage[], unknown>, Error> => {
+  const getMessagesByUserId = async (limit: number, offset: number) => {
+    const response = await client
+      .get(`message/user/${userId}`, {
+        params: {
+          limit,
+          offset,
+        },
+      })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Failed to get user messages:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useInfiniteQuery<UserMessage[], Error>({
+    queryKey: ["messages", userId],
+    queryFn: async ({ pageParam = 0 }) =>
+      getMessagesByUserId(limit, pageParam as number),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length < limit ? undefined : allPages.length * limit;
+    },
+    select: (data) => ({ pages: data.pages, pageParams: data.pageParams }),
+    placeholderData: { pages: [], pageParams: [] },
+    refetchOnWindowFocus: false,
+    networkMode: "offlineFirst",
+    enabled: !!userId,
   });
 };
 

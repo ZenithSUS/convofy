@@ -12,7 +12,6 @@ export async function middleware(request: NextRequest) {
     "/api/typing",
     "/api/message",
     "/api/rooms",
-    "/api/upload",
     "/api/users",
   ];
 

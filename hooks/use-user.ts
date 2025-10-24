@@ -1,5 +1,5 @@
 import client from "@/lib/axios";
-import { UserDataStats } from "@/types/user";
+import { UserMediaDataStats, UserMessageDataStats } from "@/types/user";
 import {
   UseBaseQueryResult,
   useMutation,
@@ -9,7 +9,7 @@ import {
 
 export const useGetUserDataStats = (
   userId: string,
-): UseBaseQueryResult<UserDataStats, Error> => {
+): UseBaseQueryResult<UserMediaDataStats, Error> => {
   const getUserDataStats = async (userId: string) => {
     const response = await client
       .get(`users/${userId}/stats`)
@@ -25,6 +25,28 @@ export const useGetUserDataStats = (
   return useQuery({
     queryKey: ["userDataStats", userId],
     queryFn: async () => getUserDataStats(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetUserMessageStats = (
+  userId: string,
+): UseBaseQueryResult<UserMessageDataStats, Error> => {
+  const getUserMessageStats = async (userId: string) => {
+    const response = await client
+      .get(`users/${userId}/message-stats`)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error fetching user message stats:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useQuery({
+    queryKey: ["userMessageStats", userId],
+    queryFn: async () => getUserMessageStats(userId),
     enabled: !!userId,
   });
 };

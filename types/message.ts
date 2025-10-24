@@ -1,5 +1,6 @@
 import { Types } from "mongoose";
 import { User } from "@/types/user";
+import { RoomMembers } from "./room";
 
 export type Message = {
   _id: string;
@@ -13,6 +14,15 @@ export type Message = {
   content: string;
   type: "text" | "image" | "file";
   createdAt: Date;
+};
+
+export type UserMessage = Message & {
+  room: {
+    name: string;
+    isPrivate: boolean;
+    members: RoomMembers[];
+    avatar: string;
+  };
 };
 
 export type MediaMessage = Omit<Message, "type"> & {

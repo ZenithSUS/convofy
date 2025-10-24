@@ -9,8 +9,14 @@ export type User = {
   createdAt: Date;
 };
 
-export type UserDataStats = {
+export type UserMediaDataStats = {
   messages: number;
   medias: number;
   contacts: number;
+};
+
+export type UserMessageDataStats = {
+  messages: number;
+  nonTextMessages: number;
+  editedMessages: number;
 };

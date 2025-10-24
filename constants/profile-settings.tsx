@@ -18,7 +18,7 @@ export const profileSettings = [
     name: "Search Messages",
     description: "Find conversations quickly",
     icon: <SearchIcon size={20} />,
-    href: "#",
+    href: "/chat/profile/messages",
     color: "from-purple-500 to-purple-600",
   },
   {

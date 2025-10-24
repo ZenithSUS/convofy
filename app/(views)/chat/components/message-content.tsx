@@ -4,6 +4,7 @@ import { memo } from "react";
 import MessageAvatar from "./message-avatar";
 import ViewImageModal from "./modals/view-image-modal";
 import { FileIcon } from "lucide-react";
+import Link from "next/link";
 
 const MessageContent = ({ message }: { message: Message }) => {
   switch (message.type) {
@@ -53,7 +54,7 @@ const MessageContent = ({ message }: { message: Message }) => {
           </div>
           <div className="flex h-[125px] w-[250px] items-center justify-center bg-gray-300">
             <FileIcon className="h-6 w-6" />
-            <a
+            <Link
               href={message.content}
               download
               target="_blank"
@@ -61,7 +62,7 @@ const MessageContent = ({ message }: { message: Message }) => {
               className="text-blue-500 underline"
             >
               {message.content.split("/").pop()}
-            </a>
+            </Link>
           </div>
         </div>
       );

@@ -18,7 +18,9 @@ interface ViewImageModalProps {
 function ViewImageModal({ children, content, user }: ViewImageModalProps) {
   return (
     <Dialog>
-      <DialogTrigger className="flex justify-center">{children}</DialogTrigger>
+      <DialogTrigger className="flex cursor-pointer justify-center">
+        {children}
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-center">

@@ -1,35 +1,79 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
-import { UserDataStats, User as UserType } from "@/types/user";
+import {
+  UserMessageDataStats,
+  UserMediaDataStats,
+  User as UserType,
+} from "@/types/user";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { pusherServer } from "@/lib/pusher";
 
 export const userService = {
+  /**
+   * Creates a new user in the database.
+   *
+   * @param {UserType} data - User data to be inserted into the database.
+   * @returns {Promise<UserType>} - A promise that resolves with the newly created user.
+   * @throws {Error} - If there was an error while creating the user.
+   */
   async createUser(data: UserType) {
-    await connectToDatabase();
-    const user = await User.create(data);
-    return user;
+    try {
+      await connectToDatabase();
+      const user = await User.create(data);
+      return user;
+    } catch (error) {
+      throw error;
+    }
   },
 
+  /**
+   * Retrieves all users from the database, excluding passwords.
+   *
+   * @returns {Promise<UserType[]>} - A promise that resolves with an array of users.
+   * @throws {Error} - If there was an error while fetching the users.
+   */
   async getUsers() {
-    await connectToDatabase();
-    const users = await User.find({}, "-password").sort({ createdAt: -1 });
-    return users;
+    try {
+      await connectToDatabase();
+      const users = await User.find({}, "-password").sort({ createdAt: -1 });
+      return users;
+    } catch (error) {
+      throw error;
+    }
   },
 
+  /**
+   * Fetches a user from the database by their ID, excluding passwords.
+   *
+   * @param {string} id - The ID of the user to fetch.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
+   */
   async getUserById(id: string) {
     await connectToDatabase();
     const user = await User.findById(id, "-password");
     return user;
   },
 
+  /**
+   * Fetches a user from the database by their email, excluding passwords.
+   *
+   * @param {string} email - The email of the user to fetch.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
+   */
   async getUserByEmail(email: string): Promise<UserType | null> {
     await connectToDatabase();
     const user = await User.findOne({ email }, "-password");
     return user;
   },
 
+  /**
+   * Fetches user data stats, including the number of messages, media, and contacts.
+   *
+   * @param {string} userId - The ID of the user to fetch data for.
+   * @returns {Promise<UserDataStats>} - A promise that resolves with the user data stats.
+   * @throws {Error} - If there was an error while fetching the data.
+   */
   async getUserDataStats(userId: string) {
     try {
       await connectToDatabase();
@@ -42,7 +86,7 @@ export const userService = {
         Room.countDocuments({ members: userId }),
       ]);
 
-      const data: UserDataStats = { messages, medias, contacts: rooms };
+      const data: UserMediaDataStats = { messages, medias, contacts: rooms };
 
       return data;
     } catch (error) {
@@ -50,6 +94,42 @@ export const userService = {
     }
   },
 
+  /**
+   * Retrieves user message stats, including the number of messages, edited messages, and deleted messages.
+   *
+   * @param {string} userId - The ID of the user to fetch message stats for.
+   * @returns {Promise<UserMessageDataStats>} - A promise that resolves with the user message stats.
+   * @throws {Error} - If there was an error while fetching the message stats.
+   */
+  async getUserMessageStats(userId: string) {
+    try {
+      await connectToDatabase();
+      const [messages, editedMessages, nonTextMessages] = await Promise.all([
+        Message.countDocuments({
+          sender: userId,
+        }),
+        Message.countDocuments({ sender: userId, isEdited: true }),
+        Message.countDocuments({ sender: userId, type: { $ne: "text" } }),
+      ]);
+
+      const data: UserMessageDataStats = {
+        messages,
+        nonTextMessages,
+        editedMessages,
+      };
+
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Updates the status of a user in the database.
+   * @param {string} id - The ID of the user to update.
+   * @param {"online" | "offline"} status - The new status of the user.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   */
   async updateUserStatus(id: string, status: "online" | "offline") {
     await connectToDatabase();
     const user = await User.findOneAndUpdate(
@@ -60,6 +140,12 @@ export const userService = {
     return user;
   },
 
+  /**
+   * Updates the status of a user in the database and broadcasts the new status to the user's Pusher channel.
+   * @param {string} id - The ID of the user to update.
+   * @param {"online" | "offline"} status - The new status of the user.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   */
   async updateLiveUserStatus(id: string, status: "online" | "offline") {
     await connectToDatabase();
     const user = await User.findOneAndUpdate(

@@ -10,12 +10,13 @@ import {
   Download,
   Grid3x3,
   Grid2x2,
+  FileIcon,
 } from "lucide-react";
-import Image from "next/image";
 import { useMemo, useState } from "react";
-import MediaCard from "../components/media-card";
-import { Button } from "@/components/ui/button";
-import ProfileHeader from "../components/profile-header";
+import MediaCard from "@/app/(views)/chat/profile/components/cards/media-card";
+import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
+import UserImage from "@/app/(views)/chat/profile/components/user-image";
+import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
 
 interface MediaPageProps {
   session: Session;
@@ -61,17 +62,7 @@ function MediaPageClient({ session }: MediaPageProps) {
         <div className="relative -mt-20 mb-8">
           <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl backdrop-blur-lg">
             <div className="flex flex-col items-center gap-4">
-              <div className="group relative">
-                <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-50 blur-lg transition-opacity group-hover:opacity-75"></div>
-                <Image
-                  src={session.user.image || "/default-avatar.png"}
-                  alt="User Avatar"
-                  width={100}
-                  height={100}
-                  className="relative h-28 w-28 rounded-full border-4 border-white object-cover shadow-xl"
-                  priority
-                />
-              </div>
+              <UserImage userImage={session.user.image} />
 
               <div className="text-center">
                 <h1 className="mb-2 text-3xl font-bold text-gray-900">
@@ -197,25 +188,12 @@ function MediaPageClient({ session }: MediaPageProps) {
 
         {/* Load More Button */}
         {hasNextPage && (
-          <div className="mt-8 flex items-center justify-center">
-            <Button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isFetchingNextPage ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Loading More...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-5 w-5" />
-                  Load More Media
-                </>
-              )}
-            </Button>
-          </div>
+          <LoadMoreButton
+            isFetchingNextPage={isFetchingNextPage}
+            fetchNextPage={fetchNextPage}
+            icon={FileIcon}
+            content="Media"
+          />
         )}
 
         {/* Loading Indicator for Pagination */}

@@ -71,6 +71,27 @@ export const getMessages = async (
   }
 };
 
+export const getMessagesByUserId = async (
+  userId: string,
+  limit: number,
+  offset: number,
+) => {
+  try {
+    await connectToDatabase();
+    const messages = await Message.find({ sender: userId })
+      .limit(limit)
+      .skip(offset)
+      .populate("room", ["name", "avatar", "members", "isPrivate"])
+      .populate("sender", ["name", "avatar"])
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return messages;
+  } catch (error) {
+    throw error;
+  }
+};
+
 /**
  * This function gets messages by room that are paginated
  * and sorted by createdAt

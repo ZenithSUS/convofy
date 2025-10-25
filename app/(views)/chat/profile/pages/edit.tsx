@@ -154,6 +154,7 @@ function EditPageClient({ session }: { session: Session }) {
       updateUser,
       form,
       update,
+      router,
     ],
   );
 

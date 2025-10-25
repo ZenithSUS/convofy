@@ -19,9 +19,9 @@ import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
 
 // Hooks
-import useUserConnectionStatus from "@/hooks/use-presence";
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
+import useConnectionStatus from "@/store/connection-status-store";
 
 interface ChatListClientProps {
   session: Session;
@@ -33,7 +33,7 @@ function ChatListClient({ session }: ChatListClientProps) {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const { connectionStatus } = useUserConnectionStatus({ session });
+  const { status: connectionStatus } = useConnectionStatus();
 
   const isSearchMode = useMemo<boolean>(() => {
     return debouncedSearchQuery.trim().length > 0;

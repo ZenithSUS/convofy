@@ -1,23 +1,17 @@
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
-import { PusherConnectionStatus } from "@/types/pusher";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
+import useConnectionStatus from "@/store/connection-status-store";
 
-interface userConnectionStatusProps {
-  session: Session;
-}
-
-const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
+const useUserConnectionStatus = (session: Session) => {
   const isMountedRef = useRef(false);
-
-  const [connectionStatus, setConnectionStatus] = useState<
-    PusherConnectionStatus | string
-  >("connecting");
+  const { status: connectionStatus, setStatus: setConnectionStatus } =
+    useConnectionStatus();
 
   const { mutateAsync: updateUserStatus } = useUpdateUserStatus();
 
@@ -29,7 +23,7 @@ const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
         getHomePusherConnectionState,
         showErrorConnectionMessage,
       ),
-    [],
+    [setConnectionStatus],
   );
 
   useEffect(() => {
@@ -74,6 +68,7 @@ const useUserConnectionStatus = ({ session }: userConnectionStatusProps) => {
     conHandler.handleConnected,
     conHandler.handleFailed,
     conHandler.handleUnavailable,
+    setConnectionStatus,
   ]);
 
   useEffect(() => {

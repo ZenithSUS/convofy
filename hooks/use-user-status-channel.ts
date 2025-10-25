@@ -6,14 +6,17 @@ import {
   subscribeToUserStatus,
   unsubscribeFromUserStatus,
 } from "@/services/pusher/user-status-manager";
+import { useSession } from "next-auth/react";
 
 export default function useUserStatusChannel(session: Session) {
+  const { update } = useSession();
   useEffect(() => {
     if (!session?.user?.id) return;
 
     // Handle status update
     const handleStatusUpdate = (status: string) => {
       console.log("User status updated:", status);
+      update({ ...session, user: { ...session.user, status } });
       return;
     };
 
@@ -23,5 +26,5 @@ export default function useUserStatusChannel(session: Session) {
     return () => {
       unsubscribeFromUserStatus();
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, update, session]);
 }

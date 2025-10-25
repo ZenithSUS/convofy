@@ -68,7 +68,7 @@ export const useGetRoomByUserId = (
   searchQuery: string = "",
 ): UseQueryResult<RoomContent[], unknown> => {
   const getRoomByUserId = async (isSearch: boolean) => {
-    const route = isSearch ? `/search` : `/rooms/user/${id}`;
+    const route = isSearch ? `/rooms/search` : `/rooms/user/${id}`;
 
     const response = await client
       .get(route, {

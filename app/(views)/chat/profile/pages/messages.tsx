@@ -5,18 +5,28 @@ import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header"
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
 import { Loader2, MessageSquareIcon } from "lucide-react";
-import { useEffect, useMemo } from "react";
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import UserMessageCard from "@/app/(views)/chat/profile/components/cards/user-message-card";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
 import { useGetUserMessageStats } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
+import MessageSearchbar from "../components/message-searchbar";
 
 interface MessagesPageClientProps {
   session: Session;
 }
 
 function MessagesPageClient({ session }: MessagesPageClientProps) {
+  const DEBOUNCE_MS = 500;
   const queryClient = useQueryClient();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  const isSearchMode = useMemo<boolean>(() => {
+    return debouncedSearchQuery.trim().length > 0;
+  }, [debouncedSearchQuery]);
+
   const {
     data: userMessages,
     isLoading,
@@ -24,7 +34,7 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useGetMessagesByUserId(session.user.id, 5);
+  } = useGetMessagesByUserId(session.user.id, 5, isSearchMode, searchQuery);
 
   const {
     data: userMessageStats,
@@ -46,6 +56,18 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
     () => isUserMessageStatsLoading || isUserMessageStatsFetching,
     [isUserMessageStatsLoading, isUserMessageStatsFetching],
   );
+
+  const handleSearch = useCallback((query: ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(query.target.value);
+  }, []);
+
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(delay);
+  }, [searchQuery]);
 
   // Remove Queries on unmount
   useEffect(() => {
@@ -113,6 +135,9 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
             </div>
           </div>
         </div>
+
+        {/* Message Search */}
+        <MessageSearchbar onSearch={handleSearch} />
 
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
           {/* Messages Content */}

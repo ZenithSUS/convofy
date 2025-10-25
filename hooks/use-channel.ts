@@ -16,9 +16,12 @@ import ConnectionStatusHandler from "@/services/pusher/connection-status-handler
 // Lib
 import { pusherClient } from "@/lib/pusher-client";
 
+// Store
+import useConnectionStatus from "@/store/connection-status-store";
+
 // Types
 import { MessageTyping } from "@/types/message";
-import { PusherChannel, PusherConnectionStatus } from "@/types/pusher";
+import { PusherChannel } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
 
 interface useChannelProps {
@@ -30,9 +33,8 @@ interface useChannelProps {
 export const useChannel = ({ session, roomId, room }: useChannelProps) => {
   // States
   const queryClient = useQueryClient();
-  const [connectionStatus, setConnectionStatus] = useState<
-    PusherConnectionStatus | string
-  >("connecting");
+  const { status: connectionStatus, setStatus: setConnectionStatus } =
+    useConnectionStatus();
   const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
     new Map(),
   );
@@ -71,7 +73,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
         getPusherConnectionState,
         showErrorConnectionMessage,
       ),
-    [],
+    [setConnectionStatus],
   );
 
   // Channel event handlers
@@ -116,6 +118,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     conHandler.handleUnavailable,
     conHandler.handleFailed,
     conHandler.handleError,
+    setConnectionStatus,
   ]);
 
   // Room channel event handlers

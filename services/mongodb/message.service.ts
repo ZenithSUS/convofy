@@ -71,6 +71,14 @@ export const getMessages = async (
   }
 };
 
+/**
+ * Retrieves messages sent by a user, paginated and sorted by createdAt in descending order.
+ * @param {string} userId - The ID of the user to fetch messages for.
+ * @param {number} limit - The maximum number of messages to return.
+ * @param {number} offset - The number of messages to skip before returning the results.
+ * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user.
+ * @throws {Error} - If there was an error while fetching the messages.
+ */
 export const getMessagesByUserId = async (
   userId: string,
   limit: number,
@@ -79,6 +87,41 @@ export const getMessagesByUserId = async (
   try {
     await connectToDatabase();
     const messages = await Message.find({ sender: userId })
+      .limit(limit)
+      .skip(offset)
+      .populate("room", ["name", "avatar", "members", "isPrivate"])
+      .populate("sender", ["name", "avatar"])
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return messages;
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Retrieves messages sent by a user that match a given query, paginated and sorted by createdAt in descending order.
+ * @param {string} userId - The ID of the user to fetch messages for.
+ * @param {string} query - The query to filter the messages by.
+ * @param {number} limit - The maximum number of messages to return.
+ * @param {number} offset - The number of messages to skip before returning the results.
+ * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user that match the query.
+ * @throws {Error} - If there was an error while fetching the messages.
+ */
+export const getMessagesByUserIdAndQuery = async (
+  userId: string,
+  query: string,
+  limit: number,
+  offset: number,
+) => {
+  try {
+    await connectToDatabase();
+    const messages = await Message.find({
+      sender: userId,
+      type: "text",
+      $or: [{ content: { $regex: query, $options: "i" } }],
+    })
       .limit(limit)
       .skip(offset)
       .populate("room", ["name", "avatar", "members", "isPrivate"])

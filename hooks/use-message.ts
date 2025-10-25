@@ -60,13 +60,20 @@ export const useGetMessagesByRoom = (
 export const useGetMessagesByUserId = (
   userId: string,
   limit: number,
+  isSearch: boolean,
+  searchQuery: string = "",
 ): UseInfiniteQueryResult<InfiniteData<UserMessage[], unknown>, Error> => {
   const getMessagesByUserId = async (limit: number, offset: number) => {
+    const route = isSearch
+      ? `/message/user/${userId}/search`
+      : `/message/user/${userId}`;
+
     const response = await client
-      .get(`message/user/${userId}`, {
+      .get(route, {
         params: {
           limit,
           offset,
+          query: searchQuery,
         },
       })
       .then((res) => res.data)
@@ -79,7 +86,7 @@ export const useGetMessagesByUserId = (
   };
 
   return useInfiniteQuery<UserMessage[], Error>({
-    queryKey: ["messages", userId],
+    queryKey: ["messages", userId, searchQuery],
     queryFn: async ({ pageParam = 0 }) =>
       getMessagesByUserId(limit, pageParam as number),
     initialPageParam: 0,
@@ -164,11 +171,7 @@ export const useSendMessage = (): UseMutationResult<
       // Update the cache with the new message
       queryClient.setQueryData(
         ["messages", variables.room],
-        (
-          old:
-            | import("@tanstack/react-query").InfiniteData<Message[]>
-            | undefined,
-        ) => {
+        (old: InfiniteData<Message[]> | undefined) => {
           if (!old) {
             return {
               pages: [data],

@@ -20,6 +20,8 @@ const MessageSchema = new Schema<IMessage>(
   { timestamps: true },
 );
 
+MessageSchema.index({ content: "text" });
+
 // Delete the model if it exists to avoid OverwriteModelError
 if (mongoose.models.Message) {
   delete mongoose.models.Message;

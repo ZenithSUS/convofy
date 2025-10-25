@@ -13,7 +13,7 @@ import MediaUpload from "@/app/(views)/chat/components/media-upload";
 import { Button } from "@/components/ui/button";
 import EmojiSelection from "@/app/(views)/chat/components/emoji-selection";
 import { Loader2, Send } from "lucide-react";
-import { ChangeEvent } from "react";
+import { ChangeEvent, KeyboardEventHandler } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 interface MessageFormProps {
@@ -37,6 +37,13 @@ function MessageForm({
   handleEmojiAppend,
   handleAppendFile,
 }: MessageFormProps) {
+  const onKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      messageForm.handleSubmit(handleSendMessage)();
+    }
+  };
+
   return (
     <Form {...messageForm}>
       <form
@@ -66,6 +73,7 @@ function MessageForm({
                     }
                   }}
                   onBlur={() => handleStopTypingUser()}
+                  onKeyDown={onKeyDown}
                 />
               </FormControl>
               <FormMessage />

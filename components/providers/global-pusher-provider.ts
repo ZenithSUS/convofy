@@ -1,30 +1,60 @@
 "use client";
 
+import showErrorConnectionMessage from "@/helper/pusher/error";
+import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 import { pusherClient } from "@/lib/pusher-client";
+import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import { RoomContent } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 function GlobalPusherProvider() {
   const { data: session, update } = useSession();
   const queryClient = useQueryClient();
+  const isMountedRef = useRef(true);
   const channelRef = useRef<ReturnType<typeof pusherClient.subscribe> | null>(
     null,
   );
 
+  const conHandler = useMemo(
+    () =>
+      new ConnectionStatusHandler(
+        isMountedRef,
+        update,
+        getHomePusherConnectionState,
+        showErrorConnectionMessage,
+      ),
+    [update],
+  );
+
   // Handle Pusher connection state changes to ensure reconnection
   useEffect(() => {
-    const handleDisconnected = () => {
-      pusherClient.connection.connect();
-    };
-
-    pusherClient.connection.bind("disconnected", handleDisconnected);
+    isMountedRef.current = true;
+    pusherClient.connection.bind("connected", conHandler.handleConnected);
+    pusherClient.connection.bind("disconnected", conHandler.handleDisconnected);
+    pusherClient.connection.bind("connecting", conHandler.handleConnecting);
+    pusherClient.connection.bind("state_change", conHandler.handleStateChange);
 
     return () => {
-      pusherClient.connection.unbind("disconnected", handleDisconnected);
+      isMountedRef.current = false;
+      pusherClient.connection.unbind("connected", conHandler.handleConnected);
+      pusherClient.connection.unbind(
+        "disconnected",
+        conHandler.handleDisconnected,
+      );
+      pusherClient.connection.unbind("connecting", conHandler.handleConnecting);
+      pusherClient.connection.unbind(
+        "state_change",
+        conHandler.handleStateChange,
+      );
     };
-  }, []);
+  }, [
+    conHandler.handleConnected,
+    conHandler.handleDisconnected,
+    conHandler.handleConnecting,
+    conHandler.handleStateChange,
+  ]);
 
   useEffect(() => {
     if (!session?.user.id) return;

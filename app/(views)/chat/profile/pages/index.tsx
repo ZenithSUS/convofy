@@ -8,6 +8,7 @@ import Link from "next/link";
 import profileSettings from "@/constants/profile-settings";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
+import useConnectionStatus from "@/store/connection-status-store";
 
 function ProfilePageClient({ session }: { session: Session }) {
   const {
@@ -15,6 +16,8 @@ function ProfilePageClient({ session }: { session: Session }) {
     isLoading,
     isFetching,
   } = useGetUserDataStats(session.user.id);
+
+  const { status: connectionStatus } = useConnectionStatus();
 
   const isStatsProcessing = useMemo(
     () => isLoading || isFetching,
@@ -41,9 +44,9 @@ function ProfilePageClient({ session }: { session: Session }) {
                 </h1>
                 <p className="text-sm text-gray-600">{session.user.email}</p>
                 <div
-                  className={`mt-2 rounded-full bg-green-100 px-3 py-1 text-xs font-medium ${session.user.status === "online" ? "text-green-800" : "text-gray-800"}`}
+                  className={`mt-2 rounded-full px-3 py-1 text-xs font-medium ${connectionStatus === "connected" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                 >
-                  {session.user.status === "online" ? "Online" : "Offline"}
+                  {connectionStatus === "connected" ? "Online" : "Offline"}
                 </div>
               </div>
             </div>

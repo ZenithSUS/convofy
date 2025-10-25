@@ -4,13 +4,14 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
-import { Loader2, MessageSquareIcon, Sparkles } from "lucide-react";
+import { Loader2, MessageSquareIcon, Sparkles, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import UserMessageCard from "@/app/(views)/chat/profile/components/cards/user-message-card";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
 import { useGetUserMessageStats } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import SearchBar from "@/components/ui/searchbar";
+import { motion } from "framer-motion";
 
 interface MessagesPageClientProps {
   session: Session;
@@ -155,6 +156,29 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
           )}
         </div>
 
+        {/* Search Result */}
+        {isSearchMode && (
+          <div className="pb-4">
+            <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <TrendingUp size={16} className="text-blue-600" />
+                    Search Results
+                  </h2>
+                  <p className="mt-1 text-xs text-gray-600">
+                    Found{" "}
+                    <span className="font-bold text-blue-600">
+                      {userMessagesData ? userMessagesData.length : 0}
+                    </span>{" "}
+                    matches for {`"${debouncedSearchQuery}"`}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
           {/* Messages Content */}
           {isMessagesProcessing && (
@@ -170,8 +194,16 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
             </div>
           )}
 
-          {userMessagesData?.map((userMessages) => (
-            <UserMessageCard key={userMessages._id} message={userMessages} />
+          {userMessagesData?.map((userMessages, index) => (
+            <motion.div
+              key={userMessages._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.2, delay: index * 0.1 }}
+            >
+              <UserMessageCard key={userMessages._id} message={userMessages} />
+            </motion.div>
           ))}
         </div>
 

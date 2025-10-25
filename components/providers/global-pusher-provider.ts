@@ -4,6 +4,7 @@ import showErrorConnectionMessage from "@/helper/pusher/error";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
+import useConnectionStatus from "@/store/connection-status-store";
 import { RoomContent } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -11,6 +12,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 function GlobalPusherProvider() {
   const { data: session, update } = useSession();
+  const { setStatus: updateConnectionStatus } = useConnectionStatus();
   const queryClient = useQueryClient();
   const isMountedRef = useRef(true);
   const channelRef = useRef<ReturnType<typeof pusherClient.subscribe> | null>(
@@ -21,7 +23,7 @@ function GlobalPusherProvider() {
     () =>
       new ConnectionStatusHandler(
         isMountedRef,
-        update,
+        updateConnectionStatus,
         getHomePusherConnectionState,
         showErrorConnectionMessage,
       ),

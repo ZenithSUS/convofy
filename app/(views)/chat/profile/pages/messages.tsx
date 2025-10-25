@@ -5,7 +5,7 @@ import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header"
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
 import { Loader2, MessageSquareIcon, Sparkles } from "lucide-react";
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import UserMessageCard from "@/app/(views)/chat/profile/components/cards/user-message-card";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
 import { useGetUserMessageStats } from "@/hooks/use-user";

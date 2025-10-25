@@ -33,6 +33,7 @@
     "cloudinary-build-url": "^0.2.4",
     "clsx": "^2.1.1",
     "emoji-mart": "^5.6.0",
+    "framer-motion": "^12.23.24",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.544.0",
     "mongodb": "^6.20.0",

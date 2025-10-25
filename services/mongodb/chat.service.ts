@@ -58,6 +58,7 @@ export const chatService = {
         const pusherPromises = (room.members as unknown as RoomMembers[]).map(
           (member) => {
             const memberId = member._id.toString();
+            console.log("memberId", memberId);
 
             return pusherServer.trigger(
               `user-${memberId}`,

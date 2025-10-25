@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useRef } from "react";
 
 function GlobalPusherProvider() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
   const queryClient = useQueryClient();
   const channelRef = useRef<ReturnType<typeof pusherClient.subscribe> | null>(
     null,
@@ -41,8 +41,8 @@ function GlobalPusherProvider() {
     const channel = pusherClient.subscribe(channelName);
     channelRef.current = channel;
 
+    // Handle room updates
     channel.bind("room-updated", (data: RoomContent) => {
-      // Update all room list queries for this user
       queryClient.setQueriesData<RoomContent[]>(
         {
           queryKey: ["rooms", session.user.id],
@@ -61,6 +61,12 @@ function GlobalPusherProvider() {
       );
     });
 
+    // Handle status updates
+    channel.bind("status-update", (status: string) => {
+      console.log("User status updated:", status);
+      update({ ...session, user: { ...session.user, status } });
+    });
+
     // Ensure Pusher is connected
     if (pusherClient.connection.state !== "connected") {
       pusherClient.connection.connect();
@@ -71,7 +77,7 @@ function GlobalPusherProvider() {
       pusherClient.unsubscribe(channelName);
       channelRef.current = null;
     };
-  }, [session?.user.id, queryClient]);
+  }, [session?.user.id, queryClient, update, session]);
 
   return null;
 }

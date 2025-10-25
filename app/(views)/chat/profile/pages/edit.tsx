@@ -64,7 +64,6 @@ function EditPageClient({ session }: { session: Session }) {
     [isUploading, isDeleting, isUpdating],
   );
 
-  // FIX #2: Check if there's any change in name OR avatar
   const isAnyChange = useMemo(() => {
     const hasNameChange = name !== session.user.name;
     const hasAvatarChange = avatar && avatar.length > 0;

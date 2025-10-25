@@ -11,7 +11,7 @@ export const profileSettings = [
     name: "Edit Profile",
     description: "Update your personal information",
     icon: <EditIcon size={20} />,
-    href: "#",
+    href: "/chat/profile/edit",
     color: "from-blue-500 to-blue-600",
   },
   {

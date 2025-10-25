@@ -125,6 +125,28 @@ export const userService = {
   },
 
   /**
+   * Updates a user in the database.
+   * @param {Partial<UserType>} data - The user data to update.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   * @throws {Error} - If there was an error while updating the user.
+   */
+  async updateUser(data: Partial<UserType>) {
+    try {
+      await connectToDatabase();
+      const user = await User.findOneAndUpdate(
+        { _id: data._id },
+        { $set: data },
+        { new: true, fields: "-password" },
+      );
+
+      console.log("Updated user:", user);
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Updates the status of a user in the database.
    * @param {string} id - The ID of the user to update.
    * @param {"online" | "offline"} status - The new status of the user.

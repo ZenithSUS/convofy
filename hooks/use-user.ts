@@ -1,5 +1,5 @@
 import client from "@/lib/axios";
-import { UserMediaDataStats, UserMessageDataStats } from "@/types/user";
+import { User, UserMediaDataStats, UserMessageDataStats } from "@/types/user";
 import {
   UseBaseQueryResult,
   useMutation,
@@ -72,5 +72,29 @@ export const useUpdateUserStatus = (): UseMutationResult<
     mutationKey: ["updateUserStatus"],
     mutationFn: async (data: { userId: string; status: string }) =>
       updateUserStatus(data.userId, data.status),
+  });
+};
+
+export const useUpdateUser = (): UseMutationResult<
+  User,
+  Error,
+  Partial<User>,
+  unknown
+> => {
+  const updateUser = async (data: Partial<User>) => {
+    const response = await client
+      .put(`users/me`, data)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error updating user:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["updateUser"],
+    mutationFn: async (data: Partial<User>) => updateUser(data),
   });
 };

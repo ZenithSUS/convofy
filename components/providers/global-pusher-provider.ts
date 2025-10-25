@@ -27,11 +27,13 @@ function GlobalPusherProvider() {
         getHomePusherConnectionState,
         showErrorConnectionMessage,
       ),
-    [update],
+    [updateConnectionStatus],
   );
 
   // Handle Pusher connection state changes to ensure reconnection
   useEffect(() => {
+    if (!session?.user.id) return;
+
     isMountedRef.current = true;
     pusherClient.connection.bind("connected", conHandler.handleConnected);
     pusherClient.connection.bind("disconnected", conHandler.handleDisconnected);
@@ -52,6 +54,7 @@ function GlobalPusherProvider() {
       );
     };
   }, [
+    session?.user.id,
     conHandler.handleConnected,
     conHandler.handleDisconnected,
     conHandler.handleConnecting,

@@ -2,7 +2,6 @@
 
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
-import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
 import { Loader2, MessageSquareIcon, Sparkles, TrendingUp } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -12,6 +11,7 @@ import { useGetUserMessageStats } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import SearchBar from "@/components/ui/searchbar";
 import { motion } from "framer-motion";
+import AvatarCard from "@/app/(views)/chat/profile/components/avatar-card";
 
 interface MessagesPageClientProps {
   session: Session;
@@ -92,19 +92,7 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* User Avatar Card */}
-        <div className="relative -mt-20 mb-8">
-          <div className="rounded-3xl border border-gray-300 bg-white p-6 shadow-2xl backdrop-blur-lg">
-            <div className="flex flex-col items-center gap-3">
-              <UserImage userImage={session.user.image} />
-              <div className="text-center">
-                <h1 className="mb-2 text-3xl font-bold text-gray-900">
-                  Messages
-                </h1>
-                <p className="text-sm text-gray-600">{session.user.name}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AvatarCard session={session} name="Messages" />
 
         {/* Message Stats */}
         <div className="mx-auto max-w-7xl pb-4">

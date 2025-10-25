@@ -33,6 +33,9 @@ declare module "next-auth/jwt" {
     status?: string | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
+    // Add these to track updates
+    name?: string | null;
+    picture?: string | null;
   }
 }
 
@@ -115,8 +118,11 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
-        // Attach additional fields to session user
-        user.id = existingUser._id?.toString();
+        // Attach existing data to user
+        user.id = existingUser._id.toString();
+        user.name = existingUser.name;
+        user.email = existingUser.email;
+        user.image = existingUser.avatar;
         user.status = existingUser.status;
         user.lastActive = existingUser.lastActive;
         user.createdAt = existingUser.createdAt;
@@ -132,10 +138,23 @@ export const authOptions: NextAuthOptions = {
       // Redirect to /chat after successful sign in
       return baseUrl + "/chat";
     },
-    async session({ session, token }) {
-      // Add additional data to session
+    async session({ session, token, trigger, newSession }) {
+      // Handle manual session updates (when update() is called)
+      if (trigger === "update" && newSession) {
+        // Update token data with new session data
+        if (newSession.user?.name) {
+          token.name = newSession.user.name;
+        }
+        if (newSession.user?.image) {
+          token.picture = newSession.user.image;
+        }
+      }
+
+      // Add additional data to session from token
       if (session.user) {
         session.user.id = token.sub!;
+        session.user.name = token.name;
+        session.user.image = token.picture;
         session.user.status = token.status!;
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
@@ -152,8 +171,24 @@ export const authOptions: NextAuthOptions = {
 
       return session;
     },
-    // args (token, account, profile)
-    async jwt({ token, account }) {
+    // Accept trigger parameter and handle updates
+    async jwt({ token, account, user, trigger, session }) {
+      // Handle manual token updates (when update() is called)
+      if (trigger === "update" && session) {
+        // Update token with new data from session
+        if (session.user?.name) {
+          token.name = session.user.name;
+        }
+        if (session.user?.image) {
+          token.picture = session.user.image;
+        }
+        if (session.user?.status) {
+          token.status = session.user.status;
+        }
+
+        return token;
+      }
+
       // Check first if the user still exists in the database
       const existingUser = await userService.getUserByEmail(token.email!);
       if (!existingUser) {
@@ -165,13 +200,26 @@ export const authOptions: NextAuthOptions = {
       if (account) {
         token.accessToken = account.access_token;
       }
-      // Fetch user data to set additional fields
-      if (token.email) {
-        const user = await userService.getUserByEmail(token.email);
-        if (user) {
-          token.status = user.status;
-          token.lastActive = user.lastActive;
-          token.createdAt = user.createdAt;
+
+      // On initial sign in, set all user data from user object
+      if (user) {
+        token.name = user.name;
+        token.picture = user.image;
+        token.status = user.status;
+        token.lastActive = user.lastActive;
+        token.createdAt = user.createdAt;
+      }
+
+      // Fetch user data to set additional fields (if not initial sign in)
+      if (!user && token.email) {
+        const dbUser = await userService.getUserByEmail(token.email);
+        if (dbUser) {
+          token.status = dbUser.status;
+          token.lastActive = dbUser.lastActive;
+          token.createdAt = dbUser.createdAt;
+          // Also sync name and avatar from DB if they've changed
+          token.name = dbUser.name;
+          token.picture = dbUser.avatar;
         }
       }
 

@@ -2,10 +2,7 @@
 
 import { useEffect } from "react";
 import { Session } from "@/app/(views)/chat/components/chat-header";
-import {
-  subscribeToUserStatus,
-  unsubscribeFromUserStatus,
-} from "@/services/pusher/user-status-manager";
+import { subscribeToUserStatus } from "@/services/pusher/user-status-manager";
 import { useSession } from "next-auth/react";
 
 export default function useUserStatusChannel(session: Session) {
@@ -22,9 +19,5 @@ export default function useUserStatusChannel(session: Session) {
 
     // Subscribe to the user status channel
     subscribeToUserStatus(session.user.id, handleStatusUpdate);
-
-    return () => {
-      unsubscribeFromUserStatus();
-    };
   }, [session?.user?.id, update, session]);
 }

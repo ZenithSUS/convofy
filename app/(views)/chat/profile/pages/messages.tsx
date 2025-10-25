@@ -4,13 +4,13 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
-import { Loader2, MessageSquareIcon } from "lucide-react";
+import { Loader2, MessageSquareIcon, Sparkles } from "lucide-react";
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from "react";
 import UserMessageCard from "@/app/(views)/chat/profile/components/cards/user-message-card";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
 import { useGetUserMessageStats } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
-import MessageSearchbar from "../components/message-searchbar";
+import SearchBar from "@/components/ui/searchbar";
 
 interface MessagesPageClientProps {
   session: Session;
@@ -34,7 +34,12 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useGetMessagesByUserId(session.user.id, 5, isSearchMode, searchQuery);
+  } = useGetMessagesByUserId(
+    session.user.id,
+    5,
+    isSearchMode,
+    debouncedSearchQuery,
+  );
 
   const {
     data: userMessageStats,
@@ -57,8 +62,8 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
     [isUserMessageStatsLoading, isUserMessageStatsFetching],
   );
 
-  const handleSearch = useCallback((query: ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(query.target.value);
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
   }, []);
 
   useEffect(() => {
@@ -137,7 +142,18 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
         </div>
 
         {/* Message Search */}
-        <MessageSearchbar onSearch={handleSearch} />
+        <div className="relative mb-4">
+          <SearchBar
+            onSearch={handleSearch}
+            placeholder="Search messages"
+            className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
+          />
+          {searchQuery && (
+            <div className="absolute top-1/2 right-3 -translate-y-1/2">
+              <Sparkles size={16} className="animate-pulse text-blue-500" />
+            </div>
+          )}
+        </div>
 
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
           {/* Messages Content */}
@@ -147,6 +163,13 @@ function MessagesPageClient({ session }: MessagesPageClientProps) {
               Loading messages...
             </div>
           )}
+
+          {userMessagesData?.length === 0 && !isMessagesProcessing && (
+            <div className="flex items-center justify-center p-4 text-gray-500">
+              No messages found
+            </div>
+          )}
+
           {userMessagesData?.map((userMessages) => (
             <UserMessageCard key={userMessages._id} message={userMessages} />
           ))}

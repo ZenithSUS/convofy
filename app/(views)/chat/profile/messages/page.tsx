@@ -6,5 +6,5 @@ import MessagesPageClient from "@/app/(views)/chat/profile/pages/messages";
 export default async function MessagesPage() {
   const session = await getServerSession(authOptions);
 
-  return <MessagesPageClient session={session as Session} />;
+  return <MessagesPageClient serverSession={session as Session} />;
 }

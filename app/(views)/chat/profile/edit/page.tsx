@@ -6,5 +6,5 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 export default async function EditPage() {
   const session = await getServerSession(authOptions);
 
-  return <EditPageClient session={session as Session} />;
+  return <EditPageClient serverSession={session as Session} />;
 }

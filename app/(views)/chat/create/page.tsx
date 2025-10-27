@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth";
 async function CreateRoomPage() {
   const session = await getServerSession(authOptions);
 
-  return <CreateRoomClient session={session as Session} />;
+  return <CreateRoomClient serverSession={session as Session} />;
 }
 
 export default CreateRoomPage;

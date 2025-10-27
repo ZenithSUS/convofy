@@ -2,13 +2,13 @@
 
 import { ThreeDot } from "react-loading-indicators";
 
-function Loading() {
+function Loading({ text }: { text?: string }) {
   return (
     <ThreeDot
       variant="bounce"
       color="#31a1cc"
       size="medium"
-      text="Loading"
+      text={text || "Loading..."}
       textColor="#000000"
     />
   );

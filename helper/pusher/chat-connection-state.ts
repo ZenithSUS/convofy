@@ -7,7 +7,7 @@ export const getPusherConnectionState = (currentState: string) => {
       toast.success("Connected to Room");
       break;
     case "connecting":
-      console.log("Connecting to Pusher");
+      console.log("Connecting to Room");
       break;
     case "disconnected":
       toast.warn("Connection lost. Reconnecting...");

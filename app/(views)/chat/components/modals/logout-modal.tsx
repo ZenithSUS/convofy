@@ -23,16 +23,8 @@ function LogoutModal({ userId }: { userId: string }) {
     setIsClient(true);
   }, []);
 
-  const handleLogout = () => {
-    signOut()
-      .then(async () => {
-        const response = await client.post("/auth/logout", { id: userId });
-        console.log("Logout response:", response);
-        return response.data;
-      })
-      .catch((error) => {
-        console.error("Error logging out:", error);
-      });
+  const handleLogout = async () => {
+    await Promise.all([signOut(), client.post("/auth/logout", { id: userId })]);
   };
 
   if (!isClient) return null;

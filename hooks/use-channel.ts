@@ -2,9 +2,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
-// Next
-import { Session } from "next-auth";
-
 // Helpers
 import getPusherConnectionState from "@/helper/pusher/chat-connection-state";
 import showErrorConnectionMessage from "@/helper/pusher/error";
@@ -23,6 +20,7 @@ import useConnectionStatus from "@/store/connection-status-store";
 import { MessageTyping } from "@/types/message";
 import { PusherChannel } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
+import { Session } from "@/app/(views)/chat/components/chat-header";
 
 interface useChannelProps {
   session: Session;
@@ -42,6 +40,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
   // Refs
   const isMountedRef = useRef(true);
   const isTypingRef = useRef(false);
+  const typingIndicatorRef = useRef<HTMLDivElement | null>(null);
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -128,7 +127,6 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     const cleanupChannel = () => {
       if (channelRef.current) {
         const channelName = channelRef.current.name;
-        console.log(`Cleaning up channel: ${channelName}`);
 
         channelRef.current.unbind_all();
 
@@ -158,16 +156,12 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     }
 
     if (!isMember) {
-      console.log(`User ${session.user.id} is not a member of room ${roomId}`);
       cleanupChannel();
       currentRoomIdRef.current = null;
       return;
     }
 
     if (currentRoomIdRef.current && currentRoomIdRef.current !== roomId) {
-      console.log(
-        `Changing from room ${currentRoomIdRef.current} to ${roomId}`,
-      );
       cleanupChannel();
     }
 
@@ -176,11 +170,8 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     const channelName = `chat-${roomId}`;
 
     if (!channelRef.current || channelRef.current.name !== channelName) {
-      console.log(`Subscribing to channel: ${channelName}`);
-
       const existingChannel = pusherClient.channel(channelName);
       if (existingChannel) {
-        console.log(`Found existing channel ${channelName}, cleaning up...`);
         existingChannel.unbind_all();
         pusherClient.unsubscribe(channelName);
       }
@@ -192,7 +183,6 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     }
 
     return () => {
-      console.log(`Unmounting room ${roomId}, cleaning up...`);
       isMountedRef.current = false;
       queryClient.removeQueries({ queryKey: ["messages", roomId] });
       cleanupChannel();
@@ -211,6 +201,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     isMountedRef,
     connectionStatus,
     isTypingRef,
+    typingIndicatorRef,
     typingUsers,
     typingTimeoutRef,
     isMember,

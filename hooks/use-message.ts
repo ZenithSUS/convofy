@@ -244,7 +244,7 @@ export const useCheckTyping = (): UseMutationResult<
       .post("/typing", data)
       .then((res) => res.data)
       .catch((err) => {
-        console.log("Failed to defined typing", err);
+        console.error("Failed to defined typing", err);
         throw err;
       });
 

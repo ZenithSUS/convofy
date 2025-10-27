@@ -22,15 +22,17 @@ import ErrorMessage from "@/components/ui/error-message";
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
 import useConnectionStatus from "@/store/connection-status-store";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface ChatListClientProps {
-  session: Session;
+  serverSession: Session;
 }
 
-function ChatListClient({ session }: ChatListClientProps) {
+function ChatListClient({ serverSession }: ChatListClientProps) {
   const DEBOUNCE_MS = 500;
   const router = useRouter();
 
+  const { session } = useHybridSession(serverSession);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const { status: connectionStatus } = useConnectionStatus();

@@ -12,7 +12,10 @@ export interface Session {
     image: string;
     name: string;
     email: string;
+    avatar?: string;
     status: "online" | "offline";
+    createdAt: Date;
+    lastActive: Date;
   };
 }
 

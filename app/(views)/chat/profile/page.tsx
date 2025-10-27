@@ -6,5 +6,5 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 export default async function ProfilePage() {
   const session = await getServerSession(authOptions);
 
-  return <ProfilePageClient session={session as Session} />;
+  return <ProfilePageClient serverSession={session as Session} />;
 }

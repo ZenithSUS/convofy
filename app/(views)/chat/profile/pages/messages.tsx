@@ -12,12 +12,15 @@ import { useQueryClient } from "@tanstack/react-query";
 import SearchBar from "@/components/ui/searchbar";
 import { motion } from "framer-motion";
 import AvatarCard from "@/app/(views)/chat/profile/components/avatar-card";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface MessagesPageClientProps {
-  session: Session;
+  serverSession: Session;
 }
 
-function MessagesPageClient({ session }: MessagesPageClientProps) {
+function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
+  const { session } = useHybridSession(serverSession);
+
   const DEBOUNCE_MS = 500;
   const queryClient = useQueryClient();
 

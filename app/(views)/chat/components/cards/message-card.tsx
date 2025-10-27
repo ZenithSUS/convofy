@@ -1,7 +1,6 @@
 "use client";
 
 import { Message } from "@/types/message";
-import { Session } from "next-auth";
 import { memo, useMemo, useRef, useState, useEffect } from "react";
 import {
   useDeleteLiveMessage,
@@ -14,7 +13,8 @@ import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import MessageContent from "../message-content";
 import { Edit } from "lucide-react";
-import MessageEdit from "../message-edit";
+import MessageEdit from "@/app/(views)/chat/components/message-edit";
+import { Session } from "@/app/(views)/chat/components/chat-header";
 
 interface Props {
   message: Message | null;

@@ -25,8 +25,9 @@ import { extractPublicId } from "cloudinary-build-url";
 import { useUpdateUser } from "@/hooks/use-user";
 import { toast } from "react-toastify";
 import { User as UserType } from "@/types/user";
-import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import useHybridSession from "@/hooks/use-hybrid-session";
+import Loading from "@/components/ui/loading";
 
 const editFormSchema = z
   .object({
@@ -40,7 +41,9 @@ const editFormSchema = z
 
 type FormData = z.infer<typeof editFormSchema>;
 
-function EditPageClient({ session }: { session: Session }) {
+function EditPageClient({ serverSession }: { serverSession: Session }) {
+  const { update, session, isLoading } = useHybridSession(serverSession);
+
   const router = useRouter();
   const form = useForm<FormData>({
     resolver: zodResolver(editFormSchema),
@@ -57,7 +60,6 @@ function EditPageClient({ session }: { session: Session }) {
   const { mutateAsync: updateUser, isPending: isUpdating } = useUpdateUser();
   const { uploadImage, isUploading } = useUploadImage();
   const { deleteFile, isDeleting } = useDeleteFile();
-  const { update } = useSession();
 
   const isAnyFileUploading = useMemo(
     () => isUploading || isDeleting || isUpdating,
@@ -170,6 +172,13 @@ function EditPageClient({ session }: { session: Session }) {
   }, []);
 
   if (!session) return null;
+
+  if (isLoading)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Loading text="Please wait" />
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">

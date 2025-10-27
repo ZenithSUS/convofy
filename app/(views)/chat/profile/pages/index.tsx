@@ -8,16 +8,21 @@ import Link from "next/link";
 import profileSettings from "@/constants/profile-settings";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
-import useConnectionStatus from "@/store/connection-status-store";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
-function ProfilePageClient({ session }: { session: Session }) {
+function ProfilePageClient({ serverSession }: { serverSession: Session }) {
+  const { session, isClientSession } = useHybridSession(serverSession);
   const {
     data: userStats,
     isLoading,
     isFetching,
   } = useGetUserDataStats(session.user.id);
 
-  const { status: connectionStatus } = useConnectionStatus();
+  const userConnectionStatus = useMemo(() => {
+    if (isClientSession) {
+      return session.user.status;
+    }
+  }, [session, isClientSession]);
 
   const isStatsProcessing = useMemo(
     () => isLoading || isFetching,
@@ -44,9 +49,9 @@ function ProfilePageClient({ session }: { session: Session }) {
                 </h1>
                 <p className="text-sm text-gray-600">{session.user.email}</p>
                 <div
-                  className={`mt-2 rounded-full px-3 py-1 text-xs font-medium ${connectionStatus === "connected" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
+                  className={`mt-2 rounded-full px-3 py-1 text-xs font-medium ${userConnectionStatus === "online" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}`}
                 >
-                  {connectionStatus === "connected" ? "Online" : "Offline"}
+                  {userConnectionStatus === "online" ? "Online" : "Offline"}
                 </div>
               </div>
             </div>

@@ -6,5 +6,5 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 export default async function MediaPage() {
   const session = await getServerSession(authOptions);
 
-  return <MediaPageClient session={session as Session} />;
+  return <MediaPageClient serverSession={session as Session} />;
 }

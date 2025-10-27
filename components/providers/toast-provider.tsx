@@ -3,5 +3,5 @@
 import { ToastContainer } from "react-toastify";
 
 export const ToastProvider = () => {
-  return <ToastContainer />;
+  return <ToastContainer limit={1} />;
 };

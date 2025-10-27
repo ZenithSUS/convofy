@@ -32,9 +32,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface ChatHeaderProps {
-  session: Session;
+  serverSession: Session;
 }
 
 const schema = z.object({
@@ -51,8 +52,9 @@ const schema = z.object({
 
 type CreateRoomForm = z.infer<typeof schema>;
 
-function CreateRoomClient({ session }: ChatHeaderProps) {
+function CreateRoomClient({ serverSession }: ChatHeaderProps) {
   const router = useRouter();
+  const { session } = useHybridSession(serverSession);
   const [isSubmitting, startTransition] = useTransition();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { uploadImage, isUploading } = useUploadImage();

@@ -1,14 +1,33 @@
 "use client";
 
 import { MessageTyping } from "@/types/message";
+import { useEffect } from "react";
+
+interface TypingIndicatorProps {
+  typingUsers: Map<string, MessageTyping>;
+  typingIndicatorRef: React.RefObject<HTMLDivElement | null>;
+}
 
 function TypingIndicator({
   typingUsers,
-}: {
-  typingUsers: Map<string, MessageTyping>;
-}) {
+  typingIndicatorRef,
+}: TypingIndicatorProps) {
+  // Auto scroll on the typing indicator
+  useEffect(() => {
+    if (typingIndicatorRef.current && typingUsers.size > 0) {
+      typingIndicatorRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+
+    return () => {
+      typingIndicatorRef.current = null;
+    };
+  }, [typingUsers, typingIndicatorRef]);
+
   return (
-    <div className="mt-4 flex w-fit items-center gap-2 rounded-full bg-gray-100 px-4 py-2">
+    <div
+      className="mt-4 flex w-fit items-center gap-2 rounded-full bg-gray-100 px-4 py-2"
+      ref={typingIndicatorRef}
+    >
       <div className="flex gap-1">
         <span
           className="h-2 w-2 animate-bounce rounded-full bg-blue-500"

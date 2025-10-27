@@ -5,12 +5,12 @@ import useUserConnectionStatus from "@/hooks/use-presence";
 
 function ChatWrapper({
   children,
-  session,
+  serverSession,
 }: {
   children: React.ReactNode;
-  session: Session;
+  serverSession: Session;
 }) {
-  useUserConnectionStatus(session);
+  useUserConnectionStatus(serverSession);
 
   return <>{children}</>;
 }

@@ -17,12 +17,14 @@ import MediaCard from "@/app/(views)/chat/profile/components/cards/media-card";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface MediaPageProps {
-  session: Session;
+  serverSession: Session;
 }
 
-function MediaPageClient({ session }: MediaPageProps) {
+function MediaPageClient({ serverSession }: MediaPageProps) {
+  const { session } = useHybridSession(serverSession);
   const [gridColumns, setGridColumns] = useState<2 | 3>(3);
 
   const {

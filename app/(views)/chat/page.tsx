@@ -6,5 +6,5 @@ import ChatListClient from "@/app/(views)/chat/pages/index";
 export default async function ChatListPage() {
   const session = await getServerSession(authOptions);
 
-  return <ChatListClient session={session as Session} />;
+  return <ChatListClient serverSession={session as Session} />;
 }

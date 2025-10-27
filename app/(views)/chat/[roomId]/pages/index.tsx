@@ -11,7 +11,6 @@ import { useForm } from "react-hook-form";
 // Next
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { Session } from "next-auth";
 
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
@@ -42,6 +41,8 @@ import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
 import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
 import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
+import { Session } from "@/app/(views)/chat/components/chat-header";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -49,8 +50,9 @@ const schemaMessage = z.object({
 
 type FormData = z.infer<typeof schemaMessage>;
 
-function RoomPageClient({ session }: { session: Session }) {
+function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const { roomId }: { roomId: string } = useParams();
+  const { session } = useHybridSession(serverSession);
 
   const messageForm = useForm<FormData>({
     resolver: zodResolver(schemaMessage),
@@ -90,6 +92,7 @@ function RoomPageClient({ session }: { session: Session }) {
     isMountedRef,
     connectionStatus,
     isTypingRef,
+    typingIndicatorRef,
     typingUsers,
     isMember,
     typingTimeoutRef,
@@ -381,7 +384,10 @@ function RoomPageClient({ session }: { session: Session }) {
 
         {/* Enhanced Typing Indicator */}
         {!isChatError && typingUsers.size > 0 && (
-          <TypingIndicator typingUsers={typingUsers} />
+          <TypingIndicator
+            typingUsers={typingUsers}
+            typingIndicatorRef={typingIndicatorRef}
+          />
         )}
       </div>
 

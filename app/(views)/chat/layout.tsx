@@ -10,5 +10,7 @@ export default async function ChatLayout({
 }>) {
   const session = await getServerSession(authOptions);
 
-  return <ChatWrapper session={session as Session}>{children}</ChatWrapper>;
+  return (
+    <ChatWrapper serverSession={session as Session}>{children}</ChatWrapper>
+  );
 }

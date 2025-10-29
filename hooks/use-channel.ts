@@ -59,8 +59,9 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     [queryClient, roomId, session?.user?.id],
   );
 
-  const isMember = useMemo(
-    () => room?.members.some((member) => member._id === session.user.id),
+  const isMember = useMemo<boolean>(
+    () =>
+      room?.members.some((member) => member._id === session.user.id) || false,
     [room, session],
   );
 

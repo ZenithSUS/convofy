@@ -74,18 +74,6 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     refetch: refetchRoom,
   } = useGetRoomById(roomId as string);
 
-  const {
-    data: messages,
-    isLoading: messagesLoading,
-    isFetching: isFetchingMessages,
-    isError: messagesError,
-    error: messagesErrorData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch: refetchMessages,
-  } = useGetMessagesByRoom(roomId as string);
-
   const roomData = useMemo(() => room, [room]);
 
   const {
@@ -102,6 +90,18 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     roomId,
     room: roomData,
   });
+
+  const {
+    data: messages,
+    isLoading: messagesLoading,
+    isFetching: isFetchingMessages,
+    isError: messagesError,
+    error: messagesErrorData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch: refetchMessages,
+  } = useGetMessagesByRoom(roomId as string, 5, isMember);
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();

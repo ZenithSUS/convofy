@@ -58,7 +58,6 @@ export const chatService = {
         const pusherPromises = (room.members as unknown as RoomMembers[]).map(
           (member) => {
             const memberId = member._id.toString();
-            console.log("memberId", memberId);
 
             return pusherServer.trigger(
               `user-${memberId}`,
@@ -70,6 +69,7 @@ export const chatService = {
 
         await Promise.all(pusherPromises);
       }
+
       // Return the populated message
       return populatedMessage;
     } catch (error) {
@@ -103,6 +103,41 @@ export const chatService = {
       const channelName = `chat-${editMessage.room}`;
       await pusherServer.trigger(channelName, "edit-message", newEditedMessage);
 
+      // Update the room last message of all related members
+      const room = await Room.findById(editMessage.room).populate("members", [
+        "avatar",
+        "_id",
+        "status",
+        "name",
+      ]);
+
+      // Check if the room exists
+      if (!room) throw new Error("Room not found");
+
+      const roomContentData = {
+        _id: room._id.toString(),
+        members: room.members as unknown as RoomMembers[],
+        name: room.isPrivate ? undefined : room.name,
+        description: room.isPrivate ? undefined : room.description,
+        lastMessage: newEditedMessage,
+        isPrivate: room.isPrivate,
+        image: room.isPrivate ? undefined : room.image,
+      };
+
+      const pusherPromises = (room.members as unknown as RoomMembers[]).map(
+        (member) => {
+          const memberId = member._id.toString();
+
+          return pusherServer.trigger(
+            `user-${memberId}`,
+            "room-updated",
+            roomContentData,
+          );
+        },
+      );
+
+      await Promise.all(pusherPromises);
+
       return newEditedMessage;
     } catch (error) {
       throw error;
@@ -134,8 +169,43 @@ export const chatService = {
 
       // Send to Pusher
       const channelName = `chat-${message?.room}`;
-
       await pusherServer.trigger(channelName, "delete-message", message);
+
+      // Update the room last message of all related members
+      const room = await Room.findById(message?.room).populate("members", [
+        "avatar",
+        "_id",
+        "status",
+        "name",
+      ]);
+
+      // Check if the room exists
+      if (!room) throw new Error("Room not found");
+
+      const roomContentData = {
+        _id: room._id.toString(),
+        members: room.members as unknown as RoomMembers[],
+        name: room.isPrivate ? undefined : room.name,
+        description: room.isPrivate ? undefined : room.description,
+        lastMessage: lastMessage,
+        isPrivate: room.isPrivate,
+        image: room.isPrivate ? undefined : room.image,
+      };
+
+      // Update the room last message of all related members
+      const pusherPromises = (room.members as unknown as RoomMembers[]).map(
+        (member) => {
+          const memberId = member._id.toString();
+          return pusherServer.trigger(
+            `user-${memberId}`,
+            "room-updated",
+            roomContentData,
+          );
+        },
+      );
+
+      // Update at the same time
+      await Promise.all(pusherPromises);
 
       return message;
     } catch (error) {

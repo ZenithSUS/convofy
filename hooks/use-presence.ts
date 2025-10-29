@@ -77,10 +77,16 @@ const useUserConnectionStatus = (serverSession: Session) => {
     if (!session.user.id) return;
 
     const getUserStatus = async () => {
-      return await updateUserStatus({
-        userId: session.user.id,
-        status: connectionStatus !== "connected" ? "offline" : "online",
-      }).catch((err) => console.error("Error updating user status:", err));
+      if (!session.user?.id) return;
+
+      try {
+        await updateUserStatus({
+          userId: session.user.id,
+          status: connectionStatus !== "connected" ? "offline" : "online",
+        });
+      } catch (err) {
+        console.error("Error updating user status:", err);
+      }
     };
 
     getUserStatus();

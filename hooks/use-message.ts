@@ -18,6 +18,7 @@ import {
 export const useGetMessagesByRoom = (
   roomId: string,
   limit: number = 5,
+  isMember: boolean = false,
 ): UseInfiniteQueryResult<InfiniteData<Message[], unknown>, Error> => {
   const getMessagesByRoom = async (
     roomId: string,
@@ -54,6 +55,7 @@ export const useGetMessagesByRoom = (
     placeholderData: { pages: [], pageParams: [] },
     refetchOnWindowFocus: false,
     networkMode: "offlineFirst",
+    enabled: !!roomId && isMember,
   });
 };
 

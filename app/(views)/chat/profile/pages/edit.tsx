@@ -201,7 +201,10 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                 name="avatar"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-700">
+                    <FormLabel
+                      htmlFor="avatar"
+                      className="text-sm font-semibold text-gray-700"
+                    >
                       Profile Picture
                     </FormLabel>
                     <FormControl>
@@ -256,7 +259,12 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name</FormLabel>
+                    <FormLabel
+                      className="text-sm font-semibold text-gray-700"
+                      id="name"
+                    >
+                      Name
+                    </FormLabel>
                     <div className="relative">
                       <User className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                       <Input

@@ -149,7 +149,8 @@ export const roomService = {
       { _id: roomId },
       { $addToSet: { members: userId } },
       { new: true },
-    );
+    ).populate("members", ["name", "avatar"]);
+
     return room || null;
   },
 

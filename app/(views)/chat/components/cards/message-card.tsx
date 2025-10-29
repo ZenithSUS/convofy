@@ -23,7 +23,6 @@ interface Props {
   isThisEditing: boolean;
   isAnyEditing: boolean;
   isDetailsVisible: boolean;
-  isCurrentDetailVisible: boolean;
   setIsDetailsVisible: (value: boolean) => void;
   onEditComplete: () => void;
   onCancelEdit: () => void;
@@ -38,7 +37,6 @@ function MessageCard({
   isThisEditing,
   isAnyEditing,
   isDetailsVisible,
-  isCurrentDetailVisible,
   onEditComplete,
   onCancelEdit,
   setCurrentEditId,
@@ -153,7 +151,8 @@ function MessageCard({
     }
 
     // Set timeout to auto-hide details only for view action
-    if (isDetailsVisible && isCurrentDetailVisible) {
+
+    if (isDetailsVisible) {
       timeOutRef.current = setTimeout(() => {
         setCurrentEditId(null);
       }, 5000);
@@ -166,13 +165,7 @@ function MessageCard({
         timeOutRef.current = null;
       }
     };
-  }, [
-    isAnyEditing,
-    isThisEditing,
-    isDetailsVisible,
-    setCurrentEditId,
-    isCurrentDetailVisible,
-  ]);
+  }, [isAnyEditing, isThisEditing, isDetailsVisible, setCurrentEditId]);
 
   if (!message) return null;
 

@@ -64,7 +64,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState<boolean>(false);
-  const [isDetailsVisible, setIsDetailsVisible] = useState<boolean>(false);
+  const [, setIsDetailsVisible] = useState<boolean>(false);
   const [actionType, setActionType] = useState<"edit" | "delete" | "view">(
     "view",
   );
@@ -377,7 +377,6 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
                   session={session as Session}
                   isThisEditing={currentEditId === msg._id}
                   isAnyEditing={!!currentEditId}
-                  isCurrentDetailVisible={isDetailsVisible}
                   isDetailsVisible={
                     currentEditId === msg._id && actionType === "view"
                   }

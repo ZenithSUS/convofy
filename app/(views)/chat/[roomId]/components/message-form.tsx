@@ -11,7 +11,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import MediaUpload from "@/app/(views)/chat/components/media-upload";
 import { Button } from "@/components/ui/button";
-import EmojiSelection from "@/app/(views)/chat/components/emoji-selection";
+
+import EmojiSelection from "../../components/emoji-selection";
 import { Loader2, Send } from "lucide-react";
 import { ChangeEvent, KeyboardEventHandler } from "react";
 import { UseFormReturn } from "react-hook-form";

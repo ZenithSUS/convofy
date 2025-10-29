@@ -10,18 +10,16 @@ import {
 import { Smile } from "lucide-react";
 import { memo } from "react";
 
-const EmojiPicker = memo(
-  dynamic(() => import("./emoji-picker"), {
-    ssr: false,
-    loading: () => <div className="p-2 text-sm">Loading emojis…</div>,
-  }),
-);
+const EmojiPicker = dynamic(() => import("./emoji-picker"), {
+  ssr: false,
+  loading: () => <p className="p-2 text-sm">Loading Emojis...</p>,
+});
 
-interface EmojiSelectionProps {
+interface EmojiSelectionV2Props {
   onEmojiAppend: (emoji: string) => void;
 }
 
-export function EmojiSelection({ onEmojiAppend }: EmojiSelectionProps) {
+export function EmojiSelection({ onEmojiAppend }: EmojiSelectionV2Props) {
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -29,7 +27,7 @@ export function EmojiSelection({ onEmojiAppend }: EmojiSelectionProps) {
           <Smile className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="relative w-fit">
+      <PopoverContent className="relative w-auto overflow-hidden p-0">
         <EmojiPicker onEmojiAppend={onEmojiAppend} />
       </PopoverContent>
     </Popover>

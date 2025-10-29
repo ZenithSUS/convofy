@@ -24,9 +24,11 @@ function MediaCard({ media }: MediaCardProps) {
           />
         </ViewImageModal>
       ) : media.type === "file" ? (
-        <div className="flex h-[200px] w-[200px] flex-col gap-2 bg-gray-400">
+        <div className="flex h-[200px] w-screen flex-col items-center justify-center gap-2 truncate rounded-md bg-gray-400 md:flex-row">
           <FileIcon size={22} />
-          <p className="text-center text-sm">{media.content}</p>
+          <p className="line-clamp-2 text-center text-sm">
+            {media.content.split("/").pop()}
+          </p>
         </div>
       ) : null}
     </div>

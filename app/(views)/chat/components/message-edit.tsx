@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Check, X, Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { KeyboardEventHandler, useMemo, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 interface Props {
@@ -50,6 +50,16 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
     }
   };
 
+  const onKeyDown: KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      editForm.handleSubmit(onSubmit)();
+    }
+    if (e.key === "Escape") {
+      onCancelEdit();
+    }
+  };
+
   return (
     <div className="w-full">
       <Form {...editForm}>
@@ -82,6 +92,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
                 className="max-h-[200px] min-h-[80px] w-full resize-none rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 text-sm text-black transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 dark:text-white"
                 maxLength={1000}
                 disabled={isSubmitting}
+                onKeyDown={onKeyDown}
                 {...field}
               />
             )}

@@ -214,6 +214,13 @@ export const userService = {
     }
   },
 
+  /**
+   * Updates a user's linked accounts in the database.
+   * @param {string} userId - The ID of the user to update.
+   * @param {{ provider: string; providerAccountId: string }} account - The linked account to add.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   * @throws {Error} - If there was an error while updating the user.
+   */
   async updateLinkedAccount(
     userId: string,
     account: { provider: string; providerAccountId: string },

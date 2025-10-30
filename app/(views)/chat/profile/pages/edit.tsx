@@ -186,7 +186,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
       <ProfileHeader userId={session.user.id} />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
-        <AvatarCard session={session} name="Edit" />
+        <AvatarCard session={session} name="Edit Information" />
 
         {/* Edit Form */}
         <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-10 shadow-2xl">

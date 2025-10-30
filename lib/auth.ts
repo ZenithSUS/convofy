@@ -15,6 +15,10 @@ declare module "next-auth" {
       status?: string | null;
       lastActive?: Date | null;
       createdAt?: Date | null;
+      providers?: string[] | null;
+      isAnonymous?: boolean;
+      anonAlias?: string;
+      anonAvatar?: string | null;
     };
   }
   interface User {
@@ -23,8 +27,12 @@ declare module "next-auth" {
     email?: string | null;
     image?: string | null;
     status?: string | null;
+    providers?: string[] | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
+    isAnonymous?: boolean;
+    anonAlias?: string;
+    anonAvatar?: string | null;
   }
 }
 
@@ -33,15 +41,16 @@ declare module "next-auth/jwt" {
     status?: string | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
-    // Add these to track updates
     name?: string | null;
     picture?: string | null;
+    providers?: string[] | null;
   }
 }
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
+      id: "credentials", // Add explicit id
       name: "Credentials",
       credentials: {
         email: {
@@ -73,6 +82,7 @@ export const authOptions: NextAuthOptions = {
             status: u.status,
             lastActive: u.lastActive,
             createdAt: u.createdAt,
+            providers: u.providers,
           };
         } catch (err: unknown) {
           const error = err as { response: { data: string } };
@@ -92,7 +102,7 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     // args: (user, account, profile)
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       if (!user?.email) return false;
 
       try {
@@ -103,10 +113,11 @@ export const authOptions: NextAuthOptions = {
           const userData: Omit<User, "_id"> = {
             name: user.name ?? "Unnamed User",
             email: user.email,
-            avatar: user.image!,
+            avatar: user.image || "",
             status: "online",
             lastActive: new Date(),
             createdAt: new Date(),
+            providers: account?.provider ? [account.provider] : ["credentials"],
           };
 
           await client.post("/auth/register", userData);
@@ -118,6 +129,26 @@ export const authOptions: NextAuthOptions = {
           return false;
         }
 
+        // This fixes the issue with existing users
+        if (!existingUser.providers) {
+          existingUser.providers = [];
+        }
+
+        // If providers array is empty, add the current login method
+        if (existingUser.providers.length === 0) {
+          const currentProvider = account?.provider || "credentials";
+          existingUser.providers = [currentProvider];
+          await userService.updateUser(existingUser);
+        }
+        // If user has providers but current one isn't in the list, add it
+        else if (
+          account?.provider &&
+          !existingUser.providers.includes(account.provider)
+        ) {
+          existingUser.providers.push(account.provider);
+          await userService.updateUser(existingUser);
+        }
+
         // Attach existing data to user
         user.id = existingUser._id.toString();
         user.name = existingUser.name;
@@ -126,6 +157,7 @@ export const authOptions: NextAuthOptions = {
         user.status = existingUser.status;
         user.lastActive = existingUser.lastActive;
         user.createdAt = existingUser.createdAt;
+        user.providers = existingUser.providers;
 
         return true;
       } catch (error) {
@@ -158,6 +190,7 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status!;
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
+        session.user.providers = token.providers!;
       }
 
       // Check first if the user still exists in the database
@@ -199,6 +232,7 @@ export const authOptions: NextAuthOptions = {
       // Persist additional data to token
       if (account) {
         token.accessToken = account.access_token;
+        token.provider = account.provider;
       }
 
       // On initial sign in, set all user data from user object
@@ -208,6 +242,7 @@ export const authOptions: NextAuthOptions = {
         token.status = user.status;
         token.lastActive = user.lastActive;
         token.createdAt = user.createdAt;
+        token.providers = user.providers;
       }
 
       // Fetch user data to set additional fields (if not initial sign in)
@@ -217,7 +252,6 @@ export const authOptions: NextAuthOptions = {
           token.status = dbUser.status;
           token.lastActive = dbUser.lastActive;
           token.createdAt = dbUser.createdAt;
-          // Also sync name and avatar from DB if they've changed
           token.name = dbUser.name;
           token.picture = dbUser.avatar;
         }

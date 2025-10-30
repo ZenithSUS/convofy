@@ -7,6 +7,7 @@ export type User = {
   status: "online" | "offline";
   lastActive: Date;
   createdAt: Date;
+  providers: string[];
 };
 
 export type UserMediaDataStats = {

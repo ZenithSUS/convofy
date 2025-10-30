@@ -16,6 +16,7 @@ export interface Session {
     status: "online" | "offline";
     createdAt: Date;
     lastActive: Date;
+    providers: string[];
   };
 }
 

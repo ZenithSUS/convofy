@@ -139,7 +139,6 @@ export const userService = {
         { new: true, fields: "-password" },
       );
 
-      console.log("Updated user:", user);
       return user;
     } catch (error) {
       throw error;

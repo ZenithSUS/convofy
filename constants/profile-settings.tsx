@@ -39,7 +39,7 @@ export const profileSettings = [
     name: "Account Settings",
     description: "Manage your account preferences",
     icon: <User2Icon size={20} />,
-    href: "#",
+    href: "/chat/profile/account",
     color: "from-pink-500 to-pink-600",
   },
 ];

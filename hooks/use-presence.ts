@@ -1,3 +1,5 @@
+"use client";
+
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
@@ -74,10 +76,10 @@ const useUserConnectionStatus = (serverSession: Session) => {
   ]);
 
   useEffect(() => {
-    if (!session.user.id) return;
+    if (!session?.user.id) return;
 
     const getUserStatus = async () => {
-      if (!session.user?.id) return;
+      isMountedRef.current = true;
 
       try {
         await updateUserStatus({
@@ -90,6 +92,10 @@ const useUserConnectionStatus = (serverSession: Session) => {
     };
 
     getUserStatus();
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, [connectionStatus, session.user.id, updateUserStatus]);
 
   return { connectionStatus };

@@ -12,6 +12,7 @@ export const authService = {
       const newUser = await User.create({
         ...data,
         password: hashed,
+        providers: data.providers ? [data.providers] : ["credentials"],
         status: "online",
       });
 

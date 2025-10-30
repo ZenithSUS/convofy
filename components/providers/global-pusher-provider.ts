@@ -98,7 +98,6 @@ function GlobalPusherProvider() {
 
     // Handle status updates
     channel.bind("status-update", (status: string) => {
-      console.log("User status updated:", status);
       update({ ...session, user: { ...session.user, status } });
     });
 

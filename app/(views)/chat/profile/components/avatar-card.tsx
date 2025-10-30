@@ -2,11 +2,12 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 
 interface AvatarCardProps {
+  children?: React.ReactNode;
   session: Session;
   name: string;
 }
 
-function AvatarCard({ session, name }: AvatarCardProps) {
+function AvatarCard({ children, session, name }: AvatarCardProps) {
   return (
     <div className="relative -mt-20 mb-8">
       <div className="rounded-3xl border border-gray-300 bg-white p-6 shadow-2xl backdrop-blur-lg">
@@ -17,6 +18,8 @@ function AvatarCard({ session, name }: AvatarCardProps) {
             <p className="text-sm text-gray-600">{session.user.name}</p>
           </div>
         </div>
+
+        {children && <div className="mt-6">{children}</div>}
       </div>
     </div>
   );

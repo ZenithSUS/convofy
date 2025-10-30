@@ -3,7 +3,13 @@
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
-import { Loader2, MessageSquareIcon, Sparkles, TrendingUp } from "lucide-react";
+import {
+  ImageIcon,
+  Loader2,
+  MessageSquareIcon,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import UserMessageCard from "@/app/(views)/chat/profile/components/cards/user-message-card";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
@@ -95,43 +101,46 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* User Avatar Card */}
-        <AvatarCard session={session} name="Messages" />
-
-        {/* Message Stats */}
-        <div className="mx-auto max-w-7xl pb-4">
-          <div className="grid grid-cols-3 place-content-center gap-4">
-            <div className="rounded-3xl border border-gray-300 bg-white p-4 shadow-2xl backdrop-blur-lg">
-              <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900">
-                {isUserMessageStatsProcessing ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  userMessageStats?.messages || 0
-                )}
-              </p>
-              <p className="text-center text-sm text-gray-600">Total</p>
-            </div>
-            <div className="rounded-3xl border border-gray-300 bg-white p-4 shadow-2xl backdrop-blur-lg">
-              <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900">
-                {isUserMessageStatsProcessing ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  userMessageStats?.editedMessages || 0
-                )}
-              </p>
-              <p className="text-center text-sm text-gray-600">Edited</p>
-            </div>
-            <div className="rounded-3xl border border-gray-300 bg-white p-4 shadow-2xl backdrop-blur-lg">
-              <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900">
-                {isUserMessageStatsProcessing ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  userMessageStats?.nonTextMessages || 0
-                )}
-              </p>
-              <p className="text-center text-sm text-gray-600">Non-Text</p>
+        <AvatarCard session={session} name="Messages">
+          {/* Message Stats */}
+          <div className="mx-auto max-w-7xl pb-4">
+            <div className="grid grid-cols-3 place-content-center gap-4">
+              <div className="flex flex-col items-center rounded-3xl border border-green-300 bg-gradient-to-br from-green-50 to-green-100 p-4 shadow-2xl backdrop-blur-lg">
+                <MessageSquareIcon className="h-7 w-7 text-green-900" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-green-900">
+                  {isUserMessageStatsProcessing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    userMessageStats?.messages || 0
+                  )}
+                </p>
+                <p className="text-center text-sm text-green-700">Total</p>
+              </div>
+              <div className="flex flex-col items-center rounded-3xl border border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 p-4 shadow-2xl backdrop-blur-lg">
+                <Sparkles className="h-7 w-7 text-blue-900" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-blue-900">
+                  {isUserMessageStatsProcessing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    userMessageStats?.editedMessages || 0
+                  )}
+                </p>
+                <p className="text-center text-sm text-blue-700">Edited</p>
+              </div>
+              <div className="flex flex-col items-center rounded-3xl border border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-2xl backdrop-blur-lg">
+                <ImageIcon className="h-7 w-7 text-gray-900" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900">
+                  {isUserMessageStatsProcessing ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    userMessageStats?.nonTextMessages || 0
+                  )}
+                </p>
+                <p className="text-center text-sm text-gray-700">Non-Text</p>
+              </div>
             </div>
           </div>
-        </div>
+        </AvatarCard>
 
         {/* Message Search */}
         <div className="relative mb-4">

@@ -10,8 +10,12 @@ export interface IUser extends Document {
   lastActive?: Date;
   createdAt: Date;
   isAnonymous?: boolean;
-  anonAlias?: string;
+  anonAlias?: string | null;
   anonAvatar?: string | null;
+  linkedAccounts: {
+    provider: "credentials" | "google" | "github" | "facebook";
+    providerAccountId: string;
+  }[];
 }
 
 const UserSchema = new Schema<IUser>(
@@ -30,6 +34,19 @@ const UserSchema = new Schema<IUser>(
     isAnonymous: { type: Boolean, default: false },
     anonAlias: { type: String },
     anonAvatar: { type: String },
+    linkedAccounts: [
+      {
+        provider: {
+          type: String,
+          enum: ["credentials", "google", "github", "facebook"],
+          required: true,
+        },
+        providerAccountId: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
   },
   { timestamps: true },
 );

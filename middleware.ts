@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
     "127.0.0.1" ||
     "localhost";
 
-  // Apply rate limiting in auth routes
+  // Auth route rate limit
   if (
     pathname.includes("/api/auth/login") ||
     pathname.includes("/api/auth/register")
@@ -52,7 +52,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Apply rate limiting for the upload route
+  // Upload rate limit
   if (pathname.startsWith("/api/upload")) {
     try {
       const { success, limit, reset, remaining } = await uploadLimit.limit(ip);
@@ -76,13 +76,13 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect to login if not authenticated
+  // Auth protection
   if (protectedRoutes.some((route) => pathname.startsWith(route)) && !token) {
     const loginUrl = new URL("/auth/login", request.url);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Protect the /chat route
+  // Protect /chat
   if (pathname.startsWith("/chat")) {
     const token = await getToken({
       req: request,
@@ -90,15 +90,16 @@ export async function middleware(request: NextRequest) {
     });
 
     if (!token) {
-      // Redirect to login if not authenticated
       const loginUrl = new URL("/auth/login", request.url);
       return NextResponse.redirect(loginUrl);
     }
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  response.headers.set("x-pathname", request.nextUrl.pathname);
+  return response;
 }
 
 export const config = {
-  matcher: ["/chat/:path*", "/api/:path*"],
+  matcher: ["/chat/:path*", "/api/:path*", "/auth/:path*"],
 };

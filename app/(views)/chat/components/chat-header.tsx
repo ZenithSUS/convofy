@@ -17,6 +17,7 @@ export interface Session {
     createdAt: Date;
     lastActive: Date;
     providers: string[];
+    linkedAccounts: { provider: string; providerAccountId: string }[];
   };
 }
 

@@ -1,3 +1,9 @@
+export type UserOAuthProviders =
+  | "credentials"
+  | "google"
+  | "github"
+  | "facebook";
+
 export type User = {
   _id: string;
   name: string;
@@ -8,6 +14,13 @@ export type User = {
   lastActive: Date;
   createdAt: Date;
   providers: string[];
+  isAnonymous?: boolean;
+  // anonAlias?: string | null;
+  // anonAvatar?: string | null;
+  linkedAccounts: {
+    provider: UserOAuthProviders;
+    providerAccountId: string;
+  }[];
 };
 
 export type UserMediaDataStats = {

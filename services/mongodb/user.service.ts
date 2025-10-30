@@ -4,6 +4,7 @@ import {
   UserMessageDataStats,
   UserMediaDataStats,
   User as UserType,
+  UserOAuthProviders,
 } from "@/types/user";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
@@ -184,6 +185,50 @@ export const userService = {
     );
 
     return user;
+  },
+
+  /**
+   * Find a user by their linked OAuth account
+   * @param provider - The OAuth provider (google, github, etc.)
+   * @param providerAccountId - The provider's account ID
+   * @returns The user if found, null otherwise
+   */
+  async getUserByLinkedAccount(
+    provider: UserOAuthProviders,
+    providerAccountId: string,
+  ) {
+    try {
+      const user = await User.findOne({
+        linkedAccounts: {
+          $elemMatch: {
+            provider: provider,
+            providerAccountId: providerAccountId,
+          },
+        },
+      });
+
+      return user;
+    } catch (error) {
+      console.error("Error finding user by linked account:", error);
+      return null;
+    }
+  },
+
+  async updateLinkedAccount(
+    userId: string,
+    account: { provider: string; providerAccountId: string },
+  ) {
+    try {
+      await connectToDatabase();
+      const user = await User.findOneAndUpdate(
+        { _id: userId },
+        { $push: { linkedAccounts: account } },
+        { new: true, fields: "-password" },
+      );
+      return user;
+    } catch (error) {
+      throw error;
+    }
   },
 };
 

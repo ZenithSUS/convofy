@@ -22,7 +22,9 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
 
   const isMobile = useIsMobile();
   const accountCreationDate = new Date(session.user.createdAt || "2024-01-01");
-  const isGoogleAuth = session.user.providers.includes("google");
+  const isGoogleAuth = session.user.linkedAccounts.some(
+    (account) => account.provider === "google",
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">

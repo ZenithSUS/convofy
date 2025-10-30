@@ -28,7 +28,6 @@ function ProfileLogoutModal({ userId }: { userId: string }) {
     signOut()
       .then(async () => {
         const response = await client.post("/auth/logout", { id: userId });
-        console.log("Logout response:", response);
         return response.data;
       })
       .catch((error) => {

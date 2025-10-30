@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 export const PUT = async (req: Request) => {
   try {
     const data: Partial<User> = await req.json();
-    console.log("Data:", data);
 
     if (!data && typeof data !== "object") {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });

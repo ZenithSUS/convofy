@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -6,9 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle2, Link2 } from "lucide-react";
+import { CheckCircle2, Link2, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { Session } from "@/app/(views)/chat/components/chat-header";
+import { signIn } from "next-auth/react";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ConnectedAccountsProps {
   session: Session;
@@ -21,6 +26,26 @@ function ConnectedAccounts({
   isGoogleAuth,
   isMobile,
 }: ConnectedAccountsProps) {
+  const [error, setError] = useState<string | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const handleConnectGoogle = async () => {
+    try {
+      setError(null);
+      setIsConnecting(true);
+
+      // Trigger OAuth sign-in flow, but come back to this page after
+      await signIn("google", {
+        callbackUrl: "/settings/accounts",
+      });
+    } catch (err) {
+      console.error("Connection error:", err);
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   return (
     <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
@@ -33,6 +58,15 @@ function ConnectedAccounts({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3 px-4 sm:px-6">
+        {error && (
+          <Alert variant="destructive" className="mb-3">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs sm:text-sm">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isGoogleAuth ? (
           <div className="flex items-center justify-between gap-2 rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 p-3 sm:p-4">
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
@@ -84,8 +118,10 @@ function ConnectedAccounts({
               variant="outline"
               size="sm"
               className="rounded-lg text-xs sm:text-sm"
+              onClick={handleConnectGoogle}
+              disabled={isConnecting}
             >
-              Connect
+              {isConnecting ? "Connecting..." : "Connect"}
             </Button>
           </div>
         )}

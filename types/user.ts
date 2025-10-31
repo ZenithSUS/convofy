@@ -19,8 +19,15 @@ export type User = {
   // anonAvatar?: string | null;
   linkedAccounts: {
     provider: UserOAuthProviders;
+    providerAccount: string;
     providerAccountId: string;
   }[];
+};
+
+export type UserLinkedAccount = {
+  provider: UserOAuthProviders;
+  providerAccount: string;
+  providerAccountId: string;
 };
 
 export type UserMediaDataStats = {

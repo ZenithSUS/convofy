@@ -25,6 +25,9 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
   const isGoogleAuth = session.user.linkedAccounts.some(
     (account) => account.provider === "google",
   );
+  const isCredentialsAuth = session.user.linkedAccounts.some(
+    (account) => account.provider === "credentials",
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -43,7 +46,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         />
 
         {/* Change Password */}
-        <ChangePassword />
+        {isCredentialsAuth && <ChangePassword />}
 
         {/* Change Email */}
         <ChangeEmail session={session} />
@@ -51,6 +54,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         {/* Connected Accounts */}
         <ConnectedAccounts
           session={session}
+          isCredentialsAuth={isCredentialsAuth}
           isGoogleAuth={isGoogleAuth}
           isMobile={isMobile}
         />

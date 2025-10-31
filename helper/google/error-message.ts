@@ -11,11 +11,24 @@ const getErrorMessage = (errorCode: string | null, error: string | null) => {
         title: "Access Denied",
         description: "You do not have permission to sign in.",
       };
+
+    case "UserNotFound":
+      return {
+        title: "User Not Found",
+        description:
+          "There is no user record corresponding to this identifier. The user may have been deleted.",
+      };
     case "Verification":
       return {
         title: "Verification Failed",
         description:
           "The sign in link is no longer valid. It may have expired or already been used.",
+      };
+    case "AccountExistsWithDifferentCredential":
+      return {
+        title: "Account Already Linked",
+        description:
+          "This Google account is already linked to a different user account. Please use a different Google account or sign in with your existing credentials.",
       };
     case "OAuthAccountNotLinked":
     case "OAuthAccountAlreadyLinked":

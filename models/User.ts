@@ -14,6 +14,7 @@ export interface IUser extends Document {
   anonAvatar?: string | null;
   linkedAccounts: {
     provider: "credentials" | "google" | "github" | "facebook";
+    providerAccount: string;
     providerAccountId: string;
   }[];
 }
@@ -41,6 +42,10 @@ const UserSchema = new Schema<IUser>(
           enum: ["credentials", "google", "github", "facebook"],
           required: true,
         },
+        providerAccount: {
+          type: String,
+          required: true,
+        },
         providerAccountId: {
           type: String,
           required: true,
@@ -49,6 +54,16 @@ const UserSchema = new Schema<IUser>(
     ],
   },
   { timestamps: true },
+);
+
+// Provider ID should be unique for each provider (google, github, etc.)
+UserSchema.index(
+  {
+    "linkedAccounts.provider": 1,
+    "linkedAccounts.providerAccount": 1,
+    "linkedAccounts.providerAccountId": 1,
+  },
+  { unique: true },
 );
 
 export default mongoose.models.User ||

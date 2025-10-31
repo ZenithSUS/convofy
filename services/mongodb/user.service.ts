@@ -140,6 +140,7 @@ export const userService = {
         { new: true, fields: "-password" },
       );
 
+      console.log("Updated user:", user);
       return user;
     } catch (error) {
       throw error;
@@ -190,11 +191,13 @@ export const userService = {
   /**
    * Find a user by their linked OAuth account
    * @param provider - The OAuth provider (google, github, etc.)
+   * @param providerAccount - The provider's account email
    * @param providerAccountId - The provider's account ID
    * @returns The user if found, null otherwise
    */
   async getUserByLinkedAccount(
     provider: UserOAuthProviders,
+    providerAccount: string,
     providerAccountId: string,
   ) {
     try {
@@ -202,6 +205,7 @@ export const userService = {
         linkedAccounts: {
           $elemMatch: {
             provider: provider,
+            providerAccount: providerAccount,
             providerAccountId: providerAccountId,
           },
         },
@@ -217,13 +221,17 @@ export const userService = {
   /**
    * Updates a user's linked accounts in the database.
    * @param {string} userId - The ID of the user to update.
-   * @param {{ provider: string; providerAccountId: string }} account - The linked account to add.
+   * @param {{ provider: string; providerAccount: string; providerAccountId: string }} account - The linked account to add.
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    * @throws {Error} - If there was an error while updating the user.
    */
   async updateLinkedAccount(
     userId: string,
-    account: { provider: string; providerAccountId: string },
+    account: {
+      provider: string;
+      providerAccount: string;
+      providerAccountId: string;
+    },
   ) {
     try {
       await connectToDatabase();

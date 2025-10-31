@@ -1,6 +1,6 @@
 import client from "@/lib/axios";
 import userService from "@/services/mongodb/user.service";
-import { User, UserOAuthProviders } from "@/types/user";
+import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
 import { getServerSession, NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -21,6 +21,7 @@ declare module "next-auth" {
       anonAvatar?: string | null;
       linkedAccounts?: {
         provider: UserOAuthProviders;
+        providerAccount: string;
         providerAccountId: string;
       }[];
     };
@@ -40,6 +41,7 @@ declare module "next-auth" {
     anonAvatar?: string | null;
     linkedAccounts?: {
       provider: UserOAuthProviders;
+      providerAccount: string;
       providerAccountId: string;
     }[];
   }
@@ -58,6 +60,7 @@ declare module "next-auth/jwt" {
     anonAvatar?: string | null;
     linkedAccounts?: {
       provider: UserOAuthProviders;
+      providerAccount: string;
       providerAccountId: string;
     }[];
     userId?: string;
@@ -126,8 +129,19 @@ export const authOptions: NextAuthOptions = {
       try {
         const currentProvider = account?.provider || "credentials";
         const currentProviderAccountId = account?.providerAccountId || "";
+        const currentAccountEmail = user.email || "";
 
-        let existingUser = await userService.getUserByEmail(user.email);
+        // ---- Login flow ----
+        let existingUser = await userService.getUserByLinkedAccount(
+          currentProvider as UserOAuthProviders,
+          currentAccountEmail,
+          currentProviderAccountId,
+        );
+
+        // If the user linked account is not found, try to get the user by email
+        if (!existingUser) {
+          existingUser = await userService.getUserByEmail(user.email);
+        }
 
         // Try to get the current session (may be null)
         const session = await getServerSession(authOptions).catch(() => null);
@@ -139,6 +153,7 @@ export const authOptions: NextAuthOptions = {
 
           const linkedAccount = await userService.getUserByLinkedAccount(
             currentProvider as UserOAuthProviders,
+            currentAccountEmail,
             currentProviderAccountId,
           );
 
@@ -146,23 +161,20 @@ export const authOptions: NextAuthOptions = {
             linkedAccount &&
             linkedAccount._id.toString() !== currentUser._id.toString()
           ) {
-            throw new Error(
-              "This OAuth account is already linked to another user.",
-            );
+            return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
           const alreadyLinked = currentUser.linkedAccounts.some(
-            (acc: {
-              provider: UserOAuthProviders;
-              providerAccountId: string;
-            }) =>
+            (acc: UserLinkedAccount) =>
               acc.provider === currentProvider &&
+              acc.providerAccount === currentAccountEmail &&
               acc.providerAccountId === currentProviderAccountId,
           );
 
           if (!alreadyLinked) {
             currentUser.linkedAccounts.push({
               provider: currentProvider as UserOAuthProviders,
+              providerAccount: currentAccountEmail,
               providerAccountId: currentProviderAccountId,
             });
             if (!currentUser.providers.includes(currentProvider)) {
@@ -171,14 +183,29 @@ export const authOptions: NextAuthOptions = {
             await userService.updateUser(currentUser);
           }
 
+          // Make the current user the logged in user
           user.id = currentUser._id.toString();
+          user.name = currentUser.name;
+          user.email = currentUser.email;
+          user.image = currentUser.avatar;
+          user.status = currentUser.status;
+          user.lastActive = currentUser.lastActive;
+          user.createdAt = currentUser.createdAt;
+          user.providers = currentUser.providers;
+          user.linkedAccounts = currentUser.linkedAccounts;
+
           return true;
         }
 
         // ---- Normal OAuth / Credentials SignIn ----
-        if (account?.provider && account.provider !== "credentials") {
+        if (
+          account?.provider &&
+          user.email &&
+          account.provider !== "credentials"
+        ) {
           const existingLinked = await userService.getUserByLinkedAccount(
             account.provider as UserOAuthProviders,
+            user.email,
             account.providerAccountId!,
           );
 
@@ -187,31 +214,36 @@ export const authOptions: NextAuthOptions = {
             (!existingUser ||
               existingLinked._id.toString() !== existingUser._id.toString())
           ) {
-            throw new Error("This account is already linked to another user.");
+            return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
         }
 
         // ---- Create user if doesn't exist ----
         if (!existingUser) {
-          const newUserData: Omit<User, "_id"> = {
-            name: user.name ?? "Unnamed User",
-            email: user.email,
-            avatar: user.image || "",
-            status: "online",
-            lastActive: new Date(),
-            createdAt: new Date(),
-            providers: [currentProvider],
-            isAnonymous: false,
-            linkedAccounts: [
-              {
-                provider: currentProvider as UserOAuthProviders,
-                providerAccountId: currentProviderAccountId,
-              },
-            ],
-          };
+          if (account?.provider !== "credentials") {
+            const newUserData: Omit<User, "_id"> = {
+              name: user.name ?? "Unnamed User",
+              email: user.email,
+              avatar: user.image || "",
+              status: "online",
+              lastActive: new Date(),
+              createdAt: new Date(),
+              providers: [currentProvider],
+              isAnonymous: false,
+              linkedAccounts: [
+                {
+                  provider: currentProvider as UserOAuthProviders,
+                  providerAccount: currentAccountEmail,
+                  providerAccountId: currentProviderAccountId,
+                },
+              ],
+            };
 
-          await client.post("/auth/register", newUserData);
-          existingUser = await userService.getUserByEmail(user.email);
+            await client.post("/auth/register", newUserData);
+            existingUser = await userService.getUserByEmail(user.email);
+          } else {
+            return "auth/error?error=UserNotFound";
+          }
         }
 
         if (!existingUser) {
@@ -231,14 +263,16 @@ export const authOptions: NextAuthOptions = {
         }
 
         const accountExists = existingUser.linkedAccounts.some(
-          (acc) =>
+          (acc: UserLinkedAccount) =>
             acc.provider === currentProvider &&
+            acc.providerAccount === currentAccountEmail &&
             acc.providerAccountId === currentProviderAccountId,
         );
 
         if (!accountExists) {
           existingUser.linkedAccounts.push({
             provider: currentProvider as UserOAuthProviders,
+            providerAccount: currentAccountEmail,
             providerAccountId: currentProviderAccountId,
           });
           needsUpdate = true;
@@ -293,7 +327,7 @@ export const authOptions: NextAuthOptions = {
         if (!existingUser) return session;
       } catch (err) {
         console.warn("Session validation failed:", err);
-        return session;
+        throw new Error("Session validation failed");
       }
 
       return session;
@@ -332,6 +366,7 @@ export const authOptions: NextAuthOptions = {
             token.createdAt = dbUser.createdAt;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
+            token.providers = dbUser.providers;
           }
         } catch (err) {
           console.warn("JWT refresh failed:", err);

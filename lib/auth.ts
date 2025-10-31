@@ -160,6 +160,13 @@ export const authOptions: NextAuthOptions = {
             return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
+          console.log("Linking user account...");
+          await userService.updateLinkedAccount(currentUser._id.toString(), {
+            provider: currentProvider as UserOAuthProviders,
+            providerAccount: currentAccountEmail,
+            providerAccountId: currentProviderAccountId,
+          });
+
           // Make the current user the logged in user
           user.id = currentUser._id.toString();
           user.name = currentUser.name;

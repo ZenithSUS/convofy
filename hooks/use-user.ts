@@ -1,5 +1,11 @@
 import client from "@/lib/axios";
-import { User, UserMediaDataStats, UserMessageDataStats } from "@/types/user";
+import {
+  CreateLinkedAccount,
+  User,
+  UserLinkedAccount,
+  UserMediaDataStats,
+  UserMessageDataStats,
+} from "@/types/user";
 import {
   UseBaseQueryResult,
   useMutation,
@@ -96,5 +102,34 @@ export const useUpdateUser = (): UseMutationResult<
   return useMutation({
     mutationKey: ["updateUser"],
     mutationFn: async (data: Partial<User>) => updateUser(data),
+  });
+};
+
+export const useLinkUserCredentials = (): UseMutationResult<
+  User,
+  Error,
+  CreateLinkedAccount,
+  unknown
+> => {
+  const linkUserCredentials = async (
+    id: string,
+    credentials: { email: string; password: string },
+    linkedAccount: UserLinkedAccount,
+  ) => {
+    const response = await client
+      .post(`/auth/${id}/link`, { credentials, linkedAccount })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error linking user credentials:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["linkUserCredentials"],
+    mutationFn: async (data: CreateLinkedAccount) =>
+      linkUserCredentials(data.id, data.credentials, data.linkedAccount),
   });
 };

@@ -15,7 +15,6 @@ declare module "next-auth" {
       status?: string | null;
       lastActive?: Date | null;
       createdAt?: Date | null;
-      providers?: string[] | null;
       isAnonymous?: boolean;
       anonAlias?: string;
       anonAvatar?: string | null;
@@ -33,7 +32,6 @@ declare module "next-auth" {
     email?: string | null;
     image?: string | null;
     status?: string | null;
-    providers?: string[] | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
     isAnonymous?: boolean;
@@ -54,7 +52,6 @@ declare module "next-auth/jwt" {
     createdAt?: Date | null;
     name?: string | null;
     picture?: string | null;
-    providers?: string[] | null;
     isAnonymous?: boolean;
     anonAlias?: string;
     anonAvatar?: string | null;
@@ -97,7 +94,6 @@ export const authOptions: NextAuthOptions = {
             status: u.status,
             lastActive: u.lastActive,
             createdAt: u.createdAt,
-            providers: u.providers,
             linkedAccounts: u.linkedAccounts,
           };
         } catch (err: unknown) {
@@ -164,25 +160,6 @@ export const authOptions: NextAuthOptions = {
             return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
-          const alreadyLinked = currentUser.linkedAccounts.some(
-            (acc: UserLinkedAccount) =>
-              acc.provider === currentProvider &&
-              acc.providerAccount === currentAccountEmail &&
-              acc.providerAccountId === currentProviderAccountId,
-          );
-
-          if (!alreadyLinked) {
-            currentUser.linkedAccounts.push({
-              provider: currentProvider as UserOAuthProviders,
-              providerAccount: currentAccountEmail,
-              providerAccountId: currentProviderAccountId,
-            });
-            if (!currentUser.providers.includes(currentProvider)) {
-              currentUser.providers.push(currentProvider);
-            }
-            await userService.updateUser(currentUser);
-          }
-
           // Make the current user the logged in user
           user.id = currentUser._id.toString();
           user.name = currentUser.name;
@@ -191,7 +168,6 @@ export const authOptions: NextAuthOptions = {
           user.status = currentUser.status;
           user.lastActive = currentUser.lastActive;
           user.createdAt = currentUser.createdAt;
-          user.providers = currentUser.providers;
           user.linkedAccounts = currentUser.linkedAccounts;
 
           return true;
@@ -228,7 +204,6 @@ export const authOptions: NextAuthOptions = {
               status: "online",
               lastActive: new Date(),
               createdAt: new Date(),
-              providers: [currentProvider],
               isAnonymous: false,
               linkedAccounts: [
                 {
@@ -252,13 +227,13 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Ensure arrays exist
-        existingUser.providers ??= [];
         existingUser.linkedAccounts ??= [];
 
         let needsUpdate = false;
 
-        if (!existingUser.providers.includes(currentProvider)) {
-          existingUser.providers.push(currentProvider);
+        // Update lastActive
+        if (existingUser.lastActive.getTime() < Date.now()) {
+          existingUser.lastActive = new Date();
           needsUpdate = true;
         }
 
@@ -289,7 +264,6 @@ export const authOptions: NextAuthOptions = {
         user.status = existingUser.status;
         user.lastActive = existingUser.lastActive;
         user.createdAt = existingUser.createdAt;
-        user.providers = existingUser.providers;
         user.linkedAccounts = existingUser.linkedAccounts;
 
         return true;
@@ -307,6 +281,9 @@ export const authOptions: NextAuthOptions = {
       if (trigger === "update" && newSession) {
         token.name = newSession.user?.name ?? token.name;
         token.picture = newSession.user?.image ?? token.picture;
+        token.status = newSession.user?.status ?? token.status;
+        token.linkedAccounts =
+          newSession.user?.linkedAccounts ?? token.linkedAccounts;
       }
 
       if (session.user) {
@@ -316,7 +293,6 @@ export const authOptions: NextAuthOptions = {
         session.user.status = token.status!;
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
-        session.user.providers = token.providers!;
         session.user.linkedAccounts = token.linkedAccounts!;
       }
 
@@ -338,6 +314,8 @@ export const authOptions: NextAuthOptions = {
         token.name = session.user?.name ?? token.name;
         token.picture = session.user?.image ?? token.picture;
         token.status = session.user?.status ?? token.status;
+        token.linkedAccounts =
+          session.user?.linkedAccounts ?? token.linkedAccounts;
         return token;
       }
 
@@ -348,7 +326,6 @@ export const authOptions: NextAuthOptions = {
         token.status = user.status;
         token.lastActive = user.lastActive;
         token.createdAt = user.createdAt;
-        token.providers = user.providers;
         token.linkedAccounts = user.linkedAccounts;
       }
 
@@ -366,7 +343,6 @@ export const authOptions: NextAuthOptions = {
             token.createdAt = dbUser.createdAt;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
-            token.providers = dbUser.providers;
           }
         } catch (err) {
           console.warn("JWT refresh failed:", err);

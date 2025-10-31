@@ -105,7 +105,7 @@ function ConnectedAccounts({
               </span>
             </div>
           ) : (
-            <CreateCredentials session={session}>
+            <CreateCredentials session={session} isGoogleAuth={isGoogleAuth}>
               <Button
                 disabled={isConnecting}
                 variant="outline"

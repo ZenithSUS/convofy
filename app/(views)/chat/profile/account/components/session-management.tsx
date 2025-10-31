@@ -20,8 +20,6 @@ interface ActiveSession {
 }
 
 function SessionManagement({ session }: { session: Session }) {
-  console.log("Session:", session);
-
   const [isLoggingOutAll, setIsLoggingOutAll] = useState(false);
   const activeSessions: ActiveSession[] = [
     {

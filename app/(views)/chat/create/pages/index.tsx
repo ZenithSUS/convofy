@@ -205,7 +205,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28">
                               <Users className="h-12 w-12 text-gray-400" />
                             </div>
                           )}

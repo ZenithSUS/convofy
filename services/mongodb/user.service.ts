@@ -5,10 +5,12 @@ import {
   UserMediaDataStats,
   User as UserType,
   UserOAuthProviders,
+  UserLinkedAccount,
 } from "@/types/user";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { pusherServer } from "@/lib/pusher";
+import bcrypt from "bcrypt";
 
 export const userService = {
   /**
@@ -140,7 +142,6 @@ export const userService = {
         { new: true, fields: "-password" },
       );
 
-      console.log("Updated user:", user);
       return user;
     } catch (error) {
       throw error;
@@ -189,6 +190,56 @@ export const userService = {
   },
 
   /**
+   * Links a user's credentials to an existing user account.
+   * @param {string} id - The ID of the user to link credentials to.
+   * @param {string} credentials - The email and password of the user to link.
+   * @param {UserLinkedAccount} linkedAccounts - The linked OAuth account to add.
+   * @returns {Promise<UserType>} - A promise that resolves with the updated user if found, or null if not found.
+   * @throws {Error} - If the email is already registered or if there was an error while linking the credentials.
+   */
+  async linkedUserCredentials(
+    id: string,
+    credentials: { email: string; password: string },
+    linkedAccounts: UserLinkedAccount,
+  ) {
+    try {
+      await connectToDatabase();
+
+      const linkedExists = await this.getUserByLinkedAccount(
+        linkedAccounts.provider,
+        linkedAccounts.providerAccount,
+        linkedAccounts.providerAccountId,
+      );
+
+      console.log("linkedExists:", !!linkedExists);
+
+      if (linkedExists) {
+        throw new Error("There is already an account with this email.");
+      }
+
+      const hash = await bcrypt.hash(credentials.password, 10);
+
+      const user = await User.findByIdAndUpdate(
+        { _id: id },
+        {
+          $push: {
+            linkedAccounts: linkedAccounts,
+          },
+          $set: {
+            email: credentials.email,
+            password: hash,
+          },
+        },
+        { new: true, fields: "-password" },
+      );
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Find a user by their linked OAuth account
    * @param provider - The OAuth provider (google, github, etc.)
    * @param providerAccount - The provider's account email
@@ -225,14 +276,7 @@ export const userService = {
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    * @throws {Error} - If there was an error while updating the user.
    */
-  async updateLinkedAccount(
-    userId: string,
-    account: {
-      provider: string;
-      providerAccount: string;
-      providerAccountId: string;
-    },
-  ) {
+  async updateLinkedAccount(userId: string, account: UserLinkedAccount) {
     try {
       await connectToDatabase();
       const user = await User.findOneAndUpdate(

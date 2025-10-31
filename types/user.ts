@@ -13,7 +13,6 @@ export type User = {
   status: "online" | "offline";
   lastActive: Date;
   createdAt: Date;
-  providers: string[];
   isAnonymous?: boolean;
   // anonAlias?: string | null;
   // anonAvatar?: string | null;
@@ -40,4 +39,13 @@ export type UserMessageDataStats = {
   messages: number;
   nonTextMessages: number;
   editedMessages: number;
+};
+
+export type CreateLinkedAccount = {
+  id: string;
+  credentials: {
+    email: string;
+    password: string;
+  };
+  linkedAccount: UserLinkedAccount;
 };

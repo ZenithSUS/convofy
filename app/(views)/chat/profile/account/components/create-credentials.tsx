@@ -92,7 +92,7 @@ function CreateCredentials({ children, session, isGoogleAuth }: Props) {
           },
         };
 
-        const response = await linkAccount(user).catch((err) => {
+        await linkAccount(user).catch((err) => {
           setApiError(err.response.data);
           throw err;
         });
@@ -112,7 +112,6 @@ function CreateCredentials({ children, session, isGoogleAuth }: Props) {
           },
         });
 
-        console.log("linkAccount response:", response);
         toast.success("User credentials linked successfully");
       } catch (error) {
         console.error("Error linking user credentials:", error);

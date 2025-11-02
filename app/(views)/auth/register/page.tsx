@@ -32,6 +32,7 @@ import client from "@/lib/axios";
 import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import Image from "next/image";
+import PasswordStrength from "@/helper/password-strength";
 
 interface RegisterFormInputs {
   name: string;
@@ -61,11 +62,15 @@ const schema = z
 
 function RegisterPage() {
   const router = useRouter();
+
   const { uploadImage, isUploading } = useUploadImage();
   const { deleteFile } = useDeleteFile();
+
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({
+    password: false,
+    confirmPassword: false,
+  });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const form = useForm<RegisterFormInputs>({
@@ -78,6 +83,10 @@ function RegisterPage() {
       avatar: null,
     },
   });
+
+  const password = form.watch("password") || "";
+  const { strengthScore, strengthLabel, strengthColor } =
+    PasswordStrength(password);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -121,8 +130,6 @@ function RegisterPage() {
       setError("An error occurred during registration");
     }
   };
-
-  const passwordStrength = form.watch("password")?.length || 0;
 
   return (
     <div className="relative w-full max-w-md space-y-8 rounded-3xl border border-gray-100 bg-white p-10 shadow-2xl">
@@ -269,7 +276,7 @@ function RegisterPage() {
                     <div className="relative">
                       <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                       <Input
-                        type={showPassword ? "text" : "password"}
+                        type={showPassword.password ? "text" : "password"}
                         autoComplete="new-password"
                         placeholder="Create a password"
                         className="h-12 rounded-xl border-2 border-gray-200 pr-10 pl-10 transition-colors focus:border-blue-500"
@@ -277,10 +284,15 @@ function RegisterPage() {
                       />
                       <button
                         type="button"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() =>
+                          setShowPassword((prev) => ({
+                            ...prev,
+                            password: !prev.password,
+                          }))
+                        }
                         className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                       >
-                        {showPassword ? (
+                        {showPassword.password ? (
                           <EyeOff className="h-5 w-5" />
                         ) : (
                           <Eye className="h-5 w-5" />
@@ -288,29 +300,17 @@ function RegisterPage() {
                       </button>
                     </div>
                     {/* Password Strength Indicator */}
-                    {passwordStrength > 0 && (
-                      <div className="space-y-1">
+                    {password.length > 0 && (
+                      <div className="space-y-2">
                         <div className="flex gap-1">
-                          <div
-                            className={`h-1 flex-1 rounded-full ${passwordStrength >= 2 ? "bg-red-500" : "bg-gray-200"}`}
-                          ></div>
-                          <div
-                            className={`h-1 flex-1 rounded-full ${passwordStrength >= 4 ? "bg-orange-500" : "bg-gray-200"}`}
-                          ></div>
-                          <div
-                            className={`h-1 flex-1 rounded-full ${passwordStrength >= 6 ? "bg-yellow-500" : "bg-gray-200"}`}
-                          ></div>
-                          <div
-                            className={`h-1 flex-1 rounded-full ${passwordStrength >= 8 ? "bg-green-500" : "bg-gray-200"}`}
-                          ></div>
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <div
+                              key={i}
+                              className={`h-1 flex-1 rounded-full ${i <= strengthScore ? strengthColor : "bg-gray-200"}`}
+                            ></div>
+                          ))}
                         </div>
-                        <p className="text-xs text-gray-500">
-                          {passwordStrength < 6
-                            ? "Weak password"
-                            : passwordStrength < 8
-                              ? "Good password"
-                              : "Strong password"}
-                        </p>
+                        <p className="text-xs text-gray-500">{strengthLabel}</p>
                       </div>
                     )}
                   </div>
@@ -333,7 +333,7 @@ function RegisterPage() {
                   <div className="relative">
                     <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                     <Input
-                      type={showConfirmPassword ? "text" : "password"}
+                      type={showPassword.confirmPassword ? "text" : "password"}
                       autoComplete="new-password"
                       placeholder="Confirm your password"
                       className="h-12 rounded-xl border-2 border-gray-200 pr-10 pl-10 transition-colors focus:border-blue-500"
@@ -342,11 +342,14 @@ function RegisterPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
+                        setShowPassword((prev) => ({
+                          ...prev,
+                          confirmPassword: !prev.confirmPassword,
+                        }))
                       }
                       className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                     >
-                      {showConfirmPassword ? (
+                      {showPassword.confirmPassword ? (
                         <EyeOff className="h-5 w-5" />
                       ) : (
                         <Eye className="h-5 w-5" />

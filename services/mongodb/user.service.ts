@@ -149,6 +149,45 @@ export const userService = {
   },
 
   /**
+   * Changes the password of a user by first verifying the current password.
+   * If the current password is valid, it hashes the new password and updates the user's password.
+   * @param {string} id - The ID of the user to change the password of.
+   * @param {string} currentPassword - The current password of the user.
+   * @param {string} newPassword - The new password of the user.
+   * @returns {Promise<UserType>} - A promise that resolves with the updated user, excluding the password.
+   * @throws {Error} - If the user is not found or if the current password is invalid.
+   */
+  async changePassword(
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    try {
+      await connectToDatabase();
+
+      const user = await User.findOne({ _id: id });
+
+      if (!user) throw new Error("User not found");
+
+      const verify = await bcrypt.compare(currentPassword, user.password);
+
+      if (!verify) throw new Error("Invalid credentials");
+
+      const hashed = await bcrypt.hash(newPassword, 10);
+
+      const updatedUser = await User.findOneAndUpdate(
+        { _id: id },
+        { password: hashed },
+        { new: true, fields: "-password" },
+      );
+
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Updates the status of a user in the database.
    * @param {string} id - The ID of the user to update.
    * @param {"online" | "offline"} status - The new status of the user.

@@ -2,6 +2,7 @@ import client from "@/lib/axios";
 import {
   CreateLinkedAccount,
   User,
+  UserChangePassword,
   UserLinkedAccount,
   UserMediaDataStats,
   UserMessageDataStats,
@@ -102,6 +103,35 @@ export const useUpdateUser = (): UseMutationResult<
   return useMutation({
     mutationKey: ["updateUser"],
     mutationFn: async (data: Partial<User>) => updateUser(data),
+  });
+};
+
+export const useChangePassword = (): UseMutationResult<
+  User,
+  Error,
+  UserChangePassword,
+  unknown
+> => {
+  const changePassword = async (
+    id: string,
+    currentPassword: string,
+    newPassword: string,
+  ) => {
+    const response = client
+      .patch("users/me/password", { id, currentPassword, newPassword })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error changing password:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["changePassword"],
+    mutationFn: async (data: UserChangePassword) =>
+      changePassword(data.id, data.oldPassword, data.newPassword),
   });
 };
 

@@ -10,59 +10,83 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useChangePassword } from "@/hooks/use-user";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
+import { Session } from "@/app/(views)/chat/components/chat-header";
+import { UserChangePassword } from "@/types/user";
+import PasswordStrength from "@/helper/password-strength";
+import { useForm } from "react-hook-form";
+import z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-function ChangePassword() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+const changePasswordSchema = z
+  .object({
+    currentPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters long."),
+    newPassword: z
+      .string()
+      .min(6, "Password must be at least 6 characters long."),
+    confirmPassword: z.string().min(1, "Please confirm your password."),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
+type ChangePasswordData = z.infer<typeof changePasswordSchema>;
 
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+function ChangePassword({ session }: { session: Session }) {
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<ChangePasswordData>({
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
 
-    setIsChangingPassword(true);
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+
+  const { mutateAsync: changePassword, isPending: isChangingPassword } =
+    useChangePassword();
+
+  const newPassword = watch("newPassword");
+  const { strengthColor, strengthLabel, strengthScore } =
+    PasswordStrength(newPassword);
+
+  const onSubmit = async (data: ChangePasswordData) => {
+    if (!session.user) return;
+
     try {
-      // TODO: Implement actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const passwordData: UserChangePassword = {
+        id: session.user.id,
+        oldPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      };
+
+      await changePassword(passwordData);
       toast.success("Password changed successfully!");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
+      reset();
     } catch (error) {
       console.error("Error changing password:", error);
       toast.error("Failed to change password");
-    } finally {
-      setIsChangingPassword(false);
     }
   };
 
-  const passwordStrength = useMemo(
-    () =>
-      newPassword.length > 0
-        ? newPassword.length < 6
-          ? 1
-          : newPassword.length < 8
-            ? 2
-            : newPassword.length < 12
-              ? 3
-              : 4
-        : 0,
-    [newPassword],
-  );
+  if (!session.user) return null;
 
   return (
     <Card className="mb-6 border border-gray-200 bg-white shadow-lg">
@@ -75,145 +99,170 @@ function ChangePassword() {
           Update your password to keep your account secure
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div>
-          <Label
-            htmlFor="current-password"
-            className="text-xs font-semibold sm:text-sm"
-          >
-            Current Password
-          </Label>
-          <div className="relative mt-1">
-            <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <Input
-              id="current-password"
-              type={showCurrentPassword ? "text" : "password"}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-              className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <Label
+              htmlFor="current-password"
+              className="text-xs font-semibold sm:text-sm"
             >
-              {showCurrentPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <Label
-            htmlFor="new-password"
-            className="text-xs font-semibold sm:text-sm"
-          >
-            New Password
-          </Label>
-          <div className="relative mt-1">
-            <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <Input
-              id="new-password"
-              type={showNewPassword ? "text" : "password"}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-              className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              {showNewPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-          {newPassword && (
-            <div className="mt-2 space-y-1">
-              <div className="flex gap-1">
-                <div
-                  className={`h-1 flex-1 rounded-full ${passwordStrength >= 1 ? "bg-red-500" : "bg-gray-200"}`}
-                ></div>
-                <div
-                  className={`h-1 flex-1 rounded-full ${passwordStrength >= 2 ? "bg-orange-500" : "bg-gray-200"}`}
-                ></div>
-                <div
-                  className={`h-1 flex-1 rounded-full ${passwordStrength >= 3 ? "bg-yellow-500" : "bg-gray-200"}`}
-                ></div>
-                <div
-                  className={`h-1 flex-1 rounded-full ${passwordStrength >= 4 ? "bg-green-500" : "bg-gray-200"}`}
-                ></div>
-              </div>
-              <p className="text-xs text-gray-600">
-                {passwordStrength === 1 && "Weak password"}
-                {passwordStrength === 2 && "Fair password"}
-                {passwordStrength === 3 && "Good password"}
-                {passwordStrength === 4 && "Strong password"}
+              Current Password
+            </Label>
+            <div className="relative mt-1">
+              <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="current-password"
+                type={showPassword.current ? "text" : "password"}
+                {...register("currentPassword")}
+                placeholder="Enter current password"
+                className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword((prev) => ({
+                    ...prev,
+                    current: !prev.current,
+                  }))
+                }
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword.current ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.currentPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.currentPassword.message}
               </p>
+            )}
+          </div>
+
+          <div>
+            <Label
+              htmlFor="new-password"
+              className="text-xs font-semibold sm:text-sm"
+            >
+              New Password
+            </Label>
+            <div className="relative mt-1">
+              <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="new-password"
+                type={showPassword.new ? "text" : "password"}
+                {...register("newPassword")}
+                placeholder="Enter new password"
+                className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword((prev) => ({ ...prev, new: !prev.new }))
+                }
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword.new ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.newPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.newPassword.message}
+              </p>
+            )}
+          </div>
+
+          {/* Password strength indicator */}
+          {newPassword && newPassword.length > 0 && (
+            <div className="space-y-2">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    className={`h-1 flex-1 rounded-full ${i <= strengthScore ? strengthColor : "bg-gray-200"}`}
+                  ></div>
+                ))}
+              </div>
+              <div className="text-xs text-gray-500">{strengthLabel}</div>
             </div>
           )}
-        </div>
 
-        <div>
-          <Label
-            htmlFor="confirm-password"
-            className="text-xs font-semibold sm:text-sm"
-          >
-            Confirm New Password
-          </Label>
-          <div className="relative mt-1">
-            <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <Input
-              id="confirm-password"
-              type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-              className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          <div>
+            <Label
+              htmlFor="confirm-password"
+              className="text-xs font-semibold sm:text-sm"
             >
-              {showConfirmPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
+              Confirm New Password
+            </Label>
+            <div className="relative mt-1">
+              <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <Input
+                id="confirm-password"
+                type={showPassword.confirm ? "text" : "password"}
+                {...register("confirmPassword")}
+                placeholder="Confirm new password"
+                className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword((prev) => ({
+                    ...prev,
+                    confirm: !prev.confirm,
+                  }))
+                }
+                className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword.confirm ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="mt-1 text-xs text-red-600">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
-        </div>
 
-        <Button
-          onClick={handleChangePassword}
-          disabled={
-            isChangingPassword ||
-            !currentPassword ||
-            !newPassword ||
-            !confirmPassword
-          }
-          className="h-11 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700"
-        >
-          {isChangingPassword ? (
-            <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Changing Password...
-            </>
-          ) : (
-            "Change Password"
-          )}
-        </Button>
+          <div className="flex items-center gap-2 overflow-auto">
+            <Button
+              type="submit"
+              disabled={isChangingPassword}
+              className="h-11 flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700"
+            >
+              {isChangingPassword ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  Changing Password...
+                </>
+              ) : (
+                "Change Password"
+              )}
+            </Button>
+
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isChangingPassword}
+              className="h-11 rounded-xl"
+              onClick={() => reset()}
+            >
+              Reset
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );
 }
+
 export default ChangePassword;

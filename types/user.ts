@@ -49,3 +49,9 @@ export type CreateLinkedAccount = {
   };
   linkedAccount: UserLinkedAccount;
 };
+
+export type UserChangePassword = {
+  id: string;
+  oldPassword: string;
+  newPassword: string;
+};

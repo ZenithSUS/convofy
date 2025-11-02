@@ -341,6 +341,7 @@ export const authOptions: NextAuthOptions = {
         token.provider = account.provider;
       }
 
+      // ---- Refresh token ----
       if (!user && token.email) {
         try {
           const dbUser = await userService.getUserByEmail(token.email);
@@ -350,6 +351,12 @@ export const authOptions: NextAuthOptions = {
             token.createdAt = dbUser.createdAt;
             token.name = dbUser.name;
             token.picture = dbUser.avatar;
+            token.linkedAccounts =
+              dbUser.linkedAccounts?.map((account) => ({
+                provider: account.provider,
+                providerAccount: account.providerAccount,
+                providerAccountId: account.providerAccountId,
+              })) ?? [];
           }
         } catch (err) {
           console.warn("JWT refresh failed:", err);

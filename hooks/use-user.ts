@@ -163,3 +163,26 @@ export const useLinkUserCredentials = (): UseMutationResult<
       linkUserCredentials(data.id, data.credentials, data.linkedAccount),
   });
 };
+
+export const useUnlinkUserCredentials = () => {
+  const unlinkUserCredentials = async (
+    id: string,
+    accountType: UserLinkedAccount,
+  ) => {
+    const response = await client
+      .patch(`/auth/${id}/unlink`, { accountType })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error unlinking user credentials:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["unlinkUserCredentials"],
+    mutationFn: async (data: { id: string; accountType: UserLinkedAccount }) =>
+      unlinkUserCredentials(data.id, data.accountType),
+  });
+};

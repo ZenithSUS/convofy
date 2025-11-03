@@ -20,7 +20,7 @@ export const userService = {
    * @returns {Promise<UserType>} - A promise that resolves with the newly created user.
    * @throws {Error} - If there was an error while creating the user.
    */
-  async createUser(data: UserType) {
+  async createUser(data: UserType): Promise<UserType> {
     try {
       await connectToDatabase();
       const user = await User.create(data);
@@ -36,7 +36,7 @@ export const userService = {
    * @returns {Promise<UserType[]>} - A promise that resolves with an array of users.
    * @throws {Error} - If there was an error while fetching the users.
    */
-  async getUsers() {
+  async getUsers(): Promise<UserType[]> {
     try {
       await connectToDatabase();
       const users = await User.find({}, "-password").sort({ createdAt: -1 });
@@ -52,7 +52,7 @@ export const userService = {
    * @param {string} id - The ID of the user to fetch.
    * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
    */
-  async getUserById(id: string) {
+  async getUserById(id: string): Promise<UserType | null> {
     await connectToDatabase();
     const user = await User.findById(id, "-password");
     return user;
@@ -77,7 +77,7 @@ export const userService = {
    * @returns {Promise<UserDataStats>} - A promise that resolves with the user data stats.
    * @throws {Error} - If there was an error while fetching the data.
    */
-  async getUserDataStats(userId: string) {
+  async getUserDataStats(userId: string): Promise<UserMediaDataStats> {
     try {
       await connectToDatabase();
       const [messages, medias, rooms] = await Promise.all([
@@ -104,7 +104,7 @@ export const userService = {
    * @returns {Promise<UserMessageDataStats>} - A promise that resolves with the user message stats.
    * @throws {Error} - If there was an error while fetching the message stats.
    */
-  async getUserMessageStats(userId: string) {
+  async getUserMessageStats(userId: string): Promise<UserMessageDataStats> {
     try {
       await connectToDatabase();
       const [messages, editedMessages, nonTextMessages] = await Promise.all([
@@ -133,7 +133,7 @@ export const userService = {
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    * @throws {Error} - If there was an error while updating the user.
    */
-  async updateUser(data: Partial<UserType>) {
+  async updateUser(data: Partial<UserType>): Promise<UserType | null> {
     try {
       await connectToDatabase();
       const user = await User.findOneAndUpdate(
@@ -161,7 +161,7 @@ export const userService = {
     id: string,
     currentPassword: string,
     newPassword: string,
-  ) {
+  ): Promise<UserType> {
     try {
       await connectToDatabase();
 
@@ -193,7 +193,10 @@ export const userService = {
    * @param {"online" | "offline"} status - The new status of the user.
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    */
-  async updateUserStatus(id: string, status: "online" | "offline") {
+  async updateUserStatus(
+    id: string,
+    status: "online" | "offline",
+  ): Promise<UserType | null> {
     await connectToDatabase();
     const user = await User.findOneAndUpdate(
       { _id: id },
@@ -209,7 +212,10 @@ export const userService = {
    * @param {"online" | "offline"} status - The new status of the user.
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    */
-  async updateLiveUserStatus(id: string, status: "online" | "offline") {
+  async updateLiveUserStatus(
+    id: string,
+    status: "online" | "offline",
+  ): Promise<UserType | null> {
     await connectToDatabase();
     const user = await User.findOneAndUpdate(
       { _id: id },
@@ -240,7 +246,7 @@ export const userService = {
     id: string,
     credentials: { email: string; password: string },
     linkedAccounts: UserLinkedAccount,
-  ) {
+  ): Promise<UserType> {
     try {
       await connectToDatabase();
 
@@ -289,7 +295,7 @@ export const userService = {
     provider: UserOAuthProviders,
     providerAccount: string,
     providerAccountId: string,
-  ) {
+  ): Promise<UserType | null> {
     try {
       const user = await User.findOne({
         linkedAccounts: {
@@ -315,7 +321,10 @@ export const userService = {
    * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
    * @throws {Error} - If there was an error while updating the user.
    */
-  async updateLinkedAccount(userId: string, account: UserLinkedAccount) {
+  async updateLinkedAccount(
+    userId: string,
+    account: UserLinkedAccount,
+  ): Promise<UserType | null> {
     try {
       await connectToDatabase();
       const user = await User.findOneAndUpdate(
@@ -323,6 +332,31 @@ export const userService = {
         { $push: { linkedAccounts: account } },
         { new: true, fields: "-password" },
       );
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Unlinks a user's linked account from their profile in the database.
+   * @param {string} userId - The ID of the user to unlink.
+   * @param {{ provider: string; providerAccount: string; providerAccountId: string }} account - The linked account to unlink.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   * @throws {Error} - If there was an error while unlinking the account.
+   */
+  async unlinkAccount(
+    userId: string,
+    account: UserLinkedAccount,
+  ): Promise<UserType | null> {
+    try {
+      await connectToDatabase();
+      const user = await User.findByIdAndUpdate(
+        { _id: userId },
+        { $pull: { linkedAccounts: account } },
+        { new: true, fields: "-password" },
+      );
+
       return user;
     } catch (error) {
       throw error;

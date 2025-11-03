@@ -8,13 +8,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CheckCircle2, Link2, AlertCircle, LockIcon } from "lucide-react";
+import { CheckCircle2, Link2, AlertCircle, Lock, X } from "lucide-react";
 import Image from "next/image";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import CreateCredentials from "@/app/(views)/chat/profile/account/components/create-credentials";
+import { useUnlinkUserCredentials } from "@/hooks/use-user";
+import UnlinkWarning from "@/app/(views)/chat/profile/account/components/unlink-warning";
 
 interface ConnectedAccountsProps {
   session: Session;
@@ -31,6 +33,9 @@ function ConnectedAccounts({
 }: ConnectedAccountsProps) {
   const [error, setError] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+
+  const { mutateAsync: unlinkAuth, isPending: isUnlinking } =
+    useUnlinkUserCredentials();
 
   const linkedAccounts = session.user.linkedAccounts.map((account) => ({
     provider: account.provider,
@@ -82,7 +87,7 @@ function ConnectedAccounts({
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
-              <LockIcon className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
+              <Lock className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-gray-900 sm:text-base">
@@ -103,6 +108,15 @@ function ConnectedAccounts({
               <span className="hidden text-sm font-semibold text-green-600 sm:inline">
                 Connected
               </span>
+              <UnlinkWarning
+                session={session}
+                unlinkAuth={unlinkAuth}
+                isUnlinking={isUnlinking}
+                setError={setError}
+                provider="credentials"
+              >
+                <X className="h-4 w-4" />
+              </UnlinkWarning>
             </div>
           ) : (
             <CreateCredentials session={session} isGoogleAuth={isGoogleAuth}>
@@ -150,6 +164,15 @@ function ConnectedAccounts({
               <span className="hidden text-sm font-semibold text-green-600 sm:inline">
                 Connected
               </span>
+              <UnlinkWarning
+                session={session}
+                unlinkAuth={unlinkAuth}
+                isUnlinking={isUnlinking}
+                setError={setError}
+                provider="google"
+              >
+                <X className="h-4 w-4" />
+              </UnlinkWarning>
             </div>
           ) : (
             <Button

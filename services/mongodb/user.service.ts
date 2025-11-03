@@ -256,8 +256,6 @@ export const userService = {
         linkedAccounts.providerAccountId,
       );
 
-      console.log("linkedExists:", !!linkedExists);
-
       if (linkedExists) {
         throw new Error("There is already an account with this email.");
       }

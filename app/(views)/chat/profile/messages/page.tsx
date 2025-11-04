@@ -9,7 +9,7 @@ export default async function MessagesPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <MessagesPageClient serverSession={session as Session} />;

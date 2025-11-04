@@ -9,7 +9,7 @@ export default async function AnonymousChatPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <AnonymousPageClient session={session as Session} />;

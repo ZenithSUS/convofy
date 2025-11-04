@@ -9,7 +9,7 @@ export default async function EditPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <EditPageClient serverSession={session as Session} />;

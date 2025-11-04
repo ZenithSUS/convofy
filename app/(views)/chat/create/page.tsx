@@ -9,7 +9,7 @@ async function CreateRoomPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <CreateRoomClient serverSession={session as Session} />;

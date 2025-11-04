@@ -9,7 +9,7 @@ export default async function ChatListPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <ChatListClient serverSession={session as Session} />;

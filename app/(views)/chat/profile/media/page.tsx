@@ -9,7 +9,7 @@ export default async function MediaPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <MediaPageClient serverSession={session as Session} />;

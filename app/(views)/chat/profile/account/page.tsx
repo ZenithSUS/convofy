@@ -9,7 +9,7 @@ export default async function AccountPage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("auth/login");
+    redirect("/auth/login");
   }
 
   return <AccountPageClient serverSession={session as Session} />;

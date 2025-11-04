@@ -4,7 +4,7 @@ import AccountPageClient from "@/app/(views)/chat/profile/pages/account";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 
 export default async function AccountPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions).catch(() => null);
 
   return <AccountPageClient serverSession={session as Session} />;
 }

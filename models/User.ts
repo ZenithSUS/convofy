@@ -1,5 +1,18 @@
 import mongoose, { Schema, Document } from "mongoose";
 
+export interface UserSession {
+  sessionId: string;
+  deviceInfo: {
+    browser?: string;
+    os?: string;
+    device?: string;
+    ip?: string;
+  };
+  createdAt: Date;
+  lastActive: Date;
+  expiresAt: Date;
+}
+
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -16,6 +29,7 @@ export interface IUser extends Document {
     providerAccount: string;
     providerAccountId: string;
   }[];
+  activeSessions: UserSession[];
 }
 
 const UserSchema = new Schema<IUser>(
@@ -44,6 +58,20 @@ const UserSchema = new Schema<IUser>(
           type: String,
           required: true,
         },
+      },
+    ],
+    activeSessions: [
+      {
+        sessionId: { type: String, required: true },
+        deviceInfo: {
+          browser: { type: String },
+          os: { type: String },
+          device: { type: String },
+          ip: { type: String },
+        },
+        createdAt: { type: Date, required: true },
+        lastActive: { type: Date, required: true },
+        expiresAt: { type: Date, required: true },
       },
     ],
   },

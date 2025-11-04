@@ -8,7 +8,7 @@ export default async function AuthLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions).catch(() => null);
 
   // Get the current pathname from headers
   const currentPath = (await headers()).get("x-pathname") || "";

@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import jwt from "jsonwebtoken";
+import { UAParser } from "ua-parser-js";
 import { AxiosError } from "axios/";
 
 export function cn(...inputs: ClassValue[]) {
@@ -58,4 +59,14 @@ export function axiosErrorMessage(error: AxiosError): string {
     }
     return `Request error: ${error.message}`;
   }
+}
+
+export function getDeviceInfo(userAgent: string, ip: string) {
+  const parser = new UAParser(userAgent);
+  return {
+    browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
+    os: `${parser.getOS().name} ${parser.getOS().version}`,
+    device: parser.getDevice().type || "Desktop",
+    ip,
+  };
 }

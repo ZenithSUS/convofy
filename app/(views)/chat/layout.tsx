@@ -8,7 +8,7 @@ export default async function ChatLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions).catch(() => null);
 
   return (
     <ChatWrapper serverSession={session as Session}>{children}</ChatWrapper>

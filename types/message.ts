@@ -35,6 +35,6 @@ export type CreateMessage = Omit<Message, "_id" | "createdAt" | "sender"> & {
 
 export type MessageTyping = {
   roomId: string;
-  user: Omit<User, "_id"> & { id: string };
+  user: Omit<User, "_id" | "activeSessions"> & { id: string };
   isTyping: boolean;
 };

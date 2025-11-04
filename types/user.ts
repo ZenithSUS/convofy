@@ -1,3 +1,5 @@
+import { UserSession } from "@/models/User";
+
 export type UserOAuthProviders =
   | "credentials"
   | "google"
@@ -21,6 +23,7 @@ export type User = {
     providerAccount: string;
     providerAccountId: string;
   }[];
+  activeSessions: UserSession[];
 };
 
 export type UserLinkedAccount = {

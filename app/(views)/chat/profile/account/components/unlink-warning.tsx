@@ -88,7 +88,7 @@ function UnlinkWarning({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-500"
+            className="bg-red-500 hover:bg-red-600"
             onClick={() => handleUnlink(provider)}
           >
             Unlink

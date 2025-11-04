@@ -12,7 +12,7 @@ import { CheckCircle2, Link2, AlertCircle, Lock, X } from "lucide-react";
 import Image from "next/image";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import CreateCredentials from "@/app/(views)/chat/profile/account/components/create-credentials";
 import { useUnlinkUserCredentials } from "@/hooks/use-user";
@@ -42,6 +42,10 @@ function ConnectedAccounts({
     providerAccount: account.providerAccount,
     providerAccountId: account.providerAccountId,
   }));
+
+  const isOneAccount = useMemo<boolean>(() => {
+    return session.user.linkedAccounts.length === 1;
+  }, [session.user.linkedAccounts]);
 
   const handleConnectGoogle = async () => {
     try {
@@ -115,7 +119,11 @@ function ConnectedAccounts({
                 setError={setError}
                 provider="credentials"
               >
-                <X className="h-4 w-4" />
+                {!isOneAccount && (
+                  <Button variant="ghost" size="icon">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </UnlinkWarning>
             </div>
           ) : (
@@ -171,7 +179,11 @@ function ConnectedAccounts({
                 setError={setError}
                 provider="google"
               >
-                <X className="h-4 w-4" />
+                {!isOneAccount && (
+                  <Button variant="ghost" size="icon">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </UnlinkWarning>
             </div>
           ) : (

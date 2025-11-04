@@ -279,7 +279,7 @@ function CreateCredentials({ children, session, isGoogleAuth }: Props) {
                     disabled={!form.formState.isValid || isLinking}
                     className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-base font-semibold text-white shadow-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
                   >
-                    Submit
+                    {isLinking ? "Linking..." : "Link Account"}
                   </Button>
 
                   {apiError && <p className="text-red-500">{apiError}</p>}

@@ -269,7 +269,9 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as Omit<User, "_id" | "activeSessions"> & {
+            id: string;
+          },
           isTyping: true,
         });
       } catch (error) {
@@ -295,7 +297,9 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as Omit<User, "_id" | "activeSessions"> & {
+            id: string;
+          },
           isTyping: false,
         });
       } catch (error) {

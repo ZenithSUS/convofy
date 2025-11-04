@@ -21,6 +21,7 @@ export interface Session {
       providerAccount: string;
       providerAccountId: string;
     }[];
+    sessionId: string;
   };
 }
 

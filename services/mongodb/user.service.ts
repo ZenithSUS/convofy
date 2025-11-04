@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import User from "@/models/User";
+import User, { UserSession } from "@/models/User";
 import {
   UserMessageDataStats,
   UserMediaDataStats,
@@ -349,9 +349,18 @@ export const userService = {
   ): Promise<UserType | null> {
     try {
       await connectToDatabase();
+
+      const query =
+        account.provider === "credentials"
+          ? {
+              $pull: { linkedAccounts: account },
+              $set: { password: null },
+            }
+          : { $pull: { linkedAccounts: account } };
+
       const user = await User.findByIdAndUpdate(
         { _id: userId },
-        { $pull: { linkedAccounts: account } },
+        { ...query },
         { new: true, fields: "-password" },
       );
 
@@ -359,6 +368,101 @@ export const userService = {
     } catch (error) {
       throw error;
     }
+  },
+
+  /**
+   * Adds a new active session to a user's profile in the database.
+   * @param {string} userId - The ID of the user to add the session to.
+   * @param {UserSession} session - The active session to add.
+   * @returns {Promise<UserType>} - A promise that resolves with the updated user.
+   * @throws {Error} - If there was an error while updating the user.
+   */
+  async addUserSession(userId: string, session: UserSession) {
+    return await User.findByIdAndUpdate(
+      userId,
+      {
+        $push: { activeSessions: session },
+        $set: { lastActive: new Date() },
+      },
+      { new: true },
+    );
+  },
+
+  /**
+   * Updates the last active date of a user's active session in the database.
+   * @param {string} userId - The ID of the user to update.
+   * @param {string} sessionId - The ID of the active session to update.
+   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
+   */
+  async updateSessionActivity(userId: string, sessionId: string) {
+    return await User.updateOne(
+      {
+        _id: userId,
+        "activeSessions.sessionId": sessionId,
+      },
+      {
+        $set: {
+          "activeSessions.$.lastActive": new Date(),
+          lastActive: new Date(),
+        },
+      },
+    );
+  },
+
+  /**
+   * Revokes an active session of a user in the database.
+   * @param {string} userId - The ID of the user to revoke the session of.
+   * @param {string} sessionId - The ID of the active session to revoke.
+   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
+   */
+  async revokeSession(userId: string, sessionId: string) {
+    return await User.findByIdAndUpdate(
+      userId,
+      { $pull: { activeSessions: { sessionId } } },
+      { new: true },
+    );
+  },
+
+  /**
+   * Revokes all active sessions of a user in the database, except for the specified session ID.
+   * @param {string} userId - The ID of the user to revoke the sessions of.
+   * @param {string} [exceptSessionId] - The ID of the active session to exclude from revocation.
+   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
+   */
+  async revokeAllSessions(userId: string, exceptSessionId?: string) {
+    const update = exceptSessionId
+      ? { $pull: { activeSessions: { sessionId: { $ne: exceptSessionId } } } }
+      : { $set: { activeSessions: [] } };
+
+    return await User.findByIdAndUpdate(userId, update, { new: true });
+  },
+
+  /**
+   * Removes all expired active sessions from all users in the database.
+   * This should be run as a cron job to clean up expired sessions periodically.
+   */
+  async cleanExpiredSessions() {
+    // Run this as a cron job
+    return await User.updateMany(
+      {},
+      {
+        $pull: {
+          activeSessions: {
+            expiresAt: { $lt: new Date() },
+          },
+        },
+      },
+    );
+  },
+
+  /**
+   * Fetches all active sessions of a user from the database.
+   * @param {string} userId - The ID of the user to fetch active sessions for.
+   * @returns {Promise<UserSession[]>} - A promise that resolves with an array of active sessions of the user.
+   */
+  async getUserActiveSessions(userId: string) {
+    const user = await User.findById(userId).select("activeSessions");
+    return user?.activeSessions || [];
   },
 };
 

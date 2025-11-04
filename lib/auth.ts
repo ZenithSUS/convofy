@@ -4,6 +4,8 @@ import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
 import { getServerSession, NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { UserSession } from "@/models/User";
+import { getDeviceInfo } from "./utils";
 
 declare module "next-auth" {
   interface Session {
@@ -23,6 +25,7 @@ declare module "next-auth" {
         providerAccount: string;
         providerAccountId: string;
       }[];
+      sessionId?: string;
     };
   }
 
@@ -42,11 +45,13 @@ declare module "next-auth" {
       providerAccount: string;
       providerAccountId: string;
     }[];
+    sessionId?: string;
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
+    sessionId?: string;
     status?: string | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
@@ -204,7 +209,7 @@ export const authOptions: NextAuthOptions = {
         // ---- Create user if doesn't exist ----
         if (!existingUser) {
           if (account?.provider !== "credentials") {
-            const newUserData: Omit<User, "_id"> = {
+            const newUserData: Omit<User, "_id" | "activeSessions"> = {
               name: user.name ?? "Unnamed User",
               email: user.email,
               avatar: user.image || "",
@@ -264,6 +269,38 @@ export const authOptions: NextAuthOptions = {
           await userService.updateUser(existingUser);
         }
 
+        // Add session
+        if (existingUser) {
+          // Get request headers for device info
+          const headers = await import("next/headers");
+          const headersList = await headers.headers();
+          const userAgent = headersList.get("user-agent") || "";
+          const ip =
+            headersList.get("x-forwarded-for") ||
+            headersList.get("x-real-ip") ||
+            "unknown";
+
+          const sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const deviceInfo = getDeviceInfo(userAgent, ip);
+
+          const newSession: UserSession = {
+            sessionId,
+            deviceInfo,
+            createdAt: new Date(),
+            lastActive: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          };
+
+          // Add session to user's active sessions
+          await userService.addUserSession(
+            existingUser._id.toString(),
+            newSession,
+          );
+
+          user.sessionId = sessionId;
+        }
+
+        // Set user properties
         user.id = existingUser._id.toString();
         user.name = existingUser.name;
         user.email = existingUser.email;
@@ -295,6 +332,7 @@ export const authOptions: NextAuthOptions = {
 
       if (session.user) {
         session.user.id = token.userId ?? token.sub!;
+        session.user.sessionId = token.sessionId; // ✅ FIX: Add sessionId
         session.user.name = token.name;
         session.user.image = token.picture;
         session.user.status = token.status!;
@@ -308,6 +346,18 @@ export const authOptions: NextAuthOptions = {
           session.user.email!,
         );
         if (!existingUser) return session;
+
+        // Validate session
+        if (token.sessionId) {
+          const sessionExists =
+            existingUser.activeSessions?.some(
+              (s) => s.sessionId === token.sessionId,
+            ) ?? false;
+
+          if (!sessionExists) {
+            throw new Error("Session revoked");
+          }
+        }
       } catch (err) {
         console.warn("Session validation failed:", err);
         throw new Error("Session validation failed");
@@ -327,6 +377,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       if (user) {
+        token.sessionId = user.sessionId;
         token.userId = user.id;
         token.name = user.name;
         token.picture = user.image;
@@ -342,10 +393,24 @@ export const authOptions: NextAuthOptions = {
       }
 
       // ---- Refresh token ----
-      if (!user && token.email) {
+      if (!user && token.email && token.sessionId) {
         try {
           const dbUser = await userService.getUserByEmail(token.email);
           if (dbUser) {
+            const sessionExists =
+              dbUser.activeSessions?.some(
+                (session) => session.sessionId === token.sessionId,
+              ) ?? false;
+
+            if (!sessionExists) {
+              throw new Error("Session revoked");
+            }
+
+            await userService.updateSessionActivity(
+              dbUser._id.toString(),
+              token.sessionId as string,
+            );
+
             token.status = dbUser.status;
             token.lastActive = dbUser.lastActive;
             token.createdAt = dbUser.createdAt;
@@ -360,6 +425,7 @@ export const authOptions: NextAuthOptions = {
           }
         } catch (err) {
           console.warn("JWT refresh failed:", err);
+          throw err;
         }
       }
 

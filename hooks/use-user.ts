@@ -1,4 +1,5 @@
 import client from "@/lib/axios";
+import { UserSession } from "@/models/User";
 import {
   CreateLinkedAccount,
   User,
@@ -184,5 +185,52 @@ export const useUnlinkUserCredentials = () => {
     mutationKey: ["unlinkUserCredentials"],
     mutationFn: async (data: { id: string; accountType: UserLinkedAccount }) =>
       unlinkUserCredentials(data.id, data.accountType),
+  });
+};
+
+export const useGetUserSessions = (): UseBaseQueryResult<
+  UserSession[],
+  Error
+> => {
+  const getUserSessions = async () => {
+    const response = await client
+      .get("/sessions")
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error fetching user sessions:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useQuery({
+    queryKey: ["userSessions"],
+    queryFn: async () => getUserSessions(),
+  });
+};
+
+export const useRemoveAllUserSessions = (): UseMutationResult<
+  void,
+  Error,
+  { exceptCurrent: boolean },
+  unknown
+> => {
+  const removeAllUserSessions = async (exceptCurrent: boolean) => {
+    const response = await client
+      .post("/sessions/revoke-all", { exceptCurrent })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("Error removing user sessions:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["removeAllUserSessions"],
+    mutationFn: async (data: { exceptCurrent: boolean }) =>
+      removeAllUserSessions(data.exceptCurrent),
   });
 };

@@ -330,9 +330,13 @@ export const authOptions: NextAuthOptions = {
           newSession.user?.linkedAccounts ?? token.linkedAccounts;
       }
 
+      if (!session?.user) {
+        return session;
+      }
+
       if (session.user) {
         session.user.id = token.userId ?? token.sub!;
-        session.user.sessionId = token.sessionId; // ✅ FIX: Add sessionId
+        session.user.sessionId = token.sessionId;
         session.user.name = token.name;
         session.user.image = token.picture;
         session.user.status = token.status!;
@@ -342,6 +346,10 @@ export const authOptions: NextAuthOptions = {
       }
 
       try {
+        if (!session.user?.email) {
+          return session;
+        }
+
         const existingUser = await userService.getUserByEmail(
           session.user.email!,
         );

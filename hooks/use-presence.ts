@@ -76,7 +76,7 @@ const useUserConnectionStatus = (serverSession: Session) => {
   ]);
 
   useEffect(() => {
-    if (!session?.user.id) return;
+    if (!session?.user?.id) return; // ✅ Already has proper null check
 
     const getUserStatus = async () => {
       isMountedRef.current = true;
@@ -96,7 +96,7 @@ const useUserConnectionStatus = (serverSession: Session) => {
     return () => {
       isMountedRef.current = false;
     };
-  }, [connectionStatus, session.user.id, updateUserStatus]);
+  }, [connectionStatus, session?.user?.id, updateUserStatus]);
 
   return { connectionStatus };
 };

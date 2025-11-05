@@ -5,7 +5,7 @@ export const GET = async () => {
   try {
     console.log("Running daily cron job...");
 
-    // Cronjobs
+    // Run the daily cron job
     await userService.cleanExpiredSessions();
 
     return NextResponse.json(

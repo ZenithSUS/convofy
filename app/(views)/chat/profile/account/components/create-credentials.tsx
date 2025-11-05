@@ -19,7 +19,7 @@ import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useCallback, useState } from "react";
+import { SetStateAction, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import PasswordStrength from "@/helper/password-strength";
 import { CreateLinkedAccount } from "@/types/user";
@@ -31,6 +31,9 @@ interface Props {
   isGoogleAuth: boolean;
   session: Session;
   children: React.ReactNode;
+  setIsConnecting: React.Dispatch<
+    SetStateAction<{ credentials: boolean; google: boolean; github: boolean }>
+  >;
 }
 
 const createCredentialsSchema = z
@@ -49,7 +52,12 @@ const createCredentialsSchema = z
 
 type createCredentialsSchemaType = z.infer<typeof createCredentialsSchema>;
 
-function CreateCredentials({ children, session, isGoogleAuth }: Props) {
+function CreateCredentials({
+  children,
+  session,
+  isGoogleAuth,
+  setIsConnecting,
+}: Props) {
   const { update } = useHybridSession(session);
   const form = useForm<createCredentialsSchemaType>({
     resolver: zodResolver(createCredentialsSchema),
@@ -77,6 +85,7 @@ function CreateCredentials({ children, session, isGoogleAuth }: Props) {
       if (!session) return;
 
       try {
+        setIsConnecting((prev) => ({ ...prev, credentials: true }));
         setIsLinking(true);
         setApiError(null);
         const user: CreateLinkedAccount = {
@@ -118,9 +127,10 @@ function CreateCredentials({ children, session, isGoogleAuth }: Props) {
         toast.error("Failed to link user credentials");
       } finally {
         setIsLinking(false);
+        setIsConnecting((prev) => ({ ...prev, credentials: false }));
       }
     },
-    [session, linkAccount, update],
+    [session, linkAccount, update, setIsConnecting],
   );
 
   if (!session) return null;

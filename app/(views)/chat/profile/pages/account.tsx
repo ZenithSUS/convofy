@@ -22,11 +22,17 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
 
   const isMobile = useIsMobile();
   const accountCreationDate = new Date(session.user.createdAt || "2024-01-01");
+
   const isGoogleAuth = session.user.linkedAccounts.some(
     (account) => account.provider === "google",
   );
+
   const isCredentialsAuth = session.user.linkedAccounts.some(
     (account) => account.provider === "credentials",
+  );
+
+  const isGitHubAuth = session.user.linkedAccounts.some(
+    (account) => account.provider === "github",
   );
 
   return (
@@ -59,6 +65,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
           session={session}
           isCredentialsAuth={isCredentialsAuth}
           isGoogleAuth={isGoogleAuth}
+          isGitHubAuth={isGitHubAuth}
           isMobile={isMobile}
         />
 

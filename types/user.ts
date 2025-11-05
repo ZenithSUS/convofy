@@ -24,6 +24,7 @@ export type User = {
     providerAccountId: string;
   }[];
   activeSessions: UserSession[];
+  sessionId?: string;
 };
 
 export type UserLinkedAccount = {

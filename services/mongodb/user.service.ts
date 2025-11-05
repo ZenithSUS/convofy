@@ -464,6 +464,21 @@ export const userService = {
     const user = await User.findById(userId).select("activeSessions");
     return user?.activeSessions || [];
   },
+
+  /**
+   * Fetches the current active session ID of a user from the database.
+   * @param {string} userId - The ID of the user to fetch the active session for.
+   * @param {string} sessionId - The ID of the active session to fetch.
+   * @returns {Promise<UserSession["sessionId"]>} - A promise that resolves with the current active session ID of the user.
+   */
+  async getCurrentSessionID(userId: string, sessionId: string) {
+    const user = await User.findById(userId).select("activeSessions");
+    const currentSessionID = user?.activeSessions.find(
+      (session: UserSession) => session.sessionId === sessionId,
+    )?.sessionId;
+
+    return currentSessionID;
+  },
 };
 
 export default userService;

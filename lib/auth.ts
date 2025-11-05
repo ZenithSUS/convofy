@@ -4,6 +4,7 @@ import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
 import { getServerSession, NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GithubProvider from "next-auth/providers/github";
 import { UserSession } from "@/models/User";
 import { getDeviceInfo } from "./utils";
 
@@ -114,6 +115,16 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true,
     }),
+    GithubProvider({
+      clientId:
+        process.env.NODE_ENV === "production"
+          ? process.env.GITHUB_CLIENT_ID_PROD!
+          : process.env.GITHUB_CLIENT_ID_DEV!,
+      clientSecret:
+        process.env.NODE_ENV === "production"
+          ? process.env.GITHUB_CLIENT_SECRET_PROD!
+          : process.env.GITHUB_CLIENT_SECRET_DEV!,
+    }),
   ],
 
   secret: process.env.NEXTAUTH_SECRET,
@@ -148,8 +159,18 @@ export const authOptions: NextAuthOptions = {
         const session = await getServerSession(authOptions).catch(() => null);
 
         // ---- Linking flow ----
-        if (session?.user?.id && currentProvider !== "credentials") {
+        if (
+          session?.user?.id &&
+          session?.user?.sessionId &&
+          currentProvider !== "credentials"
+        ) {
+          // Get the current user and current session
           const currentUser = await userService.getUserById(session.user.id);
+          const currentSession = await userService.getCurrentSessionID(
+            session.user.id,
+            session.user.sessionId,
+          );
+
           if (!currentUser) return false;
 
           const linkedAccount = await userService.getUserByLinkedAccount(
@@ -165,7 +186,6 @@ export const authOptions: NextAuthOptions = {
             return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
-          console.log("Linking user account...");
           await userService.updateLinkedAccount(currentUser._id.toString(), {
             provider: currentProvider as UserOAuthProviders,
             providerAccount: currentAccountEmail,
@@ -173,6 +193,7 @@ export const authOptions: NextAuthOptions = {
           });
 
           // Make the current user the logged in user
+          user.sessionId = currentSession;
           user.id = currentUser._id.toString();
           user.name = currentUser.name;
           user.email = currentUser.email;
@@ -269,38 +290,34 @@ export const authOptions: NextAuthOptions = {
           await userService.updateUser(existingUser);
         }
 
-        // Add session
-        if (existingUser) {
-          // Get request headers for device info
-          const headers = await import("next/headers");
-          const headersList = await headers.headers();
-          const userAgent = headersList.get("user-agent") || "";
-          const ip =
-            headersList.get("x-forwarded-for") ||
-            headersList.get("x-real-ip") ||
-            "unknown";
+        // Get request headers for device info
+        const headers = await import("next/headers");
+        const headersList = await headers.headers();
+        const userAgent = headersList.get("user-agent") || "";
+        const ip =
+          headersList.get("x-forwarded-for") ||
+          headersList.get("x-real-ip") ||
+          "unknown";
 
-          const sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-          const deviceInfo = getDeviceInfo(userAgent, ip);
+        const sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const deviceInfo = getDeviceInfo(userAgent, ip);
 
-          const newSession: UserSession = {
-            sessionId,
-            deviceInfo,
-            createdAt: new Date(),
-            lastActive: new Date(),
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-          };
+        const newSession: UserSession = {
+          sessionId,
+          deviceInfo,
+          createdAt: new Date(),
+          lastActive: new Date(),
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        };
 
-          // Add session to user's active sessions
-          await userService.addUserSession(
-            existingUser._id.toString(),
-            newSession,
-          );
-
-          user.sessionId = sessionId;
-        }
+        // Add session to user's active sessions
+        await userService.addUserSession(
+          existingUser._id.toString(),
+          newSession,
+        );
 
         // Set user properties
+        user.sessionId = sessionId;
         user.id = existingUser._id.toString();
         user.name = existingUser.name;
         user.email = existingUser.email;
@@ -393,6 +410,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // ---- Refresh token ----
+
       if (!user && token.email && token.sessionId) {
         try {
           const dbUser = await userService.getUserByEmail(token.email);
@@ -427,6 +445,11 @@ export const authOptions: NextAuthOptions = {
           console.warn("JWT refresh failed:", err);
           throw err;
         }
+      }
+
+      // ---- Invalid session ----
+      if (!token.sessionId) {
+        throw new Error("Invalid session");
       }
 
       return token;

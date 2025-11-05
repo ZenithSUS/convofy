@@ -417,7 +417,7 @@ export const userService = {
    */
   async revokeSession(userId: string, sessionId: string) {
     return await User.findByIdAndUpdate(
-      userId,
+      { _id: userId },
       { $pull: { activeSessions: { sessionId } } },
       { new: true },
     );

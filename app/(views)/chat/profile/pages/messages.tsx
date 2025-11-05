@@ -97,7 +97,10 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
-      <ProfileHeader userId={session.user.id} />
+      <ProfileHeader
+        userId={session.user.id}
+        sessionId={session.user.sessionId}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* User Avatar Card */}

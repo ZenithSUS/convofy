@@ -109,7 +109,7 @@ function SessionManagement({ session }: { session: Session }) {
             </div>
           ))}
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <SessionRemoveWarning
             description="This will log you out from all devices except the current one."
             handleRemoveSession={handleLogoutAllDevices}
@@ -131,7 +131,7 @@ function SessionManagement({ session }: { session: Session }) {
                   <span className="hidden sm:inline">
                     Logout From All Devices
                   </span>
-                  <span className="sm:hidden">Logout All</span>
+                  <span className="sm:hidden">Logout All Devices</span>
                 </>
               )}
             </Button>
@@ -158,7 +158,7 @@ function SessionManagement({ session }: { session: Session }) {
                   <span className="hidden sm:inline">
                     Logout Except Current
                   </span>
-                  <span className="sm:hidden">Logout All</span>
+                  <span className="sm:hidden">Logout Except Current</span>
                 </>
               )}
             </Button>

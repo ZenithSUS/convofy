@@ -17,22 +17,25 @@ import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-function ProfileLogoutModal({ userId }: { userId: string }) {
+interface ProfileLogoutModalProps {
+  userId: string;
+  sessionId: string;
+}
+
+function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleLogout = () => {
-    signOut()
-      .then(async () => {
-        const response = await client.post("/auth/logout", { id: userId });
-        return response.data;
+  const handleLogout = async () => {
+    if (!isClient) return;
+    await Promise.all([signOut(), client.post("/auth/logout", { id: userId })])
+      .then(() => {
+        client.post(`/sessions/${userId}/revoke`, { sessionId });
       })
-      .catch((error) => {
-        console.error("Error logging out:", error);
-      });
+      .catch((error) => console.error("Error logging out:", error));
   };
 
   if (!isClient) return null;

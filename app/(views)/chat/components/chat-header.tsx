@@ -57,7 +57,10 @@ function ChatHeader({ session }: { session: Session }) {
               : session.user.name) || session.user.email}
           </div>
 
-          <LogoutModal userId={session.user.id} />
+          <LogoutModal
+            userId={session.user.id}
+            sessionId={session.user.sessionId}
+          />
         </div>
       )}
     </div>

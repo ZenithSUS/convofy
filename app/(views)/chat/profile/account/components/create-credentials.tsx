@@ -32,7 +32,12 @@ interface Props {
   session: Session;
   children: React.ReactNode;
   setIsConnecting: React.Dispatch<
-    SetStateAction<{ credentials: boolean; google: boolean; github: boolean }>
+    SetStateAction<{
+      credentials: boolean;
+      google: boolean;
+      github: boolean;
+      facebook: boolean;
+    }>
   >;
 }
 
@@ -287,7 +292,7 @@ function CreateCredentials({
                   <Button
                     type="submit"
                     disabled={!form.formState.isValid || isLinking}
-                    className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-base font-semibold text-white shadow-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
+                    className="w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 px-8 py-6 text-base font-semibold text-white shadow-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50"
                   >
                     {isLinking ? "Linking..." : "Link Account"}
                   </Button>

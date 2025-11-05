@@ -1,12 +1,26 @@
-import client from "@/lib/axios";
-import userService from "@/services/mongodb/user.service";
-import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
+// Next
 import { getServerSession, NextAuthOptions } from "next-auth";
+
+// Lib
+import client from "@/lib/axios";
+
+// Utils
+import { getDeviceInfo } from "./utils";
+
+// Types
+import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
+
+// Models
+import { UserSession } from "@/models/User";
+
+// Services
+import userService from "@/services/mongodb/user.service";
+
+// Providers
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
-import { UserSession } from "@/models/User";
-import { getDeviceInfo } from "./utils";
+import FacebookProvider from "next-auth/providers/facebook";
 
 declare module "next-auth" {
   interface Session {
@@ -124,6 +138,10 @@ export const authOptions: NextAuthOptions = {
         process.env.NODE_ENV === "production"
           ? process.env.GITHUB_CLIENT_SECRET_PROD!
           : process.env.GITHUB_CLIENT_SECRET_DEV!,
+    }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID!,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
     }),
   ],
 

@@ -37,7 +37,7 @@ interface AccountCardProps {
   isUnlinking: boolean;
   setError: (error: string | null) => void;
   onConnect: (provider: UserOAuthProviders) => void;
-  isGoogleAuth?: boolean;
+  isAnyOAuth: boolean;
   setIsConnecting: React.Dispatch<
     React.SetStateAction<Record<UserOAuthProviders, boolean>>
   >;
@@ -54,7 +54,7 @@ function AccountCard({
   isUnlinking,
   setError,
   onConnect,
-  isGoogleAuth,
+  isAnyOAuth,
   setIsConnecting,
 }: AccountCardProps) {
   const iconSize = isMobile ? 20 : 24;
@@ -113,7 +113,7 @@ function AccountCard({
       ) : provider.isCredentials ? (
         <CreateCredentials
           session={session}
-          isGoogleAuth={isGoogleAuth!}
+          isAnyOAuth={isAnyOAuth}
           setIsConnecting={setIsConnecting}
         >
           <Button

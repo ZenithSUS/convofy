@@ -20,6 +20,7 @@ import userService from "@/services/mongodb/user.service";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
+import DiscordProvider from "next-auth/providers/discord";
 
 declare module "next-auth" {
   interface Session {
@@ -137,6 +138,10 @@ export const authOptions: NextAuthOptions = {
         process.env.NODE_ENV === "production"
           ? process.env.GITHUB_CLIENT_SECRET_PROD!
           : process.env.GITHUB_CLIENT_SECRET_DEV!,
+    }),
+    DiscordProvider({
+      clientId: process.env.DISCORD_CLIENT_ID!,
+      clientSecret: process.env.DISCORD_CLIENT_SECRET!,
     }),
   ],
 

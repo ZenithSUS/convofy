@@ -22,7 +22,7 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { SetStateAction, useCallback, useState } from "react";
 import { Button } from "@/components/ui/button";
 import PasswordStrength from "@/helper/password-strength";
-import { CreateLinkedAccount } from "@/types/user";
+import { CreateLinkedAccount, UserOAuthProviders } from "@/types/user";
 import { useLinkUserCredentials } from "@/hooks/use-user";
 import { toast } from "react-toastify";
 import useHybridSession from "@/hooks/use-hybrid-session";
@@ -32,12 +32,7 @@ interface Props {
   session: Session;
   children: React.ReactNode;
   setIsConnecting: React.Dispatch<
-    SetStateAction<{
-      credentials: boolean;
-      google: boolean;
-      github: boolean;
-      facebook: boolean;
-    }>
+    SetStateAction<Record<UserOAuthProviders, boolean>>
   >;
 }
 

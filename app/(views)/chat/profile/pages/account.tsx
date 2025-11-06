@@ -35,6 +35,10 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
     (account) => account.provider === "github",
   );
 
+  const isDiscordAuth = session.user.linkedAccounts.some(
+    (account) => account.provider === "discord",
+  );
+
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
@@ -66,6 +70,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
           isCredentialsAuth={isCredentialsAuth}
           isGoogleAuth={isGoogleAuth}
           isGitHubAuth={isGitHubAuth}
+          isDiscordAuth={isDiscordAuth}
           isMobile={isMobile}
         />
 

@@ -25,7 +25,7 @@ export interface IUser extends Document {
   anonAlias?: string | null;
   anonAvatar?: string | null;
   linkedAccounts: {
-    provider: "credentials" | "google" | "github" | "facebook";
+    provider: "credentials" | "google" | "github" | "discord";
     providerAccount: string;
     providerAccountId: string;
   }[];
@@ -47,7 +47,7 @@ const UserSchema = new Schema<IUser>(
       {
         provider: {
           type: String,
-          enum: ["credentials", "google", "github", "facebook"],
+          enum: ["credentials", "google", "github", "discord"],
           required: true,
         },
         providerAccount: {

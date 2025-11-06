@@ -4,7 +4,7 @@ export type UserOAuthProviders =
   | "credentials"
   | "google"
   | "github"
-  | "facebook";
+  | "discord";
 
 export type User = {
   _id: string;

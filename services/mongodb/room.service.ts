@@ -3,6 +3,8 @@ import Room from "@/models/Room";
 import User from "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
+import { pusherServer } from "@/lib/pusher";
+import Message from "@/models/Message";
 
 export const roomService = {
   /**
@@ -18,7 +20,22 @@ export const roomService = {
       createdAt: new Date(),
     });
 
-    return room;
+    const populatedRoom = await Room.findById(room._id)
+      .populate("lastMessage", ["content", "type", "createdAt"])
+      .populate("members", ["name", "avatar", "_id", "status"])
+      .lean();
+
+    // Send new room event to Pusher
+    const channelName = `user-${data.createdBy}`;
+
+    try {
+      await pusherServer.trigger(channelName, "room-created", populatedRoom);
+    } catch (error) {
+      await Room.deleteOne({ _id: room._id });
+      throw error;
+    }
+
+    return populatedRoom;
   },
 
   /**
@@ -132,6 +149,12 @@ export const roomService = {
       room = await Room.findById(room._id)
         .populate("members", ["name", "avatar"])
         .populate("lastMessage", ["content", "type", "createdAt"]);
+
+      // Send new room event to both users
+      await Promise.all([
+        pusherServer.trigger(`user-${userIdA}`, "room-created", room),
+        pusherServer.trigger(`user-${userIdB}`, "room-created", room),
+      ]);
     }
 
     return room;
@@ -172,6 +195,37 @@ export const roomService = {
       .lean();
 
     return rooms || [];
+  },
+
+  /**
+   * Deletes a room by its ID if the room was created by the given user.
+   * If the room is not found, an error is thrown.
+   * After deleting the room, all messages in the room are also deleted.
+   * @param {string} userId - The ID of the user who created the room.
+   * @param {string} roomId - The ID of the room to delete.
+   * @returns {Promise<Room | null>} The deleted room, or null if no room was found.
+   * @throws {Error} - If the room is not found.
+   */
+  async deleteRoomById(userId: string, roomId: string) {
+    await connectToDatabase();
+
+    const room = await Room.findOneAndDelete({
+      _id: roomId,
+      createdBy: userId,
+    });
+
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    const channelName = `user-${userId}`;
+
+    await pusherServer.trigger(channelName, "room-deleted", roomId);
+
+    // Delete all messages in the room
+    await Message.deleteMany({ room: roomId });
+
+    return room;
   },
 
   /**

@@ -42,6 +42,7 @@ RoomSchema.index(
   },
 );
 
+// Sort members to ensure consistent ordering
 RoomSchema.pre("save", function (next) {
   // Sort members to ensure consistent ordering
   if (this.members && this.members.length > 0) {

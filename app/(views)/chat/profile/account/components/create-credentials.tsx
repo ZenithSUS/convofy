@@ -28,7 +28,7 @@ import { toast } from "react-toastify";
 import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface Props {
-  isGoogleAuth: boolean;
+  isAnyOAuth: boolean;
   session: Session;
   children: React.ReactNode;
   setIsConnecting: React.Dispatch<
@@ -55,7 +55,7 @@ type createCredentialsSchemaType = z.infer<typeof createCredentialsSchema>;
 function CreateCredentials({
   children,
   session,
-  isGoogleAuth,
+  isAnyOAuth,
   setIsConnecting,
 }: Props) {
   const { update } = useHybridSession(session);
@@ -164,7 +164,7 @@ function CreateCredentials({
                               type="email"
                               autoComplete="email"
                               placeholder="Enter your email"
-                              disabled={isGoogleAuth}
+                              disabled={isAnyOAuth}
                               className="h-12 rounded-xl border-2 pl-10 text-sm"
                               {...field}
                             />

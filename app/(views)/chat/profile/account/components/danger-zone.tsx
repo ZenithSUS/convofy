@@ -205,7 +205,7 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
         </div>
 
         {/* Delete Account */}
-        <DeleteAccount />
+        <DeleteAccount userId={session.user.id} />
       </CardContent>
     </Card>
   );

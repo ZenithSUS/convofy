@@ -66,9 +66,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState<boolean>(false);
   const [, setIsDetailsVisible] = useState<boolean>(false);
-  const [actionType, setActionType] = useState<"edit" | "delete" | "view">(
-    "view",
-  );
+  const [actionType, setActionType] = useState<"edit" | "view">("view");
 
   const {
     data: room,
@@ -418,7 +416,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         )}
       </div>
 
-      {/* Enhanced Input Area */}
+      {/* Input Area */}
       {isMember && !isOtherPersonUnavailable ? (
         <div className="border-t bg-white shadow-lg">
           {/* File Preview Section */}

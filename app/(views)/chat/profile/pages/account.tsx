@@ -16,6 +16,7 @@ import ConnectedAccounts from "@/app/(views)/chat/profile/account/components/con
 import SessionManagement from "@/app/(views)/chat/profile/account/components/session-management";
 import DangerZone from "@/app/(views)/chat/profile/account/components/danger-zone";
 import AccountInfo from "@/app/(views)/chat/profile/account/components/account-into";
+import { useMemo } from "react";
 
 function AccountPageClient({ serverSession }: { serverSession: Session }) {
   const { session } = useHybridSession(serverSession);
@@ -38,6 +39,10 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
   const isDiscordAuth = session.user.linkedAccounts.some(
     (account) => account.provider === "discord",
   );
+
+  const isAnyOAuth = useMemo(() => {
+    return isGoogleAuth || isGitHubAuth || isDiscordAuth;
+  }, [isGoogleAuth, isGitHubAuth, isDiscordAuth]);
 
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
@@ -71,6 +76,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
           isGoogleAuth={isGoogleAuth}
           isGitHubAuth={isGitHubAuth}
           isDiscordAuth={isDiscordAuth}
+          isAnyOAuth={isAnyOAuth}
           isMobile={isMobile}
         />
 

@@ -35,12 +35,8 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
     (account) => account.provider === "github",
   );
 
-  const isFacebookAuth = session.user.linkedAccounts.some(
-    (account) => account.provider === "facebook",
-  );
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
       <ProfileHeader
         userId={session.user.id}
@@ -70,7 +66,6 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
           isCredentialsAuth={isCredentialsAuth}
           isGoogleAuth={isGoogleAuth}
           isGitHubAuth={isGitHubAuth}
-          isFacebookAuth={isFacebookAuth}
           isMobile={isMobile}
         />
 

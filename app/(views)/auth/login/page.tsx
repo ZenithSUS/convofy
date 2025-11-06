@@ -47,7 +47,6 @@ function LoginPage() {
   const [isCredentialsLoading, startCredentialsTransition] = useTransition();
   const [isGoogleLoading, startGoogleTransition] = useTransition();
   const [isGithubLoading, startGithubTransition] = useTransition();
-  const [isFacebookLoading, startFacebookTransition] = useTransition();
 
   const onSubmit = async (data: LoginFormInputs) => {
     setAuthError("");
@@ -84,17 +83,6 @@ function LoginPage() {
   const handleGithubLogin = () => {
     startGithubTransition(async () => {
       const res = await signIn("github");
-
-      if (res?.error) {
-        setAuthError(res.error);
-        return;
-      }
-    });
-  };
-
-  const handleFacebookLogin = () => {
-    startFacebookTransition(async () => {
-      const res = await signIn("facebook");
 
       if (res?.error) {
         setAuthError(res.error);
@@ -300,31 +288,6 @@ function LoginPage() {
                     height={20}
                     src="/github.png"
                     alt="Github Logo"
-                    className="h-5 w-5"
-                  />
-                </>
-              )}
-            </Button>
-
-            {/* Facebook Sign In */}
-            <Button
-              variant="outline"
-              type="button"
-              onClick={handleFacebookLogin}
-              disabled={isFacebookLoading}
-              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isFacebookLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                </>
-              ) : (
-                <>
-                  <Image
-                    width={20}
-                    height={20}
-                    src="/facebook.png"
-                    alt="Facebook Logo"
                     className="h-5 w-5"
                   />
                 </>

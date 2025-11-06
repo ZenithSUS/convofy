@@ -23,7 +23,6 @@ interface ConnectedAccountsProps {
   isCredentialsAuth: boolean;
   isGoogleAuth: boolean;
   isGitHubAuth: boolean;
-  isFacebookAuth: boolean;
   isMobile: boolean;
 }
 
@@ -32,7 +31,6 @@ function ConnectedAccounts({
   isCredentialsAuth,
   isGoogleAuth,
   isGitHubAuth,
-  isFacebookAuth,
   isMobile,
 }: ConnectedAccountsProps) {
   const [error, setError] = useState<string | null>(null);
@@ -88,26 +86,11 @@ function ConnectedAccounts({
     }
   };
 
-  const handleConnectFacebook = async () => {
-    try {
-      setError(null);
-      setIsConnecting((prev) => ({ ...prev, facebook: true }));
-
-      // Trigger OAuth sign-in flow, but come back to this page after
-      await signIn("facebook");
-    } catch (err) {
-      console.error("Connection error:", err);
-      setError("An unexpected error occurred. Please try again.");
-    } finally {
-      setIsConnecting((prev) => ({ ...prev, facebook: false }));
-    }
-  };
-
   return (
     <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Link2 className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
+          <Link2 className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
           <span className="truncate">Connected Accounts</span>
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -126,11 +109,11 @@ function ConnectedAccounts({
 
         {/* Credentials */}
         <div
-          className={`flex items-center justify-between gap-2 rounded-xl border bg-gradient-to-r ${isCredentialsAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
+          className={`flex items-center justify-between gap-2 rounded-xl border bg-linear-to-r ${isCredentialsAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
-              <Lock className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
+              <Lock className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-gray-900 sm:text-base">
@@ -146,8 +129,8 @@ function ConnectedAccounts({
             </div>
           </div>
           {isCredentialsAuth ? (
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
-              <CheckCircle2 className="h-4 w-4 flex-shrink-0 text-green-600 sm:h-5 sm:w-5" />
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 sm:h-5 sm:w-5" />
               <span className="hidden text-sm font-semibold text-green-600 sm:inline">
                 Connected
               </span>
@@ -185,10 +168,10 @@ function ConnectedAccounts({
 
         {/* Google */}
         <div
-          className={`flex items-center justify-between gap-2 rounded-xl border bg-gradient-to-r ${isGoogleAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
+          className={`flex items-center justify-between gap-2 rounded-xl border bg-linear-to-r ${isGoogleAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
               <Image
                 src="/google-logo.png"
                 alt="Google"
@@ -210,7 +193,7 @@ function ConnectedAccounts({
             </div>
           </div>
           {isGoogleAuth ? (
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600 sm:h-5 sm:w-5" />
               <span className="hidden text-sm font-semibold text-green-600 sm:inline">
                 Connected
@@ -244,10 +227,10 @@ function ConnectedAccounts({
 
         {/* GitHub */}
         <div
-          className={`flex items-center justify-between gap-2 rounded-xl border bg-gradient-to-r ${isGitHubAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
+          className={`flex items-center justify-between gap-2 rounded-xl border bg-linear-to-r ${isGitHubAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
               <Image
                 src="/github.png"
                 alt="GitHub"
@@ -269,7 +252,7 @@ function ConnectedAccounts({
             </div>
           </div>
           {isGitHubAuth ? (
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1 sm:gap-2">
               <CheckCircle2 className="h-4 w-4 text-green-600 sm:h-5 sm:w-5" />
               <span className="hidden text-sm font-semibold text-green-600 sm:inline">
                 Connected
@@ -297,65 +280,6 @@ function ConnectedAccounts({
               disabled={isConnecting.github}
             >
               {isConnecting.github ? "Connecting..." : "Connect"}
-            </Button>
-          )}
-        </div>
-
-        {/* Facebook */}
-        <div
-          className={`flex items-center justify-between gap-2 rounded-xl border bg-gradient-to-r ${isFacebookAuth ? "border-green-200 from-green-50 to-green-50" : "border-gray-200 from-gray-100 to-gray-50"} p-3 sm:p-4`}
-        >
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
-              <Image
-                src="/facebook.png"
-                alt="Facebook"
-                width={isMobile ? 20 : 24}
-                height={isMobile ? 20 : 24}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-gray-900 sm:text-base">
-                Facebook
-              </p>
-              <p className="truncate text-xs text-gray-600 sm:text-sm">
-                {
-                  linkedAccounts.find(
-                    (account) => account.provider === "facebook",
-                  )?.providerAccount
-                }
-              </p>
-            </div>
-          </div>
-          {isFacebookAuth ? (
-            <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
-              <CheckCircle2 className="h-4 w-4 text-green-600 sm:h-5 sm:w-5" />
-              <span className="hidden text-sm font-semibold text-green-600 sm:inline">
-                Connected
-              </span>
-              <UnlinkWarning
-                session={session}
-                unlinkAuth={unlinkAuth}
-                isUnlinking={isUnlinking}
-                setError={setError}
-                provider="facebook"
-              >
-                {!isOneAccount && (
-                  <Button variant="ghost" size="icon">
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </UnlinkWarning>
-            </div>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-lg text-xs sm:text-sm"
-              onClick={handleConnectFacebook}
-              disabled={isConnecting.facebook}
-            >
-              {isConnecting.facebook ? "Connecting..." : "Connect"}
             </Button>
           )}
         </div>

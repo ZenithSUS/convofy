@@ -26,7 +26,7 @@ export const roomService = {
       .lean();
 
     // Send new room event to Pusher
-    const channelName = `user-${data.createdBy}`;
+    const channelName = `user-${data.owner}`;
 
     try {
       await pusherServer.trigger(channelName, "room-created", populatedRoom);
@@ -143,7 +143,7 @@ export const roomService = {
       room = await Room.create({
         isPrivate: true,
         members: sortedMembers,
-        createdBy: userIdA,
+        owner: userIdA,
       });
 
       // Populate the newly created room
@@ -173,7 +173,13 @@ export const roomService = {
       { _id: roomId },
       { $addToSet: { members: userId } },
       { new: true },
-    ).populate("members", ["name", "avatar"]);
+    )
+      .populate("members", ["name", "avatar"])
+      .populate("lastMessage", ["content", "type", "createdAt"]);
+
+    // Trigger pusher event to set new rooms to the user
+    const channelName = `user-${userId}`;
+    pusherServer.trigger(channelName, "room-created", room);
 
     return room || null;
   },

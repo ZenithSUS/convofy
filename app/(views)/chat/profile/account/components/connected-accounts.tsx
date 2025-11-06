@@ -21,6 +21,7 @@ interface ConnectedAccountsProps {
   isGoogleAuth: boolean;
   isGitHubAuth: boolean;
   isDiscordAuth: boolean;
+  isAnyOAuth: boolean;
   isMobile: boolean;
 }
 
@@ -30,6 +31,7 @@ function ConnectedAccounts({
   isGoogleAuth,
   isGitHubAuth,
   isDiscordAuth,
+  isAnyOAuth,
   isMobile,
 }: ConnectedAccountsProps) {
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +139,7 @@ function ConnectedAccounts({
             isUnlinking={isUnlinking}
             setError={setError}
             onConnect={handleConnect}
-            isGoogleAuth={isGoogleAuth}
+            isAnyOAuth={isAnyOAuth}
             setIsConnecting={setIsConnecting}
           />
         ))}

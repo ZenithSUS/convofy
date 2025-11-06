@@ -57,7 +57,7 @@ function SessionManagement({ session }: { session: Session }) {
     <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Monitor className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
+          <Monitor className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
           <span className="truncate">Active Sessions</span>
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -72,18 +72,28 @@ function SessionManagement({ session }: { session: Session }) {
           </div>
         )}
 
+        {activeSessions?.length === 0 && !sessionsLoading && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border-2 border-gray-200 bg-gray-50 p-3 sm:p-4">
+            <LogOut className="h-5 w-5 text-gray-600 sm:h-6 sm:w-6" />
+            <p className="text-xs text-gray-600 sm:text-sm">
+              No active sessions
+            </p>
+          </div>
+        )}
+
         {activeSessions &&
+          activeSessions?.length > 0 &&
           activeSessions.map((sessionItem) => (
             <div
               key={sessionItem.sessionId}
               className={`flex items-center justify-between gap-2 rounded-xl border-2 p-3 sm:p-4 ${
                 sessionItem.sessionId === session.user.sessionId
-                  ? "border-green-200 bg-gradient-to-r from-green-50 to-emerald-50"
+                  ? "border-green-200 bg-linear-to-r from-green-50 to-emerald-50"
                   : "border-gray-200 bg-gray-50"
               }`}
             >
               <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
                   <Chrome className="h-5 w-5 text-gray-700 sm:h-6 sm:w-6" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -102,7 +112,7 @@ function SessionManagement({ session }: { session: Session }) {
                 </div>
               </div>
               {sessionItem.sessionId === session.user.sessionId && (
-                <span className="flex-shrink-0 rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 sm:px-3">
+                <span className="shrink-0 rounded-full bg-green-100 px-2 py-1 text-xs font-semibold text-green-700 sm:px-3">
                   Current
                 </span>
               )}

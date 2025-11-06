@@ -78,7 +78,10 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         <SessionManagement session={session} />
 
         {/* Danger Zone */}
-        <DangerZone isGoogleAuth={isGoogleAuth} />
+        <DangerZone
+          session={session}
+          linkedAccounts={session.user.linkedAccounts}
+        />
       </div>
     </div>
   );

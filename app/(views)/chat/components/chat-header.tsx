@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import LogoutModal from "./modals/logout-modal";
 import { useRouter } from "next/navigation";
+import { UserLinkedAccount } from "@/types/user";
 
 export interface Session {
   user: {
@@ -16,11 +17,9 @@ export interface Session {
     status: "online" | "offline";
     createdAt: Date;
     lastActive: Date;
-    linkedAccounts: {
-      provider: string;
-      providerAccount: string;
-      providerAccountId: string;
-    }[];
+    isAvailable: boolean;
+    isAnonymous: boolean;
+    linkedAccounts: UserLinkedAccount[];
     sessionId: string;
   };
 }

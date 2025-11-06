@@ -31,7 +31,7 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
 
   const handleLogout = async () => {
     if (!isClient) return;
-    console.log("sessionId", sessionId);
+
     await Promise.all([signOut(), client.post("/auth/logout", { id: userId })])
       .then(() => {
         client.post(`/sessions/${userId}/revoke`, { sessionId });
@@ -39,7 +39,7 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
       .catch((error) => console.error("Error logging out:", error));
   };
 
-  if (!isClient) return null;
+  if (!isClient || !userId || !sessionId) return null;
 
   return (
     <AlertDialog>

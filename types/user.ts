@@ -15,9 +15,10 @@ export type User = {
   status: "online" | "offline";
   lastActive: Date;
   createdAt: Date;
+  isAvailable: boolean;
   isAnonymous?: boolean;
-  // anonAlias?: string | null;
-  // anonAvatar?: string | null;
+  anonAlias?: string | null;
+  anonAvatar?: string | null;
   linkedAccounts: {
     provider: UserOAuthProviders;
     providerAccount: string;
@@ -26,6 +27,8 @@ export type User = {
   activeSessions: UserSession[];
   sessionId?: string;
 };
+
+export type UserCreate = Omit<User, "_id" | "activeSessions" | "isAvailable">;
 
 export type UserLinkedAccount = {
   provider: UserOAuthProviders;

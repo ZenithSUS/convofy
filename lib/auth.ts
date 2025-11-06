@@ -8,7 +8,12 @@ import client from "@/lib/axios";
 import { getDeviceInfo } from "./utils";
 
 // Types
-import { User, UserLinkedAccount, UserOAuthProviders } from "@/types/user";
+import {
+  User,
+  UserCreate,
+  UserLinkedAccount,
+  UserOAuthProviders,
+} from "@/types/user";
 
 // Models
 import { UserSession } from "@/models/User";
@@ -30,6 +35,7 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       status?: string | null;
+      isAvailable?: boolean;
       lastActive?: Date | null;
       createdAt?: Date | null;
       isAnonymous?: boolean;
@@ -52,6 +58,7 @@ declare module "next-auth" {
     status?: string | null;
     lastActive?: Date | null;
     createdAt?: Date | null;
+    isAvailable?: boolean;
     isAnonymous?: boolean;
     anonAlias?: string;
     anonAvatar?: string | null;
@@ -71,7 +78,9 @@ declare module "next-auth/jwt" {
     lastActive?: Date | null;
     createdAt?: Date | null;
     name?: string | null;
+    email?: string | null;
     picture?: string | null;
+    isAvailable?: boolean;
     isAnonymous?: boolean;
     anonAlias?: string;
     anonAvatar?: string | null;
@@ -112,6 +121,7 @@ export const authOptions: NextAuthOptions = {
             email: u.email,
             image: u.avatar,
             status: u.status,
+            isAvailable: u.isAvailable,
             lastActive: u.lastActive,
             createdAt: u.createdAt,
             linkedAccounts: u.linkedAccounts,
@@ -217,6 +227,7 @@ export const authOptions: NextAuthOptions = {
           user.email = currentUser.email;
           user.image = currentUser.avatar;
           user.status = currentUser.status;
+          user.isAvailable = currentUser.isAvailable;
           user.lastActive = currentUser.lastActive;
           user.createdAt = currentUser.createdAt;
           user.linkedAccounts = currentUser.linkedAccounts;
@@ -248,7 +259,7 @@ export const authOptions: NextAuthOptions = {
         // ---- Create user if doesn't exist ----
         if (!existingUser) {
           if (account?.provider !== "credentials") {
-            const newUserData: Omit<User, "_id" | "activeSessions"> = {
+            const newUserData: UserCreate = {
               name: user.name ?? "Unnamed User",
               email: user.email,
               avatar: user.image || "",
@@ -341,6 +352,7 @@ export const authOptions: NextAuthOptions = {
         user.email = existingUser.email;
         user.image = existingUser.avatar;
         user.status = existingUser.status;
+        user.isAvailable = existingUser.isAvailable;
         user.lastActive = existingUser.lastActive;
         user.createdAt = existingUser.createdAt;
         user.linkedAccounts = existingUser.linkedAccounts;
@@ -361,6 +373,7 @@ export const authOptions: NextAuthOptions = {
         token.name = newSession.user?.name ?? token.name;
         token.picture = newSession.user?.image ?? token.picture;
         token.status = newSession.user?.status ?? token.status;
+        token.isAvailable = newSession.user?.isAvailable ?? token.isAvailable;
         token.linkedAccounts =
           newSession.user?.linkedAccounts ?? token.linkedAccounts;
       }
@@ -371,6 +384,7 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name;
         session.user.image = token.picture;
         session.user.status = token.status!;
+        session.user.isAvailable = token.isAvailable!;
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
         session.user.linkedAccounts = token.linkedAccounts!;
@@ -406,6 +420,7 @@ export const authOptions: NextAuthOptions = {
         token.name = session.user?.name ?? token.name;
         token.picture = session.user?.image ?? token.picture;
         token.status = session.user?.status ?? token.status;
+        token.isAvailable = session.user?.isAvailable ?? token.isAvailable;
         token.linkedAccounts =
           session.user?.linkedAccounts ?? token.linkedAccounts;
         return token;
@@ -417,9 +432,15 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.picture = user.image;
         token.status = user.status;
+        token.isAvailable = user.isAvailable;
         token.lastActive = user.lastActive;
         token.createdAt = user.createdAt;
-        token.linkedAccounts = user.linkedAccounts;
+        token.linkedAccounts =
+          user.linkedAccounts?.map((account) => ({
+            provider: account.provider,
+            providerAccount: account.providerAccount,
+            providerAccountId: account.providerAccountId,
+          })) ?? [];
       }
 
       if (account) {
@@ -448,6 +469,7 @@ export const authOptions: NextAuthOptions = {
             );
 
             token.status = dbUser.status;
+            token.isAvailable = dbUser.isAvailable;
             token.lastActive = dbUser.lastActive;
             token.createdAt = dbUser.createdAt;
             token.name = dbUser.name;

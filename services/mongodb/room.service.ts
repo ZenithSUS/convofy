@@ -74,6 +74,7 @@ export const roomService = {
     const room = await Room.findById(id).populate("members", [
       "name",
       "avatar",
+      "isAvailable",
     ]);
 
     return room;

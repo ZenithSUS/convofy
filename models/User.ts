@@ -21,6 +21,7 @@ export interface IUser extends Document {
   status: "online" | "offline";
   lastActive?: Date;
   createdAt: Date;
+  isAvailable: boolean;
   isAnonymous?: boolean;
   anonAlias?: string | null;
   anonAvatar?: string | null;
@@ -40,6 +41,7 @@ const UserSchema = new Schema<IUser>(
     avatar: { type: String },
     status: { type: String, enum: ["online", "offline"], default: "offline" },
     lastActive: { type: Date },
+    isAvailable: { type: Boolean, default: true },
     isAnonymous: { type: Boolean, default: false },
     anonAlias: { type: String },
     anonAvatar: { type: String },

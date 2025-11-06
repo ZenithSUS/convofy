@@ -91,6 +91,31 @@ export const authService = {
       throw error;
     }
   },
+
+  /**
+   * Verifies a user's credentials.
+   * Checks if the user exists and if the password matches the stored hash.
+   * If the user is valid, it returns "user verified".
+   * @throws {Error} - If the user is not found or if the password is invalid.
+   * @param {string} id - The ID of the user to verify.
+   * @param {string} password - The password of the user to verify.
+   * @returns {Promise<string>} - A promise that resolves with "user verified" if the user is valid.
+   */
+  async verifyUser(id: string, password: string) {
+    try {
+      const user = await User.findOne({ _id: id });
+
+      if (!user) throw new Error("User not found");
+
+      const valid = await bcrypt.compare(password, user.password);
+
+      if (!valid) throw new Error("Invalid credentials");
+
+      return "user verified";
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default authService;

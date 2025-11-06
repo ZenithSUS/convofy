@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
 import { useGetRoomById } from "@/hooks/use-rooms";
+import useHybridSession from "@/hooks/use-hybrid-session";
 import {
   useCheckTyping,
   useGetMessagesByRoom,
@@ -42,7 +43,7 @@ import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
 import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
 import { Session } from "@/app/(views)/chat/components/chat-header";
-import useHybridSession from "@/hooks/use-hybrid-session";
+import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -147,6 +148,18 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     if (isChatError) return true;
     return roomData && messagesData && session;
   }, [roomData, messagesData, session, isChatError]);
+
+  const isOtherPersonUnavailable = useMemo(() => {
+    if (roomData?.isPrivate && roomData?.members.length === 2) {
+      const otherPerson = roomData.members.find(
+        (m) => m._id !== session.user.id,
+      );
+
+      // Return true if the other person is NOT available
+      return !(otherPerson?.isAvailable ?? true);
+    }
+    return false;
+  }, [roomData, session.user.id]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -313,7 +326,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
       <RoomHeader
         room={roomData as RoomContent}
         userId={session?.user.id as string}
@@ -406,7 +419,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       </div>
 
       {/* Enhanced Input Area */}
-      {isMember ? (
+      {isMember && !isOtherPersonUnavailable ? (
         <div className="border-t bg-white shadow-lg">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (
@@ -429,6 +442,8 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
             handleAppendFile={handleAppendFile}
           />
         </div>
+      ) : isMember && isOtherPersonUnavailable ? (
+        <PersonUnavailable />
       ) : (
         <NotJoinedModal
           roomId={roomId as string}

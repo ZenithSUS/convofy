@@ -18,7 +18,7 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 
 interface Props {
   message: Message | null;
-  actionType: "edit" | "delete" | "view";
+  actionType: "edit" | "view";
   session: Session;
   isThisEditing: boolean;
   isAnyEditing: boolean;
@@ -27,7 +27,7 @@ interface Props {
   onEditComplete: () => void;
   onCancelEdit: () => void;
   setCurrentEditId: (id: string | null) => void;
-  setActionType: (type: "edit" | "delete" | "view") => void;
+  setActionType: (type: "edit" | "view") => void;
 }
 
 function MessageCard({
@@ -56,10 +56,7 @@ function MessageCard({
   const { mutateAsync: updateMessage } = useUpdateLiveMessage();
   const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
-  const handleEditMessage = (
-    action: "edit" | "delete" | "view",
-    messageId: string,
-  ) => {
+  const handleEditMessage = (action: "edit" | "view", messageId: string) => {
     if (!isUserMessage) return;
 
     setActionType(action);
@@ -67,10 +64,7 @@ function MessageCard({
     setIsDetailsVisible(true);
   };
 
-  const handleViewDetails = (
-    action: "edit" | "delete" | "view",
-    id: string,
-  ) => {
+  const handleViewDetails = (action: "edit" | "view", id: string) => {
     if (isThisEditing && actionType === "edit") {
       return;
     }
@@ -221,7 +215,7 @@ function MessageCard({
           onMouseLeave={() => setIsHovering(false)}
           className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
             message.sender._id === session?.user?.id
-              ? "rounded-br-sm bg-gradient-to-br from-blue-400 to-blue-500 text-white"
+              ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white"
               : "rounded-bl-sm border border-gray-200 bg-white text-gray-800"
           } ${
             isHovering && !isEditingMessage
@@ -253,8 +247,8 @@ function MessageCard({
           <div
             className={`absolute -bottom-2 h-0 w-0 ${
               message.sender._id === session?.user?.id
-                ? "right-0 border-t-[12px] border-l-[12px] border-t-blue-500 border-l-transparent"
-                : "left-0 border-t-[12px] border-r-[12px] border-t-white border-r-transparent"
+                ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent"
+                : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent"
             }`}
           />
         </div>

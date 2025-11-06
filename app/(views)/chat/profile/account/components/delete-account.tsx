@@ -11,11 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import client from "@/lib/axios";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-function DeleteAccount() {
+function DeleteAccount({ userId }: { userId: string }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -28,10 +30,10 @@ function DeleteAccount() {
     setIsDeleting(true);
 
     try {
-      // TODO: Implement actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await client.delete(`/users/${userId}`);
       toast.success("Account deleted successfully");
-      // Redirect to home
+      // Sign out the user after successful account deletion
+      signOut({ callbackUrl: "/auth/login" });
     } catch (error) {
       toast.error("Failed to delete account");
       console.error("Error deleting account:", error);

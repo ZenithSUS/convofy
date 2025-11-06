@@ -15,7 +15,7 @@ export type Room = {
     createdAt: Date;
   };
   isPrivate: boolean;
-  createdBy: string;
+  owner: string;
   createdAt: Date;
 };
 

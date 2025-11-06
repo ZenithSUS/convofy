@@ -1,13 +1,15 @@
+import { Message as MessageType } from "@/types/message";
 import mongoose, { Types, Schema } from "mongoose";
+import Message from "./Message";
 
 export interface IRoom {
   name?: string;
   description?: string;
   isPrivate: boolean;
   image?: string;
-  members: string[];
+  members: Types.ObjectId[];
   lastMessage: Types.ObjectId;
-  createdBy: Types.ObjectId;
+  owner: Types.ObjectId;
   createdAt: Date;
 }
 
@@ -16,10 +18,10 @@ const RoomSchema = new Schema<IRoom>(
     name: { type: String, required: false },
     description: { type: String },
     isPrivate: { type: Boolean, default: false },
-    members: [{ type: String, ref: "User", required: true }],
+    members: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
     image: { type: String },
     lastMessage: { type: Schema.Types.ObjectId, ref: "Message" },
-    createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
     createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true },
@@ -49,6 +51,21 @@ RoomSchema.pre("save", function (next) {
     this.members = [...this.members].sort();
   }
   next();
+});
+
+// Cascade delete messages if the room is deleted
+RoomSchema.post("findOneAndDelete", async (doc: MessageType) => {
+  await Message.deleteMany({ room: doc.room });
+});
+
+RoomSchema.post("deleteOne", async function () {
+  const roomId = this.getFilter()["_id"];
+  await Message.deleteMany({ room: roomId });
+});
+
+RoomSchema.post("deleteMany", async function () {
+  const roomId = this.getFilter()["_id"];
+  await Message.deleteMany({ room: roomId });
 });
 
 // Delete the model if it exists to avoid OverwriteModelError

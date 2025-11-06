@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import CreateCredentials from "./create-credentials";
 import { Session } from "@/app/(views)/chat/components/chat-header";

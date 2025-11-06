@@ -479,6 +479,16 @@ export const userService = {
 
     return currentSessionID;
   },
+
+  /**
+   * Deletes a user by their ID.
+   * @param {string} userId - The ID of the user to delete.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the deleted user if found, or null if not found.
+   * @throws {Error} - If there was an error while deleting the user.
+   */
+  async deleteUserById(userId: string) {
+    return await User.findOneAndDelete({ _id: userId });
+  },
 };
 
 export default userService;

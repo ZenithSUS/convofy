@@ -96,6 +96,34 @@ function GlobalPusherProvider() {
       );
     });
 
+    // Handle room created updates
+    channel.bind("room-created", (data: RoomContent) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+          return [...oldRooms, data];
+        },
+      );
+    });
+
+    // Handle room deleted updates
+    channel.bind("room-deleted", (roomId: string) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+          return oldRooms.filter((room) => room._id !== roomId);
+        },
+      );
+    });
+
     // Handle status updates
     channel.bind("status-update", (status: string) => {
       update({ ...session, user: { ...session.user, status } });

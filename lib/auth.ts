@@ -394,7 +394,9 @@ export const authOptions: NextAuthOptions = {
         const existingUser = await userService.getUserByEmail(
           session.user.email!,
         );
-        if (!existingUser) return session;
+        if (!existingUser) {
+          throw new Error("User no longer exists!");
+        }
 
         // Validate session
         if (token.sessionId) {
@@ -480,6 +482,8 @@ export const authOptions: NextAuthOptions = {
                 providerAccount: account.providerAccount,
                 providerAccountId: account.providerAccountId,
               })) ?? [];
+          } else {
+            throw new Error("User No longer exists!");
           }
         } catch (err) {
           console.warn("JWT refresh failed:", err);

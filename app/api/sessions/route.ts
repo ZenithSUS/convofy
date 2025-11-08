@@ -11,7 +11,12 @@ export const GET = async () => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await userService.getUserActiveSessions(session.user.id);
+    // Row-level security: only fetch sessions for the logged-in user
+    const userId = session.user.id;
+
+    // 3️Fetch active sessions
+    const response = await userService.getUserActiveSessions(userId);
+
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.error("Error getting session:", error);

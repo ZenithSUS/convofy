@@ -47,6 +47,7 @@ declare module "next-auth" {
         providerAccountId: string;
       }[];
       sessionId?: string;
+      role?: string;
     };
   }
 
@@ -68,6 +69,7 @@ declare module "next-auth" {
       providerAccountId: string;
     }[];
     sessionId?: string;
+    role?: string;
   }
 }
 
@@ -90,6 +92,7 @@ declare module "next-auth/jwt" {
       providerAccountId: string;
     }[];
     userId?: string;
+    role?: string;
   }
 }
 
@@ -451,7 +454,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       // ---- Refresh token ----
-
       if (!user && token.email && token.sessionId) {
         try {
           const dbUser = await userService.getUserByEmail(token.email);

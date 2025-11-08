@@ -2,6 +2,7 @@
 // React
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import DOMPurify from "dompurify";
 
 // Zod, Tanstack and React Hook Form
 import z from "zod";
@@ -227,7 +228,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
           sender: session.user.id as string,
           room: roomId as string,
           isEdited: false,
-          content: data.message,
+          content: DOMPurify.sanitize(data.message),
           type: "text",
         };
         await sendMessage(messageData);
@@ -244,7 +245,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
           const messageData: CreateMessage = {
             sender: session.user.id as string,
             room: roomId as string,
-            content: url,
+            content: DOMPurify.sanitize(url),
             type,
           };
           return sendMessage(messageData);

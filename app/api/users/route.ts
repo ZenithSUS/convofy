@@ -13,7 +13,7 @@ export const GET = async (req: NextRequest) => {
   try {
     // Authenticate
     const token = await getUserToken(req);
-    console.log("Token", token);
+
     if (!token || !token.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -18,12 +18,12 @@ export const GET = async (req: NextRequest) => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2Check role (row-level or role-based security)
+    // Check role (row-level or role-based security)
     if (token.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // 3️⃣ Fetch users (only if admin)
+    // Fetch users (only if admin)
     const users = await userService.getUsers();
 
     return NextResponse.json(users, { status: 200 });

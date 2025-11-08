@@ -1,16 +1,34 @@
 import userService from "@/services/mongodb/user.service";
 import { User } from "@/types/user";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getUserToken } from "@/lib/utils";
 
-export const PUT = async (req: Request) => {
+export const PUT = async (req: NextRequest) => {
   try {
-    const data: Partial<User> = await req.json();
+    // Authenticate
+    const token = await getUserToken(req);
+    if (!token || !token.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (!data && typeof data !== "object") {
+    const userId = token.sub;
+
+    // Parse and validate request body
+    const data: Partial<User> = await req.json();
+    if (!data || typeof data !== "object") {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
-    const response = await userService.updateUser(data);
+    // Prevent users from updating someone else’s data
+    if (data._id && data._id !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Force the update to be tied to the authenticated user
+    const response = await userService.updateUser({
+      ...data,
+      _id: userId,
+    });
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

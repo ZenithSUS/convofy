@@ -1,5 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Room from "@/models/Room";
+import { Room as IRoom } from "@/types/room";
 import User from "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
@@ -69,6 +70,21 @@ export const roomService = {
    * @param {string} id - The ID of the room to fetch.
    * @returns {Promise<Room>} The room with the given ID.
    */
+  async findRoomById(id: string) {
+    await connectToDatabase();
+    const room = await Room.findById(id)
+      .populate("members", ["name", "avatar", "_id", "status"])
+      .populate("lastMessage", ["content", "type", "createdAt"])
+      .lean();
+
+    return room;
+  },
+
+  /**
+   * Fetches a room by its ID.
+   * @param {string} id - The ID of the room to fetch.
+   * @returns {Promise<Room>} The room with the given ID.
+   */
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
     const room = await Room.findById(id).populate("members", [
@@ -78,6 +94,70 @@ export const roomService = {
     ]);
 
     return room;
+  },
+
+  /**
+   * Retrieves all rooms that the given user is a member of or owns, sorted by createdAt in descending order.
+   * If a search query is provided, the rooms are filtered by the name of the room.
+   * @param {string} userId - The ID of the user to fetch the rooms for.
+   * @param {string} [searchQuery] - The query to filter the rooms by.
+   * @returns {Promise<IRoom[]>} A promise that resolves with an array of rooms that the given user is a member of or owns.
+   * @throws {Error} - If there was an error while fetching the rooms.
+   */
+  async getUserRooms(userId: string, searchQuery?: string) {
+    try {
+      const query: {
+        members: string;
+        name?: { $regex: string; $options: string };
+      } = {
+        members: userId,
+      };
+
+      // Add search filter if provided
+      if (searchQuery) {
+        query.name = { $regex: searchQuery, $options: "i" };
+      }
+
+      const rooms = await Room.find(query)
+        .populate("members", ["name", "avatar", "_id", "status"])
+        .populate("lastMessage", ["content", "type", "createdAt", "sender"])
+        .sort({ createdAt: -1 })
+        .lean<IRoom[]>();
+
+      return rooms;
+    } catch (error) {
+      console.error("Error getting user rooms:", error);
+      throw error;
+    }
+  },
+
+  async findDirectRoom(members: string[]) {
+    try {
+      await connectToDatabase();
+      const room = await Room.findOne({ members: { $all: members, $size: 2 } });
+      return room;
+    } catch (error) {
+      console.error("Error finding direct room:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetches the count of rooms that the user is a member of or owns.
+   * @param {string} userId - The ID of the user to fetch the room count for.
+   * @returns {Promise<number>} The count of rooms that the user is a member of or owns.
+   */
+  async getUserRoomCount(userId: string): Promise<number> {
+    try {
+      const count = await Room.countDocuments({
+        $or: [{ owner: userId }, { members: userId }],
+      });
+
+      return count;
+    } catch (error) {
+      console.error("Error getting user room count:", error);
+      return 0;
+    }
   },
 
   /**
@@ -182,26 +262,6 @@ export const roomService = {
     pusherServer.trigger(channelName, "room-created", room);
 
     return room || null;
-  },
-
-  /**
-   * Fetches all rooms that the given user is a member of, sorted by createdAt in descending order.
-   * If no rooms are found, an empty array is returned.
-   * @param {string} userId - The ID of the user to fetch rooms for.
-   * @returns {Promise<Room[]>} A promise that resolves with an array of rooms that the given user is a member of.
-   */
-  async getRoomsAndUsersByUserId(userId: string) {
-    await connectToDatabase();
-
-    const rooms = await Room.find({
-      members: userId,
-    })
-      .populate("members", ["name", "avatar", "_id", "status"])
-      .populate("lastMessage", ["content", "type", "sender", "createdAt"])
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return rooms || [];
   },
 
   /**

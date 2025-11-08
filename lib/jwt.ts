@@ -9,6 +9,7 @@ export interface TokenPayload {
   sub: string; // user ID
   email: string;
   name: string;
+  role: string;
   iat?: number;
   exp?: number;
 }
@@ -23,11 +24,13 @@ export async function generateToken(user: {
   _id: string;
   email: string;
   name: string;
+  role: string;
 }): Promise<string> {
   const token = await new SignJWT({
     sub: user._id.toString(),
     email: user.email,
     name: user.name,
+    role: user.role,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

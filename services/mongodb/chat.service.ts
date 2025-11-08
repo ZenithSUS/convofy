@@ -6,6 +6,15 @@ import { Message as IMessage } from "@/types/message";
 import { RoomMembers } from "@/types/room";
 
 export const chatService = {
+  /**
+   * Sends a live message to the specified room.
+   * The message is saved to the database, and the room's last message is updated.
+   * The message is then sent to Pusher with the populated sender information.
+   * Finally, the room's last message is updated for all related members.
+   * @param {Message} data - The message to send.
+   * @returns {Promise<Message>} The populated message.
+   * @throws {Error} If the message ID is empty, the message is not found, or the room is not found.
+   */
   async sendLiveMessage(data: IMessage) {
     try {
       await connectToDatabase();
@@ -77,6 +86,13 @@ export const chatService = {
     }
   },
 
+  /**
+   * Edits a live message by updating the content and sending the updated message to Pusher.
+   * @param {string} id - The ID of the message to edit.
+   * @param {string} content - The new content of the message.
+   * @returns {Promise<Message>} The updated message with populated sender information.
+   * @throws {Error} If the message ID is empty, the message is not found, or the room is not found.
+   */
   async editLiveMessage(id: string, content: string) {
     try {
       await connectToDatabase();
@@ -144,6 +160,12 @@ export const chatService = {
     }
   },
 
+  /**
+   * Deletes a live message from the database and updates the last message of the room and all related members.
+   * @param {string} id - The ID of the message to delete.
+   * @throws {Error} - If the message ID is empty, the message is not found, or the room is not found.
+   * @returns {Promise<Message | null>} The deleted message, or null if no message was found.
+   */
   async deleteLiveMessage(id: string) {
     try {
       if (!id) throw new Error("Message ID is required");
@@ -210,6 +232,39 @@ export const chatService = {
       return message;
     } catch (error) {
       throw error;
+    }
+  },
+
+  /**
+   * Fetches a room by its ID.
+   * @param {string} id - The ID of the room to fetch.
+   * @returns {Promise<Room>} The room with the given ID.
+   */
+  async findRoomById(id: string) {
+    await connectToDatabase();
+    const room = await Room.findById(id)
+      .populate("members", ["name", "avatar", "_id", "status"])
+      .populate("lastMessage", ["content", "type", "createdAt"])
+      .lean();
+
+    return room;
+  },
+
+  /**
+   * Finds a message by its ID.
+   * @param {string} messageId - The ID of the message to find.
+   * @returns {Promise<Message | null>} A promise that resolves with the message if found, or null if not found.
+   * @throws {Error} - If an error occurs while finding the message.
+   */
+  async findMessageById(messageId: string) {
+    try {
+      const message = await Message.findOne({
+        _id: messageId,
+      });
+      return message;
+    } catch (error) {
+      console.error("Error finding message:", error);
+      return null;
     }
   },
 };

@@ -1,21 +1,41 @@
+import { getUserToken } from "@/lib/utils";
 import userService from "@/services/mongodb/user.service";
 import { CreateLinkedAccount } from "@/types/user";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
 export const POST = async (
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const { id } = await params;
+    const token = await getUserToken(req);
+
+    if (!token || !token.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: targetUserId } = await params;
+    const loggedInUserId = new ObjectId(token.sub);
     const data: Omit<CreateLinkedAccount, "id"> = await req.json();
 
     if (!data || typeof data !== "object") {
       return NextResponse.json("Unprocessable entity", { status: 422 });
     }
 
+    if (targetUserId !== loggedInUserId.toString()) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only link your own account" },
+        { status: 403 },
+      );
+    }
+
+    if (!targetUserId || !ObjectId.isValid(targetUserId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
     const response = await userService.linkedUserCredentials(
-      id,
+      targetUserId,
       data.credentials,
       data.linkedAccount,
     );

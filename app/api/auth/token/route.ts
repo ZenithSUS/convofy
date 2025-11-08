@@ -29,6 +29,7 @@ export async function POST(request: Request) {
       _id: user._id,
       email: user.email,
       name: user.name,
+      role: "admin",
     });
 
     // Return token for Postman/API clients

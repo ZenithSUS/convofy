@@ -2,14 +2,16 @@ import { Types } from "mongoose";
 import { User } from "@/types/user";
 import { RoomMembers } from "./room";
 
+export type Sender = {
+  _id: Types.ObjectId | string;
+  name: string;
+  avatar: string;
+};
+
 export type Message = {
   _id: string;
   room: string;
-  sender: {
-    _id: Types.ObjectId | string;
-    name: string;
-    avatar: string;
-  };
+  sender: Sender;
   isEdited?: boolean;
   content: string;
   type: "text" | "image" | "file";

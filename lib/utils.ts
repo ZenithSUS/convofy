@@ -2,6 +2,9 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { UAParser } from "ua-parser-js";
 import { AxiosError } from "axios/";
+import { getToken, JWT } from "next-auth/jwt";
+import { verifyToken } from "./jwt";
+import { NextRequest } from "next/server";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -54,4 +57,40 @@ export function getDeviceInfo(userAgent: string, ip: string) {
     device: parser.getDevice().type || "Desktop",
     ip,
   };
+}
+
+export async function getUserToken(req: NextRequest): Promise<JWT | null> {
+  try {
+    // Try NextAuth session token first
+    let token = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+
+    if (!token) {
+      const authHeader = req.headers.get("authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        const bearerToken = authHeader.substring(7);
+
+        try {
+          const decoded = await verifyToken(bearerToken);
+          if (decoded) {
+            token = {
+              sub: decoded.sub,
+              email: decoded.email,
+              name: decoded.name,
+              role: decoded.role,
+            } as JWT;
+          }
+        } catch (error) {
+          console.warn("Invalid Bearer token:", error);
+        }
+      }
+    }
+
+    return token;
+  } catch (error) {
+    console.error("Error getting user token:", error);
+    return null;
+  }
 }

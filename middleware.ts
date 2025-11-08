@@ -1,9 +1,8 @@
-import { getToken, JWT } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import authRatelimit from "@/lib/redis/redis-auth-limit";
 import uploadLimit from "./lib/redis/redis-upload.limit";
-import { verifyToken } from "@/lib/jwt";
+import { getUserToken } from "./lib/utils";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -16,31 +15,7 @@ export async function middleware(request: NextRequest) {
   };
 
   // Get token once and reuse
-  let token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
-  // If no cookie token, try Authorization header (for API clients like Postman)
-  if (!token) {
-    const authHeader = request.headers.get("authorization");
-    if (authHeader?.startsWith("Bearer ")) {
-      const bearerToken = authHeader.substring(7);
-
-      // Verify the JWT token manually
-      const decoded = await verifyToken(bearerToken);
-
-      if (decoded) {
-        // Convert to NextAuth token format
-        token = {
-          sub: decoded.sub,
-          email: decoded.email,
-          name: decoded.name,
-        } as JWT;
-      }
-    }
-  }
-
+  const token = await getUserToken(request);
   const ip = token?.sub || getClientIp(request);
 
   // Auth route rate limit

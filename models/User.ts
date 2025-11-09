@@ -34,6 +34,7 @@ export interface IUser extends Document {
     providerAccountId: string;
   }[];
   activeSessions: UserSession[];
+  role: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -67,7 +68,7 @@ const UserSchema = new Schema<IUser>(
     ],
     activeSessions: [
       {
-        sessionId: { type: String, required: true, unique: true },
+        sessionId: { type: String, required: true },
         deviceInfo: {
           browser: { type: String },
           os: { type: String },
@@ -79,6 +80,11 @@ const UserSchema = new Schema<IUser>(
         expiresAt: { type: Date, required: true },
       },
     ],
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
   },
   { timestamps: true },
 );
@@ -91,6 +97,12 @@ UserSchema.index(
     "linkedAccounts.providerAccountId": 1,
   },
   { unique: true },
+);
+
+// Session ID should be unique
+UserSchema.index(
+  { "activeSessions.sessionId": 1 },
+  { unique: true, sparse: true },
 );
 
 // Cascade delete messages when user is deleted

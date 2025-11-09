@@ -21,6 +21,7 @@ export interface Session {
     isAnonymous: boolean;
     linkedAccounts: UserLinkedAccount[];
     sessionId: string;
+    role: "user" | "admin";
   };
 }
 

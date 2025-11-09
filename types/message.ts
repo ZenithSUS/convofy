@@ -40,3 +40,11 @@ export type MessageTyping = {
   user: Omit<User, "_id" | "activeSessions"> & { id: string };
   isTyping: boolean;
 };
+
+export type MessageOutputTyping = {
+  user: {
+    _id: string;
+    name: string;
+    avatar: string | null;
+  };
+};

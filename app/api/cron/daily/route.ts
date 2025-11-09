@@ -1,5 +1,6 @@
 import userService from "@/services/mongodb/user.service";
 import { NextResponse } from "next/server";
+import "@/lib/mongodb";
 
 export const GET = async () => {
   try {

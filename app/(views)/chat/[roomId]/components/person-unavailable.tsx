@@ -1,4 +1,8 @@
-function PersonUnavailable() {
+interface PersonUnavailableProps {
+  isYouUnavailable: boolean;
+}
+
+function PersonUnavailable({ isYouUnavailable }: PersonUnavailableProps) {
   return (
     <div className="border-t bg-linear-to-r from-gray-50 to-gray-100 px-6 py-8 shadow-lg">
       <div className="mx-auto max-w-md text-center">
@@ -19,11 +23,12 @@ function PersonUnavailable() {
           </svg>
         </div>
         <h3 className="mb-2 text-xl font-semibold text-gray-800">
-          User Unavailable
+          {isYouUnavailable ? "You are" : "This person is"} unavailable
         </h3>
         <p className="text-sm text-gray-600">
-          This person is currently not available to receive messages. Please try
-          again later.
+          {isYouUnavailable
+            ? "You are dead to receive messages. Turn on your presence to receive messages."
+            : " This person is currently not available to receive messages. Please try again later."}
         </p>
       </div>
     </div>

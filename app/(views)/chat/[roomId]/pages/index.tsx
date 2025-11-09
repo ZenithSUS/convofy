@@ -25,7 +25,7 @@ import {
 import useChannel from "@/hooks/use-channel";
 
 // Types
-import { User } from "@/types/user";
+import { UserTyping } from "@/types/user";
 import { AxiosError } from "axios/";
 import { CreateMessage, Message } from "@/types/message";
 import { FileInfo } from "@/types/file";
@@ -45,6 +45,7 @@ import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
+import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -105,7 +106,11 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     hasNextPage,
     isFetchingNextPage,
     refetch: refetchMessages,
-  } = useGetMessagesByRoom(roomId as string, 5, isMember);
+  } = useGetMessagesByRoom(
+    roomId as string,
+    5,
+    isMember && session.user.isAvailable,
+  );
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();
@@ -128,10 +133,6 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const isChatError = useMemo(() => {
     return roomError || messagesError;
   }, [roomError, messagesError]);
-
-  const chatErrorData = useMemo(() => {
-    return roomErrorData || messagesErrorData;
-  }, [roomErrorData, messagesErrorData]);
 
   const isAllLoading = useMemo(() => {
     if (isChatError) return false;
@@ -159,6 +160,10 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     }
     return false;
   }, [roomData, session.user.id]);
+
+  const isUnavailable = useMemo(() => {
+    return !session.user.isAvailable;
+  }, [session.user.isAvailable]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -281,9 +286,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id" | "activeSessions"> & {
-            id: string;
-          },
+          user: session.user! as UserTyping,
           isTyping: true,
         });
       } catch (error) {
@@ -309,9 +312,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id" | "activeSessions"> & {
-            id: string;
-          },
+          user: session.user! as UserTyping,
           isTyping: false,
         });
       } catch (error) {
@@ -320,8 +321,15 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     }
   };
 
+  // Loading state
   if (!isAllDataLoaded || isAllLoading) {
     return <LoadingConvo />;
+  }
+
+  if (roomError) {
+    return (
+      <RoomError roomErrorData={roomErrorData} handleRefresh={handleRefresh} />
+    );
   }
 
   return (
@@ -340,7 +348,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       <div className="flex-1 flex-col-reverse overflow-y-auto p-4 md:p-6">
         {hasNextPage && (
           <div className="mb-6 flex items-center justify-center">
-            {!isFetchingNextPage && !isChatError && isMember && (
+            {!isFetchingNextPage && !messagesError && isMember && (
               <Button
                 onClick={() => fetchNextPage()}
                 variant="outline"
@@ -359,10 +367,10 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
           </div>
         )}
 
-        {isChatError && (
+        {messagesError && (
           <div className="my-8">
             <ErrorMessage
-              error={chatErrorData as AxiosError}
+              error={messagesErrorData as AxiosError}
               onClick={handleRefresh}
             />
           </div>
@@ -377,7 +385,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
           </div>
         )}
 
-        {!isChatError && !isAllFetching && messagesData.length === 0 ? (
+        {!messagesError && !isAllFetching && messagesData.length === 0 ? (
           <StartMessage />
         ) : (
           <div className="space-y-2">
@@ -409,7 +417,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         )}
 
         {/* Enhanced Typing Indicator */}
-        {!isChatError && typingUsers.size > 0 && (
+        {!messagesError && typingUsers.size > 0 && (
           <TypingIndicator
             typingUsers={typingUsers}
             typingIndicatorRef={typingIndicatorRef}
@@ -418,7 +426,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       </div>
 
       {/* Input Area */}
-      {isMember && !isOtherPersonUnavailable ? (
+      {isMember && !isOtherPersonUnavailable && !isUnavailable ? (
         <div className="border-t bg-white shadow-lg">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (
@@ -441,8 +449,8 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
             handleAppendFile={handleAppendFile}
           />
         </div>
-      ) : isMember && isOtherPersonUnavailable ? (
-        <PersonUnavailable />
+      ) : isMember && (isOtherPersonUnavailable || isUnavailable) ? (
+        <PersonUnavailable isYouUnavailable={isUnavailable} />
       ) : (
         <NotJoinedModal
           roomId={roomId as string}

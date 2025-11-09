@@ -26,6 +26,7 @@ export type User = {
   }[];
   activeSessions: UserSession[];
   sessionId?: string;
+  role: "user" | "admin";
 };
 
 export type UserCreate = Omit<User, "_id" | "activeSessions" | "isAvailable">;
@@ -61,4 +62,8 @@ export type UserChangePassword = {
   id: string;
   oldPassword: string;
   newPassword: string;
+};
+
+export type UserTyping = Omit<User, "_id" | "activeSessions"> & {
+  id: string;
 };

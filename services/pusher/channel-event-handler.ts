@@ -1,5 +1,5 @@
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
-import { Message, MessageTyping } from "@/types/message";
+import { Message, MessageOutputTyping } from "@/types/message";
 import { PusherChannel, PusherState, PusherSubsciption } from "@/types/pusher";
 import { toast } from "react-toastify";
 
@@ -20,7 +20,7 @@ export class ChannelEventHandler {
     private isMountedRef: React.RefObject<boolean>,
     private currentRoomIdRef: React.RefObject<string | null>,
     private setTypingUsers: React.Dispatch<
-      React.SetStateAction<Map<string, MessageTyping>>
+      React.SetStateAction<Map<string, MessageOutputTyping>>
     >,
   ) {}
 
@@ -169,19 +169,19 @@ export class ChannelEventHandler {
     );
   };
 
-  private handleTypingStart = (data: MessageTyping) => {
+  private handleTypingStart = (data: MessageOutputTyping) => {
     if (
       !this.isMountedRef.current ||
       this.currentRoomIdRef.current !== this.roomId ||
-      data.user.id === this.currentUserId
+      data.user._id === this.currentUserId
     ) {
       return;
     }
 
-    this.setTypingUsers((prev) => new Map(prev).set(data.user.id, data));
+    this.setTypingUsers((prev) => new Map(prev).set(data.user._id, data));
   };
 
-  private handleTypingEnd = (data: MessageTyping) => {
+  private handleTypingEnd = (data: MessageOutputTyping) => {
     if (
       !this.isMountedRef.current ||
       this.currentRoomIdRef.current !== this.roomId
@@ -191,7 +191,7 @@ export class ChannelEventHandler {
 
     this.setTypingUsers((prev) => {
       const newMap = new Map(prev);
-      newMap.delete(data.user.id);
+      newMap.delete(data.user._id);
       return newMap;
     });
   };

@@ -9,7 +9,7 @@ export default async function ProfilePage() {
 
   if (!session) {
     // Redirect to login if no session
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   return <ProfilePageClient serverSession={session as Session} />;

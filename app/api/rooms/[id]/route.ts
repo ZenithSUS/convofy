@@ -40,7 +40,7 @@ export const GET = async (
 
 export const DELETE = async (
   req: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
     const token = await getUserToken(req);
@@ -48,7 +48,7 @@ export const DELETE = async (
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const { userId } = await req.json();
 
     if (!id || !userId) {

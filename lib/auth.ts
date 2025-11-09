@@ -128,6 +128,7 @@ export const authOptions: NextAuthOptions = {
             lastActive: u.lastActive,
             createdAt: u.createdAt,
             linkedAccounts: u.linkedAccounts,
+            role: u.role,
           };
         } catch (err: unknown) {
           const error = err as { response: { data: string } };
@@ -234,6 +235,7 @@ export const authOptions: NextAuthOptions = {
           user.lastActive = currentUser.lastActive;
           user.createdAt = currentUser.createdAt;
           user.linkedAccounts = currentUser.linkedAccounts;
+          user.role = currentUser.role;
 
           return true;
         }
@@ -277,6 +279,7 @@ export const authOptions: NextAuthOptions = {
                   providerAccountId: currentProviderAccountId,
                 },
               ],
+              role: "user",
             };
 
             await client.post("/auth/register", newUserData);
@@ -359,6 +362,7 @@ export const authOptions: NextAuthOptions = {
         user.lastActive = existingUser.lastActive;
         user.createdAt = existingUser.createdAt;
         user.linkedAccounts = existingUser.linkedAccounts;
+        user.role = existingUser.role;
 
         return true;
       } catch (error) {
@@ -391,6 +395,7 @@ export const authOptions: NextAuthOptions = {
         session.user.lastActive = token.lastActive!;
         session.user.createdAt = token.createdAt!;
         session.user.linkedAccounts = token.linkedAccounts!;
+        session.user.role = token.role!;
       }
 
       try {
@@ -446,6 +451,7 @@ export const authOptions: NextAuthOptions = {
             providerAccount: account.providerAccount,
             providerAccountId: account.providerAccountId,
           })) ?? [];
+        token.role = user.role;
       }
 
       if (account) {
@@ -484,6 +490,7 @@ export const authOptions: NextAuthOptions = {
                 providerAccount: account.providerAccount,
                 providerAccountId: account.providerAccountId,
               })) ?? [];
+            token.role = dbUser.role;
           } else {
             throw new Error("User No longer exists!");
           }

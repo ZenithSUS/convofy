@@ -31,12 +31,19 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
 
   const handleLogout = async () => {
     if (!isClient) return;
+    try {
+      await client.post(`/sessions/${userId}/revoke`, {
+        sessionId,
+      });
+      await Promise.all([
+        signOut({ redirect: false }),
+        client.post("/auth/logout", { id: userId }),
+      ]);
 
-    await Promise.all([signOut(), client.post("/auth/logout", { id: userId })])
-      .then(() => {
-        client.post(`/sessions/${userId}/revoke`, { sessionId });
-      })
-      .catch((error) => console.error("Error logging out:", error));
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   if (!isClient || !userId || !sessionId) return null;

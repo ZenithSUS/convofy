@@ -30,11 +30,21 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
 
   const handleLogout = async () => {
     if (!isClient) return;
-    await Promise.all([signOut(), client.post("/auth/logout", { id: userId })])
-      .then(() => {
-        client.post(`/sessions/${userId}/revoke`, { sessionId });
-      })
-      .catch((error) => console.error("Error logging out:", error));
+
+    try {
+      await client.post(`/sessions/${userId}/revoke`, {
+        sessionId,
+      });
+
+      await Promise.all([
+        signOut({ redirect: false }),
+        client.post("/auth/logout", { id: userId }),
+      ]);
+
+      window.location.href = "/auth/login";
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   };
 
   if (!isClient) return null;

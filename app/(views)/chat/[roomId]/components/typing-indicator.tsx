@@ -1,10 +1,10 @@
 "use client";
 
-import { MessageTyping } from "@/types/message";
+import { MessageOutputTyping } from "@/types/message";
 import { useEffect } from "react";
 
 interface TypingIndicatorProps {
-  typingUsers: Map<string, MessageTyping>;
+  typingUsers: Map<string, MessageOutputTyping>;
   typingIndicatorRef: React.RefObject<HTMLDivElement | null>;
 }
 

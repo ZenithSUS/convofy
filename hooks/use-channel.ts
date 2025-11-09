@@ -17,7 +17,7 @@ import { pusherClient } from "@/lib/pusher-client";
 import useConnectionStatus from "@/store/connection-status-store";
 
 // Types
-import { MessageTyping } from "@/types/message";
+import { MessageOutputTyping } from "@/types/message";
 import { PusherChannel } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
 import { Session } from "@/app/(views)/chat/components/chat-header";
@@ -33,9 +33,9 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
   const queryClient = useQueryClient();
   const { status: connectionStatus, setStatus: setConnectionStatus } =
     useConnectionStatus();
-  const [typingUsers, setTypingUsers] = useState<Map<string, MessageTyping>>(
-    new Map(),
-  );
+  const [typingUsers, setTypingUsers] = useState<
+    Map<string, MessageOutputTyping>
+  >(new Map());
 
   // Refs
   const isMountedRef = useRef(true);

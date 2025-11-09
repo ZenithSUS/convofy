@@ -110,7 +110,6 @@ export const PUT = async (
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    // Authentication
     const token = await getUserToken(req);
     if (!token || !token.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -120,7 +119,6 @@ export const PUT = async (
     const messageId = (await params).id;
     const { content } = await req.json();
 
-    // 2. Validate inputs
     if (!messageId || !ObjectId.isValid(messageId)) {
       return NextResponse.json(
         { error: "Invalid message ID" },
@@ -149,7 +147,7 @@ export const PUT = async (
       );
     }
 
-    // 3. Rate limiting
+    // Rate limiting
     const { success, limit, remaining, reset } = await messageLimit.limit(
       userId.toString(),
     );

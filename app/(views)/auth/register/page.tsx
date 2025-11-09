@@ -144,7 +144,7 @@ function RegisterPage() {
 
       {/* Header */}
       <div className="text-center">
-        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
           <span className="text-2xl font-bold text-white">C</span>
         </div>
         <h1 className="mb-2 text-3xl font-bold text-gray-900">
@@ -176,7 +176,7 @@ function RegisterPage() {
                           className="h-20 w-20 rounded-full border-4 border-blue-100 object-cover"
                         />
                       ) : (
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-gray-100 bg-gradient-to-br from-gray-100 to-gray-200">
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-gray-100 bg-linear-to-br from-gray-100 to-gray-200">
                           <User className="h-8 w-8 text-gray-400" />
                         </div>
                       )}
@@ -371,7 +371,7 @@ function RegisterPage() {
 
           {/* Terms */}
           <div className="flex items-start gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
             <p className="text-xs text-gray-700">
               By creating an account, you agree to our{" "}
               <a
@@ -394,7 +394,7 @@ function RegisterPage() {
           <Button
             type="submit"
             disabled={isUploading || form.formState.isSubmitting}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isUploading || form.formState.isSubmitting ? (
               <>

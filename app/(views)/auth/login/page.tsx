@@ -235,7 +235,7 @@ function LoginPage() {
           >
             {isCredentialsLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 Signing in...
               </>
             ) : (
@@ -266,7 +266,7 @@ function LoginPage() {
             >
               {isGoogleLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 </>
               ) : (
                 <>
@@ -291,7 +291,7 @@ function LoginPage() {
             >
               {isGithubLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 </>
               ) : (
                 <>

@@ -1,9 +1,12 @@
 import messageLimit from "@/lib/redis/redis-message-send-limit";
 import { getUserToken } from "@/lib/utils";
 import chatService from "@/services/mongodb/chat.service";
+import userService from "@/services/mongodb/user.service";
 import { Message, Sender } from "@/types/message";
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
+import UserStatsCache from "@/lib/cache/cache-user-stats";
+import UserMessageCacheStats from "@/lib/cache/cache-message-user-stat";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -87,6 +90,16 @@ export const POST = async (req: NextRequest) => {
     }
 
     const response = await chatService.sendLiveMessage(data);
+
+    // Update user stats cache
+    await Promise.all([
+      UserStatsCache.refresh(userId.toString(), () =>
+        userService.getUserDataStats(userId.toString()),
+      ),
+      UserMessageCacheStats.refresh(userId.toString(), () =>
+        userService.getUserMessageStats(userId.toString()),
+      ),
+    ]);
 
     return NextResponse.json(response, {
       status: 201,

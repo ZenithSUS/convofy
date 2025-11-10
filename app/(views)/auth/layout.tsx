@@ -13,8 +13,15 @@ export default async function AuthLayout({
   // Get the current pathname from headers
   const currentPath = (await headers()).get("x-pathname") || "";
 
-  // If user is logged in and NOT on /auth/error, redirect to /chat
-  if (session && !currentPath.includes("/auth/error")) {
+  // Route the is allowed without session
+  const allowedRoutes = [
+    "/auth/error",
+    "/auth/verify-email-change",
+    "/auth/verify-email",
+  ];
+
+  // If user is logged in and NOT on allowed routes, redirect to /chat
+  if (session && !allowedRoutes.includes(currentPath)) {
     redirect("/chat");
   }
 

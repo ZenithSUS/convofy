@@ -377,6 +377,7 @@ export const authOptions: NextAuthOptions = {
 
     async session({ session, token, trigger, newSession }) {
       if (trigger === "update" && newSession) {
+        token.email = newSession.user?.email ?? token.email;
         token.name = newSession.user?.name ?? token.name;
         token.picture = newSession.user?.image ?? token.picture;
         token.status = newSession.user?.status ?? token.status;
@@ -389,6 +390,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.userId ?? token.sub!;
         session.user.sessionId = token.sessionId;
         session.user.name = token.name;
+        session.user.email = token.email;
         session.user.image = token.picture;
         session.user.status = token.status!;
         session.user.isAvailable = token.isAvailable!;
@@ -428,6 +430,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, account, user, trigger, session }) {
       if (trigger === "update" && session) {
         token.name = session.user?.name ?? token.name;
+        token.email = session.user?.email ?? token.email;
         token.picture = session.user?.image ?? token.picture;
         token.status = session.user?.status ?? token.status;
         token.isAvailable = session.user?.isAvailable ?? token.isAvailable;

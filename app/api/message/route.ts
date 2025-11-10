@@ -6,6 +6,9 @@ import messageSendLimit from "@/lib/redis/redis-message-send-limit";
 import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
 import { getUserToken } from "@/lib/utils";
 import { ObjectId } from "mongodb";
+import UserStatsCache from "@/lib/cache/cache-user-stats";
+import userService from "@/services/mongodb/user.service";
+import UserMessageCacheStats from "@/lib/cache/cache-message-user-stat";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -213,8 +216,18 @@ export const GET = async (req: NextRequest) => {
       );
     }
 
-    // 7. Fetch messages
+    // Fetch messages
     const response = await getMessages(roomId, limit, offset);
+
+    // Update user stats cache
+    await Promise.all([
+      UserStatsCache.refresh(userId.toString(), () =>
+        userService.getUserDataStats(userId.toString()),
+      ),
+      UserMessageCacheStats.refresh(userId.toString(), () =>
+        userService.getUserMessageStats(userId.toString()),
+      ),
+    ]);
 
     return NextResponse.json(response, {
       status: 200,

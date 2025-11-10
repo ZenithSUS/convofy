@@ -1,5 +1,7 @@
 import client from "@/lib/axios";
 import { UserSession } from "@/models/User";
+import { EmailChangeData, EmailTokenData } from "@/types/email";
+import { AxiosErrorMessage } from "@/types/error";
 import {
   CreateLinkedAccount,
   User,
@@ -232,5 +234,79 @@ export const useRemoveAllUserSessions = (): UseMutationResult<
     mutationKey: ["removeAllUserSessions"],
     mutationFn: async (data: { exceptCurrent: boolean }) =>
       removeAllUserSessions(data.exceptCurrent),
+  });
+};
+
+export const useChangeUserEmail = (): UseMutationResult<
+  void,
+  Error,
+  { newEmail: string; currentPassword: string }
+> => {
+  const changeUserEmail = async (newEmail: string, currentPassword: string) => {
+    const response = await client
+      .post("/users/email/change", {
+        newEmail,
+        currentPassword,
+      })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("There is something wrong in changing the email:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["changeEmail"],
+    mutationFn: async (data: { newEmail: string; currentPassword: string }) =>
+      changeUserEmail(data.newEmail, data.currentPassword),
+  });
+};
+
+export const useChangeEmailToken = (
+  userId: string,
+  token: string,
+): UseBaseQueryResult<EmailTokenData, AxiosErrorMessage> => {
+  const changeEmailToken = async (token: string): Promise<EmailTokenData> => {
+    const response = await client
+      .get("users/email/verify", { params: { token } })
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("There is something wrong in changing the email:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useQuery<EmailTokenData, AxiosErrorMessage>({
+    queryKey: ["changeEmailToken", userId],
+    queryFn: async () => changeEmailToken(token),
+    enabled: !!userId,
+  });
+};
+
+export const useChangeEmail = (): UseMutationResult<
+  User,
+  AxiosErrorMessage,
+  EmailChangeData,
+  unknown
+> => {
+  const changeEmail = async (data: EmailChangeData) => {
+    const response = await client
+      .post("/users/email/verify", data)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("There is something wrong in changing the email:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["changeEmail"],
+    mutationFn: async (data: EmailChangeData) => changeEmail(data),
   });
 };

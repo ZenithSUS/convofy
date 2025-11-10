@@ -9,31 +9,54 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Info, Loader2, Mail } from "lucide-react";
+import { Info, Loader2, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { toast } from "react-toastify";
+import { useChangeUserEmail } from "@/hooks/use-user";
+import { AxiosError } from "axios/";
+import { AxiosErrorMessage } from "@/types/error";
 
 function ChangeEmail({ session }: { session: Session }) {
-  const [isChangingEmail, setIsChangingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apiError, setApiError] = useState<string | null>(null);
+
+  const { mutateAsync: changeEmail, isPending: isChangingEmail } =
+    useChangeUserEmail();
 
   const handleChangeEmail = async () => {
+    setApiError(null);
     if (!newEmail || !newEmail.includes("@")) {
       toast.error("Please enter a valid email");
       return;
     }
 
-    setIsChangingEmail(true);
+    if (!password) {
+      toast.error("Please enter your password");
+      return;
+    }
+
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const data = {
+        newEmail,
+        currentPassword: password,
+      };
+      await changeEmail(data);
+
       toast.success("Verification email sent! Please check your inbox.");
       setNewEmail("");
-    } catch (error) {
-      console.error("Error changing email:", error);
+      setPassword("");
+    } catch (error: unknown) {
+      const err = error as AxiosErrorMessage;
+
+      console.error("Error changing email:", err.message);
+      setApiError(
+        err instanceof AxiosError
+          ? err.response?.data?.error || err.message
+          : "There is something wrong in changing the email.",
+      );
       toast.error("Failed to change email");
-    } finally {
-      setIsChangingEmail(false);
     }
   };
 
@@ -41,7 +64,7 @@ function ChangeEmail({ session }: { session: Session }) {
     <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Mail className="h-4 w-4 flex-shrink-0 text-blue-600 sm:h-5 sm:w-5" />
+          <Mail className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
           <span className="truncate">Change Email Address</span>
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -85,6 +108,35 @@ function ChangeEmail({ session }: { session: Session }) {
           </div>
         </div>
 
+        <div>
+          <Label
+            htmlFor="password"
+            className="text-xs font-semibold sm:text-sm"
+          >
+            Password
+          </Label>
+          <div className="relative mt-1">
+            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400 sm:h-5 sm:w-5" />
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              className="h-10 rounded-xl border-2 pl-9 text-sm sm:h-11 sm:pl-10"
+            />
+          </div>
+        </div>
+
+        {apiError && (
+          <Alert className="border-red-200 bg-red-50">
+            <Info className="h-4 w-4 text-red-600" />
+            <AlertTitle className="line-clamp-2 text-sm text-red-900 sm:text-base">
+              {apiError}
+            </AlertTitle>
+          </Alert>
+        )}
+
         <Alert className="border-blue-200 bg-blue-50">
           <Info className="h-4 w-4 text-blue-600" />
           <AlertTitle className="text-sm text-blue-900 sm:text-base">
@@ -99,7 +151,7 @@ function ChangeEmail({ session }: { session: Session }) {
         <Button
           onClick={handleChangeEmail}
           disabled={isChangingEmail || !newEmail}
-          className="h-10 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-sm font-semibold hover:from-blue-700 hover:to-purple-700 sm:h-11"
+          className="h-10 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-sm font-semibold hover:from-blue-700 hover:to-purple-700 sm:h-11"
         >
           {isChangingEmail ? (
             <>

@@ -55,7 +55,7 @@ export const authService = {
 
       if (!user) throw new Error("Invalid credentials");
 
-      const valid = await bcrypt.compare(password, user.password);
+      const valid = await bcrypt.compare(password, user.password || "");
       if (!valid) throw new Error("Invalid credentials");
 
       const userUpdated = await User.findOneAndUpdate(

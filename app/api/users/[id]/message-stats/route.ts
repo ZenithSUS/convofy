@@ -1,6 +1,8 @@
 import userService from "@/services/mongodb/user.service";
 import { NextResponse, NextRequest } from "next/server";
 import { getUserToken } from "@/lib/utils";
+import UserMessageCacheStats from "@/lib/cache/cache-message-user-stat";
+import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
 
 export const GET = async (
   req: NextRequest,
@@ -31,10 +33,45 @@ export const GET = async (
       );
     }
 
+    const { success, limit, remaining, reset } =
+      await messageFetchLimit.limit(id);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": limit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+          },
+        },
+      );
+    }
+
+    const cached = UserMessageCacheStats.get(id);
+
+    if (cached) {
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: {
+          "X-Cache": "HIT",
+          "X-RateLimit-Remaining": remaining.toString(),
+        },
+      });
+    }
+
     // Fetch the user message stats
     const response = await userService.getUserMessageStats(id);
 
-    return NextResponse.json(response, { status: 200 });
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        "X-Cache": "MISS",
+        "X-RateLimit-Remaining": remaining.toString(),
+      },
+    });
   } catch (error) {
     console.error("Error fetching user message stats:", error);
     return NextResponse.json(

@@ -26,3 +26,7 @@ export const POST = async (req: Request) => {
     );
   }
 };
+
+export const GET = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};

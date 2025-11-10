@@ -50,11 +50,15 @@ export const userService = {
    * Fetches a user from the database by their ID, excluding passwords.
    *
    * @param {string} id - The ID of the user to fetch.
+   * @param {boolean} excludePassword - Whether to exclude the password field from the response.
    * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
    */
-  async getUserById(id: string): Promise<UserType | null> {
+  async getUserById(
+    id: string,
+    excludePassword = true,
+  ): Promise<UserType | null> {
     await connectToDatabase();
-    const user = await User.findById(id, "-password");
+    const user = await User.findById(id, excludePassword ? "-password" : "");
     return user;
   },
 
@@ -337,6 +341,44 @@ export const userService = {
   },
 
   /**
+   * Replaces a user's linked credential provider in the database.
+   * @param {string} accountId - The ID of the user to update.
+   * @param {Partial<UserLinkedAccount>} account - The linked credential provider to replace.
+   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   * @throws {Error} - If there was an error while updating the user.
+   */
+  async replaceCredentialProvider(
+    accountId: string,
+    account: Partial<UserLinkedAccount>, // allows partial updates (e.g., only email)
+  ) {
+    try {
+      await connectToDatabase();
+
+      const user = await User.findOneAndUpdate(
+        {
+          _id: accountId,
+          "linkedAccounts.providerAccountId": accountId,
+        },
+        {
+          $set: {
+            "linkedAccounts.$.provider": account.provider,
+            "linkedAccounts.$.providerAccount": account.providerAccount,
+            "linkedAccounts.$.providerAccountId": account.providerAccountId,
+          },
+        },
+        {
+          new: true,
+          projection: "-password",
+        },
+      );
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Unlinks a user's linked account from their profile in the database.
    * @param {string} userId - The ID of the user to unlink.
    * @param {{ provider: string; providerAccount: string; providerAccountId: string }} account - The linked account to unlink.
@@ -488,6 +530,20 @@ export const userService = {
    */
   async deleteUserById(userId: string) {
     return await User.findOneAndDelete({ _id: userId });
+  },
+
+  /**
+   * Verifies if a given password matches the hashed password of a user.
+   * If the user is not found, it returns false.
+   * @param {string} userId - The ID of the user to verify.
+   * @param {string} password - The password to verify.
+   * @returns {Promise<boolean>} - A promise that resolves with true if the password is valid, or false if not.
+   */
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
+    const user = await User.findById(userId).select("password");
+    if (!user) return false;
+
+    return await bcrypt.compare(password, user.password);
   },
 };
 

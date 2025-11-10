@@ -1,11 +1,9 @@
 import { getUserToken } from "@/lib/utils";
 import userService from "@/services/mongodb/user.service";
 import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
-import { Redis } from "@upstash/redis";
 import { Types } from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-
-const redis = Redis.fromEnv();
+import UserStatsCache from "@/lib/cache/cache-user-stats";
 
 export const GET = async (
   req: NextRequest,
@@ -65,8 +63,7 @@ export const GET = async (
       );
     }
 
-    const cacheKey = `user-stats:${id}`;
-    const cached = await redis.get(cacheKey);
+    const cached = await UserStatsCache.get(id);
 
     if (cached) {
       return NextResponse.json(cached, {
@@ -79,7 +76,7 @@ export const GET = async (
     }
 
     const response = await userService.getUserDataStats(id);
-    await redis.setex(cacheKey, 300, JSON.stringify(response));
+    await UserStatsCache.set(id, response);
 
     return NextResponse.json(response, {
       status: 200,

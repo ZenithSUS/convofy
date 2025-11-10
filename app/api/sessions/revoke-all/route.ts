@@ -5,7 +5,7 @@ import { NextResponse, NextRequest } from "next/server";
 
 export const POST = async (req: NextRequest) => {
   try {
-    // 1️⃣ Authenticate via NextAuth
+    // Authenticate via NextAuth
     const session = await getServerSession(authOptions).catch(() => null);
 
     if (!session?.user?.id) {

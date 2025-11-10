@@ -67,7 +67,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         {isCredentialsAuth && <ChangePassword session={session} />}
 
         {/* Change Email */}
-        <ChangeEmail session={session} />
+        {isCredentialsAuth && <ChangeEmail session={session} />}
 
         {/* Connected Accounts */}
         <ConnectedAccounts

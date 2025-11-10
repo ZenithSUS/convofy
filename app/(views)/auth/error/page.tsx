@@ -18,7 +18,6 @@ import getErrorMessage from "@/helper/google/error-message";
 export default function AuthErrorPage() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
-  console.log(error);
 
   const errorInfo = getErrorMessage(error, error);
 

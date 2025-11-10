@@ -237,7 +237,7 @@ function ChangePassword({ session }: { session: Session }) {
             <Button
               type="submit"
               disabled={isChangingPassword}
-              className="h-11 flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700"
+              className="h-11 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700"
             >
               {isChangingPassword ? (
                 <>

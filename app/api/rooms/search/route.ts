@@ -6,7 +6,7 @@ import { escapeRegex } from "@/helper/escape-regex";
 
 export const GET = async (req: NextRequest) => {
   try {
-    // 1. Authentication
+    // Authentication
     const token = await getUserToken(req);
 
     if (!token || !token.sub) {

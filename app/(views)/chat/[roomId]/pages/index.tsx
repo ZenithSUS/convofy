@@ -46,6 +46,7 @@ import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
 import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
+import getFileDirectory from "@/helper/file-directories";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -241,11 +242,19 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
       if (selectedFiles.length > 0) {
         const uploadPromises = selectedFiles.map(async (fileInfo) => {
-          const url = await uploadImage(fileInfo.file);
+          const type = fileInfo.type.startsWith("image/") ? "image" : "file";
+
+          const directory = getFileDirectory(
+            type === "file" ? "message" : "roomMedia",
+            session.user.id,
+            roomId,
+          );
+
+          const url = await uploadImage(fileInfo.file, directory);
+
           if (!url) {
             throw new Error(`Failed to upload ${fileInfo.name}`);
           }
-          const type = fileInfo.type.startsWith("image/") ? "image" : "file";
 
           const messageData: CreateMessage = {
             sender: session.user.id as string,

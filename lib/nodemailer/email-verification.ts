@@ -1,3 +1,4 @@
+import baseUrl from "@/constants/baseUrl";
 import transporter from "@/lib/nodemailer/config";
 
 interface SendVerificationEmailParams {
@@ -15,11 +16,6 @@ export const sendEmailChangeVerification = async ({
   newEmail,
   emailType,
 }: SendVerificationEmailParams) => {
-  const baseUrl =
-    process.env.NODE_ENV === "production"
-      ? process.env.NEXT_PUBLIC_BASE_URL_PROD
-      : process.env.NEXT_PUBLIC_BASE_URL_DEV;
-
   if (emailType === "verification") {
     // Send verification email TO the NEW email address
     if (!verificationToken) {

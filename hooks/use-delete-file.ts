@@ -4,13 +4,14 @@ import { useState } from "react";
 export const useDeleteFile = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deleteFile = async (publicId: string) => {
+  const deleteFile = async (publicId?: string, folder?: string) => {
     try {
       setIsDeleting(true);
       const response = client
         .delete("/upload", {
           params: {
             publicId,
+            folder,
           },
         })
         .then((res) => res.data)

@@ -13,3 +13,8 @@ export type EmailChangeData = {
   token: string;
   userId: string;
 };
+
+export type EmailRecoveryData = {
+  recoveryEmail: string;
+  expiresIn: string;
+};

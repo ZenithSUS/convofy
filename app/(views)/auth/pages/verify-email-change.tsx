@@ -157,11 +157,15 @@ function VerifyEmailChangePageClient({
     return (
       <div className="mx-auto h-fit max-w-md rounded-3xl border border-gray-100 bg-white p-8 shadow-xl transition-shadow hover:shadow-2xl">
         <div className="flex flex-col items-center justify-center gap-2 text-center">
-          <h1 className="mb-2 text-3xl font-bold tracking-tight text-gray-900">
-            Email Changed Successfully
-          </h1>
-
-          <p className="text-sm text-gray-600">You Can Now Close This tab</p>
+          <div className="text-center">
+            <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
+              <span className="text-2xl font-bold text-white">C</span>
+            </div>
+            <h1 className="mb-2 text-3xl font-bold text-gray-900">
+              Email Changed
+            </h1>
+            <p className="text-sm text-gray-600">You Can Now Close This tab</p>
+          </div>
         </div>
       </div>
     );

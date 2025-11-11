@@ -153,6 +153,29 @@ export const userService = {
   },
 
   /**
+   * Updates a user's password in the database.
+   * @param {string} id - The ID of the user to update.
+   * @param {string} newPassword - The new password of the user.
+   * @returns {Promise<boolean>} - A promise that resolves with true if the user was found and updated, or false if not found.
+   * @throws {Error} - If there was an error while updating the user.
+   */
+  async updatePassword(id: string, newPassword: string): Promise<boolean> {
+    try {
+      await connectToDatabase();
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const user = await User.findOneAndUpdate(
+        { _id: id },
+        { password: hashedPassword },
+        { new: true, fields: "-password" },
+      );
+      return !!user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
    * Changes the password of a user by first verifying the current password.
    * If the current password is valid, it hashes the new password and updates the user's password.
    * @param {string} id - The ID of the user to change the password of.

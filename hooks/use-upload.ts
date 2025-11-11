@@ -8,7 +8,7 @@ interface UploadResponse {
 export const useUploadImage = () => {
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadImage = async (file: File) => {
+  const uploadImage = async (file: File, directory?: string) => {
     try {
       setIsUploading(true);
       const formData = new FormData();
@@ -18,6 +18,9 @@ export const useUploadImage = () => {
         "/upload",
         formData,
         {
+          params: {
+            directory,
+          },
           headers: {
             "Content-Type": "multipart/form-data",
           },

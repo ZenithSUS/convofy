@@ -11,25 +11,34 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useDeleteFile } from "@/hooks/use-delete-file";
 import client from "@/lib/axios";
+import { extractPublicId } from "cloudinary-build-url";
 import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-function DeleteAccount({ userId }: { userId: string }) {
+function DeleteAccount({ userId, image }: { userId: string; image: string }) {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const { deleteFile } = useDeleteFile();
+
   const handleDeleteAccount = async () => {
-    if (deleteConfirmation !== "DELETE") {
-      toast.error('Please type "DELETE" to confirm');
+    if (deleteConfirmation !== "DELETE MY ACCOUNT") {
+      toast.error('Please type "DELETE MY ACCOUNT" to confirm');
       return;
     }
 
     setIsDeleting(true);
 
     try {
+      const publicId = extractPublicId(image);
+      await Promise.all([
+        deleteFile(publicId),
+        client.delete(`/users/${userId}/media`),
+      ]);
       await client.delete(`/users/${userId}`);
       toast.success("Account deleted successfully");
       // Sign out the user after successful account deletion
@@ -99,14 +108,15 @@ function DeleteAccount({ userId }: { userId: string }) {
                 htmlFor="delete-confirmation"
                 className="text-sm font-semibold"
               >
-                Type <span className="font-mono font-bold">DELETE</span> to
-                confirm
+                Type{" "}
+                <span className="font-mono font-bold">DELETE MY ACCOUNT</span>{" "}
+                to confirm
               </Label>
               <Input
                 id="delete-confirmation"
                 value={deleteConfirmation}
                 onChange={(e) => setDeleteConfirmation(e.target.value)}
-                placeholder="DELETE"
+                placeholder="DELETE MY ACCOUNT"
                 className="mt-1 h-11 rounded-xl border-2"
               />
             </div>
@@ -115,7 +125,9 @@ function DeleteAccount({ userId }: { userId: string }) {
           <DialogFooter className="flex-col gap-2 sm:flex-row">
             <Button
               onClick={handleDeleteAccount}
-              disabled={isDeleting || deleteConfirmation !== "DELETE"}
+              disabled={
+                isDeleting || deleteConfirmation !== "DELETE MY ACCOUNT"
+              }
               variant="destructive"
               className="h-10 rounded-lg font-semibold"
             >

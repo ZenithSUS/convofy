@@ -333,18 +333,35 @@ function LoginPage() {
           </div>
 
           {/* Sign Up Link */}
-          <div className="pt-2 text-center">
-            <span className="text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-            </span>
-            <button
-              type="button"
-              onClick={() => router.push("/auth/register")}
-              className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
-            >
-              Sign up for free
-            </button>
+          <div className="space-y-1 pt-2 text-center">
+            <div>
+              <span className="text-sm text-gray-600">
+                Don&apos;t have an account?{" "}
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push("/auth/register")}
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
+                Sign up for free
+              </button>
+            </div>
+
+            <div>
+              <span className="text-sm text-gray-600">
+                Forgot your password?{" "}
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push("/auth/forgot")}
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
+                Reset password
+              </button>
+            </div>
           </div>
+
+          {/* Forgot */}
         </form>
       </Form>
     </div>

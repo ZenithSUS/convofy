@@ -1,22 +1,22 @@
-import { toast } from "react-toastify";
+import { Toast } from "@/components/providers/toast-provider";
 
 export const getPusherConnectionState = (currentState: string) => {
   // Handle different states
   switch (currentState) {
     case "connected":
-      toast.success("Connected to Room");
+      Toast.success("Connected to Convofy");
       break;
     case "connecting":
-      console.log("Connecting to Room");
+      Toast.info("Connecting to Convofy...");
       break;
     case "disconnected":
-      toast.warn("Connection lost. Reconnecting...");
+      Toast.info("Connection lost. Reconnecting...");
       break;
     case "unavailable":
-      toast.error("Connection unavailable. Check your internet.");
+      Toast.warn("Connection unavailable. Check your internet.");
       break;
     case "failed":
-      toast.error("Connection failed. Please refresh the page.");
+      Toast.warn("Connection failed. Please refresh the page.");
       break;
   }
 };

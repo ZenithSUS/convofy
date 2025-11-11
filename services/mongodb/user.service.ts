@@ -552,6 +552,7 @@ export const userService = {
    * @throws {Error} - If there was an error while deleting the user.
    */
   async deleteUserById(userId: string) {
+    await connectToDatabase();
     return await User.findOneAndDelete({ _id: userId });
   },
 

@@ -17,7 +17,7 @@ export default async function AuthLayout({
   const allowedRoutes = [
     "/auth/error",
     "/auth/verify-email-change",
-    "/auth/verify-email",
+    "/auth/recover-password",
   ];
 
   // If user is logged in and NOT on allowed routes, redirect to /chat

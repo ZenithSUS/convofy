@@ -33,6 +33,8 @@ import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import Image from "next/image";
 import PasswordStrength from "@/helper/password-strength";
+import fileDirectories from "@/helper/file-directories";
+import { signIn } from "next-auth/react";
 
 interface RegisterFormInputs {
   name: string;
@@ -102,7 +104,8 @@ function RegisterPage() {
   const onSubmit = async (data: RegisterFormInputs) => {
     setError(null);
     try {
-      const avatarUrl = await uploadImage(data.avatar![0]);
+      const directory = fileDirectories("avatar");
+      const avatarUrl = await uploadImage(data.avatar![0], directory);
 
       if (!avatarUrl) {
         setError("Failed to upload avatar");
@@ -119,7 +122,7 @@ function RegisterPage() {
       const response = await client.post("/auth/register", userData);
 
       if (response.status === 201) {
-        router.push("/auth/login");
+        signIn("credentials", { email: data.email, password: data.password });
       } else {
         const publicId = extractPublicId(avatarUrl);
         await deleteFile(publicId);

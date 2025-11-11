@@ -242,6 +242,17 @@ export const roomService = {
   },
 
   /**
+   * Fetches an array of room IDs that the user is a member of.
+   * @param {string} userId - The ID of the user to fetch the room IDs for.
+   * @returns {Promise<Room[]>} An array of room IDs that the user is a member of.
+   */
+  async getUserJoinRoomIds(userId: string) {
+    await connectToDatabase();
+    const rooms = await Room.find({ members: userId }, { _id: 1 }).lean();
+    return rooms;
+  },
+
+  /**
    * Adds a new member to an existing room if the room doesn't already contain the given user.
    * @param {string} roomId - The ID of the room to add the member to.
    * @param {string} userId - The ID of the user to add to the room.

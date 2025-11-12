@@ -397,7 +397,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         {!messagesError && !isAllFetching && messagesData.length === 0 ? (
           <StartMessage />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {messagesData.map((msg: Message, index: number) => (
               <div
                 key={msg._id}
@@ -443,6 +443,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
               selectedFiles={selectedFiles}
               setSelectedFiles={setSelectedFiles}
               handleRemoveFile={handleRemoveFile}
+              isUploading={isUploading}
             />
           )}
 

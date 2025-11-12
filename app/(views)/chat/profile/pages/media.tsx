@@ -55,7 +55,7 @@ function MediaPageClient({ serverSession }: MediaPageProps) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
       <ProfileHeader
         userId={session.user.id}
@@ -68,21 +68,21 @@ function MediaPageClient({ serverSession }: MediaPageProps) {
         <AvatarCard session={session} name="Media Gallery">
           {/* Stats Cards */}
           <div className="mt-4 grid w-full grid-cols-3 gap-4">
-            <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center">
+            <div className="rounded-xl border border-blue-200 bg-linear-to-br from-blue-50 to-blue-100 p-4 text-center">
               <ImageIcon className="mx-auto mb-2 h-6 w-6 text-blue-600" />
               <div className="text-2xl font-bold text-blue-900">
                 {mediaStats.images}
               </div>
               <div className="text-xs text-blue-700">Images</div>
             </div>
-            <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 text-center">
+            <div className="rounded-xl border border-purple-200 bg-linear-to-br from-purple-50 to-purple-100 p-4 text-center">
               <FileText className="mx-auto mb-2 h-6 w-6 text-purple-600" />
               <div className="text-2xl font-bold text-purple-900">
                 {mediaStats.files}
               </div>
               <div className="text-xs text-purple-700">Files</div>
             </div>
-            <div className="rounded-xl border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100 p-4 text-center">
+            <div className="rounded-xl border border-pink-200 bg-linear-to-br from-pink-50 to-pink-100 p-4 text-center">
               <Download className="mx-auto mb-2 h-6 w-6 text-pink-600" />
               <div className="text-2xl font-bold text-pink-900">
                 {mediaStats.total}
@@ -146,7 +146,7 @@ function MediaPageClient({ serverSession }: MediaPageProps) {
         {/* Empty State */}
         {!isMediaProcessing && mediaData.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-gray-100 to-gray-200">
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-gray-100 to-gray-200">
               <ImageIcon size={40} className="text-gray-400" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-gray-700">

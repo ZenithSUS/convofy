@@ -83,7 +83,9 @@ function MessageCard({
     if (!message) return;
     try {
       if (message.type === "file" || message.type === "image") {
-        const publicId = extractPublicId(message.content);
+        let publicId = extractPublicId(message.content);
+        publicId = decodeURIComponent(publicId);
+        publicId = publicId.replace(/\.[^/.]+$/, "");
 
         await Promise.all([deleteFile(publicId), deleteMessage(message._id)]);
         toast.success("Message deleted successfully");

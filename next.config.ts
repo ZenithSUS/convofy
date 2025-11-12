@@ -17,6 +17,18 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.discordapp.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   allowedDevOrigins: ["http://localhost:3000", "http://192.168.*.*"],

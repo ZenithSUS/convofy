@@ -1,9 +1,10 @@
 import { authOptions } from "@/lib/auth";
-import { getServerSession, Session } from "next-auth";
-import RoomPageClient from "./pages";
+import { getServerSession } from "next-auth";
+import RoomPageClient from "@/app/(views)/chat/[roomId]/pages";
+import { Session } from "@/app/(views)/chat/components/chat-header";
 
 export default async function RoomPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions).catch(() => null);
 
-  return <RoomPageClient session={session as Session} />;
+  return <RoomPageClient serverSession={session as Session} />;
 }

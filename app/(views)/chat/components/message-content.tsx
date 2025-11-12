@@ -7,6 +7,9 @@ import { FileIcon } from "lucide-react";
 import Link from "next/link";
 
 const MessageContent = ({ message }: { message: Message }) => {
+  const str = message.content;
+  const fileName = decodeURIComponent(str.substring(str.indexOf("_") + 1));
+
   switch (message.type) {
     case "text":
       return (
@@ -15,7 +18,9 @@ const MessageContent = ({ message }: { message: Message }) => {
             <MessageAvatar avatar={message.sender.avatar} />
             <strong>{message.sender.name.split(" ")[0]}</strong>{" "}
           </div>
-          <p className="break-words whitespace-pre-wrap">{message.content}</p>
+          <p className="wrap-break-word whitespace-pre-wrap">
+            {message.content}
+          </p>
         </div>
       );
 
@@ -59,9 +64,9 @@ const MessageContent = ({ message }: { message: Message }) => {
               download
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-500 underline"
+              className="truncate text-blue-500 underline"
             >
-              {message.content.split("/").pop()}
+              {fileName}
             </Link>
           </div>
         </div>

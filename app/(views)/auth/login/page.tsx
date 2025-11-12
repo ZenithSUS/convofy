@@ -46,6 +46,8 @@ function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isCredentialsLoading, startCredentialsTransition] = useTransition();
   const [isGoogleLoading, startGoogleTransition] = useTransition();
+  const [isGithubLoading, startGithubTransition] = useTransition();
+  const [isDiscordLoading, startDiscordTransition] = useTransition();
 
   const onSubmit = async (data: LoginFormInputs) => {
     setAuthError("");
@@ -79,6 +81,28 @@ function LoginPage() {
     });
   };
 
+  const handleGithubLogin = () => {
+    startGithubTransition(async () => {
+      const res = await signIn("github");
+
+      if (res?.error) {
+        setAuthError(res.error);
+        return;
+      }
+    });
+  };
+
+  const handleDiscordLogin = () => {
+    startDiscordTransition(async () => {
+      const res = await signIn("discord");
+
+      if (res?.error) {
+        setAuthError(res.error);
+        return;
+      }
+    });
+  };
+
   useEffect(() => {
     const rememberedEmail = localStorage.getItem("rememberedEmail");
     if (rememberedEmail) {
@@ -100,7 +124,7 @@ function LoginPage() {
 
       {/* Header */}
       <div className="text-center">
-        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
           <span className="text-2xl font-bold text-white">C</span>
         </div>
         <h1 className="mb-2 text-3xl font-bold text-gray-900">Welcome Back</h1>
@@ -207,11 +231,11 @@ function LoginPage() {
           <Button
             type="submit"
             disabled={isCredentialsLoading}
-            className="h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isCredentialsLoading ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Loader2 className="h-5 w-5 animate-spin" />
                 Signing in...
               </>
             ) : (
@@ -231,46 +255,113 @@ function LoginPage() {
             </div>
           </div>
 
-          {/* Google Sign In */}
-          <Button
-            variant="outline"
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={isGoogleLoading}
-            className="h-12 w-full rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isGoogleLoading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Connecting...
-              </>
-            ) : (
-              <>
-                <Image
-                  width={20}
-                  height={20}
-                  src="/google-logo.png"
-                  alt="Google Logo"
-                  className="mr-3 h-5 w-5"
-                />
-                Sign in with Google
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Google Sign In */}
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isGoogleLoading}
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isGoogleLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </>
+              ) : (
+                <>
+                  <Image
+                    width={20}
+                    height={20}
+                    src="/google-logo.png"
+                    alt="Google Logo"
+                    className="h-5 w-5"
+                  />
+                </>
+              )}
+            </Button>
+
+            {/* Github Sign In */}
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleGithubLogin}
+              disabled={isGithubLoading}
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isGithubLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </>
+              ) : (
+                <>
+                  <Image
+                    width={20}
+                    height={20}
+                    src="/github.png"
+                    alt="Github Logo"
+                    className="h-5 w-5"
+                  />
+                </>
+              )}
+            </Button>
+
+            {/* Discord Sign In */}
+            <Button
+              variant="outline"
+              type="button"
+              onClick={handleDiscordLogin}
+              disabled={isDiscordLoading}
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isDiscordLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                </>
+              ) : (
+                <>
+                  <Image
+                    width={20}
+                    height={20}
+                    src="/discord.png"
+                    alt="Discord Logo"
+                    className="h-5 w-5"
+                  />
+                </>
+              )}
+            </Button>
+          </div>
 
           {/* Sign Up Link */}
-          <div className="pt-2 text-center">
-            <span className="text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-            </span>
-            <button
-              type="button"
-              onClick={() => router.push("/auth/register")}
-              className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
-            >
-              Sign up for free
-            </button>
+          <div className="space-y-1 pt-2 text-center">
+            <div>
+              <span className="text-sm text-gray-600">
+                Don&apos;t have an account?{" "}
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push("/auth/register")}
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
+                Sign up for free
+              </button>
+            </div>
+
+            <div>
+              <span className="text-sm text-gray-600">
+                Forgot your password?{" "}
+              </span>
+              <button
+                type="button"
+                onClick={() => router.push("/auth/forgot")}
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
+                Reset password
+              </button>
+            </div>
           </div>
+
+          {/* Forgot */}
         </form>
       </Form>
     </div>

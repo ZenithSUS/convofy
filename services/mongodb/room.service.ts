@@ -1,8 +1,11 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Room from "@/models/Room";
+import { Room as IRoom } from "@/types/room";
 import User from "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
+import { pusherServer } from "@/lib/pusher";
+import Message from "@/models/Message";
 
 export const roomService = {
   /**
@@ -18,7 +21,22 @@ export const roomService = {
       createdAt: new Date(),
     });
 
-    return room;
+    const populatedRoom = await Room.findById(room._id)
+      .populate("lastMessage", ["content", "type", "createdAt"])
+      .populate("members", ["name", "avatar", "_id", "status"])
+      .lean();
+
+    // Send new room event to Pusher
+    const channelName = `user-${data.owner}`;
+
+    try {
+      await pusherServer.trigger(channelName, "room-created", populatedRoom);
+    } catch (error) {
+      await Room.deleteOne({ _id: room._id });
+      throw error;
+    }
+
+    return populatedRoom;
   },
 
   /**
@@ -52,14 +70,94 @@ export const roomService = {
    * @param {string} id - The ID of the room to fetch.
    * @returns {Promise<Room>} The room with the given ID.
    */
+  async findRoomById(id: string) {
+    await connectToDatabase();
+    const room = await Room.findById(id)
+      .populate("members", ["name", "avatar", "_id", "status"])
+      .populate("lastMessage", ["content", "type", "createdAt"])
+      .lean();
+
+    return room;
+  },
+
+  /**
+   * Fetches a room by its ID.
+   * @param {string} id - The ID of the room to fetch.
+   * @returns {Promise<Room>} The room with the given ID.
+   */
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
     const room = await Room.findById(id).populate("members", [
       "name",
       "avatar",
+      "isAvailable",
     ]);
 
     return room;
+  },
+
+  /**
+   * Retrieves all rooms that the given user is a member of or owns, sorted by createdAt in descending order.
+   * If a search query is provided, the rooms are filtered by the name of the room.
+   * @param {string} userId - The ID of the user to fetch the rooms for.
+   * @param {string} [searchQuery] - The query to filter the rooms by.
+   * @returns {Promise<IRoom[]>} A promise that resolves with an array of rooms that the given user is a member of or owns.
+   * @throws {Error} - If there was an error while fetching the rooms.
+   */
+  async getUserRooms(userId: string, searchQuery?: string) {
+    try {
+      const query: {
+        members: string;
+        name?: { $regex: string; $options: string };
+      } = {
+        members: userId,
+      };
+
+      // Add search filter if provided
+      if (searchQuery) {
+        query.name = { $regex: searchQuery, $options: "i" };
+      }
+
+      const rooms = await Room.find(query)
+        .populate("members", ["name", "avatar", "_id", "status"])
+        .populate("lastMessage", ["content", "type", "createdAt", "sender"])
+        .sort({ createdAt: -1 })
+        .lean<IRoom[]>();
+
+      return rooms;
+    } catch (error) {
+      console.error("Error getting user rooms:", error);
+      throw error;
+    }
+  },
+
+  async findDirectRoom(members: string[]) {
+    try {
+      await connectToDatabase();
+      const room = await Room.findOne({ members: { $all: members, $size: 2 } });
+      return room;
+    } catch (error) {
+      console.error("Error finding direct room:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Fetches the count of rooms that the user is a member of or owns.
+   * @param {string} userId - The ID of the user to fetch the room count for.
+   * @returns {Promise<number>} The count of rooms that the user is a member of or owns.
+   */
+  async getUserRoomCount(userId: string): Promise<number> {
+    try {
+      const count = await Room.countDocuments({
+        $or: [{ owner: userId }, { members: userId }],
+      });
+
+      return count;
+    } catch (error) {
+      console.error("Error getting user room count:", error);
+      return 0;
+    }
   },
 
   /**
@@ -125,16 +223,33 @@ export const roomService = {
       room = await Room.create({
         isPrivate: true,
         members: sortedMembers,
-        createdBy: userIdA,
+        owner: userIdA,
       });
 
       // Populate the newly created room
       room = await Room.findById(room._id)
         .populate("members", ["name", "avatar"])
         .populate("lastMessage", ["content", "type", "createdAt"]);
+
+      // Send new room event to both users
+      await Promise.all([
+        pusherServer.trigger(`user-${userIdA}`, "room-created", room),
+        pusherServer.trigger(`user-${userIdB}`, "room-created", room),
+      ]);
     }
 
     return room;
+  },
+
+  /**
+   * Fetches an array of room IDs that the user is a member of.
+   * @param {string} userId - The ID of the user to fetch the room IDs for.
+   * @returns {Promise<Room[]>} An array of room IDs that the user is a member of.
+   */
+  async getUserJoinRoomIds(userId: string) {
+    await connectToDatabase();
+    const rooms = await Room.find({ members: userId }, { _id: 1 }).lean();
+    return rooms;
   },
 
   /**
@@ -149,28 +264,46 @@ export const roomService = {
       { _id: roomId },
       { $addToSet: { members: userId } },
       { new: true },
-    );
+    )
+      .populate("members", ["name", "avatar"])
+      .populate("lastMessage", ["content", "type", "createdAt"]);
+
+    // Trigger pusher event to set new rooms to the user
+    const channelName = `user-${userId}`;
+    pusherServer.trigger(channelName, "room-created", room);
+
     return room || null;
   },
 
   /**
-   * Fetches all rooms that the given user is a member of, sorted by createdAt in descending order.
-   * If no rooms are found, an empty array is returned.
-   * @param {string} userId - The ID of the user to fetch rooms for.
-   * @returns {Promise<Room[]>} A promise that resolves with an array of rooms that the given user is a member of.
+   * Deletes a room by its ID if the room was created by the given user.
+   * If the room is not found, an error is thrown.
+   * After deleting the room, all messages in the room are also deleted.
+   * @param {string} userId - The ID of the user who created the room.
+   * @param {string} roomId - The ID of the room to delete.
+   * @returns {Promise<Room | null>} The deleted room, or null if no room was found.
+   * @throws {Error} - If the room is not found.
    */
-  async getRoomsAndUsersByUserId(userId: string) {
+  async deleteRoomById(userId: string, roomId: string) {
     await connectToDatabase();
 
-    const rooms = await Room.find({
-      members: userId,
-    })
-      .populate("members", ["name", "avatar", "_id", "status"])
-      .populate("lastMessage", ["content", "type", "sender", "createdAt"])
-      .sort({ createdAt: -1 })
-      .lean();
+    const room = await Room.findOneAndDelete({
+      _id: roomId,
+      createdBy: userId,
+    });
 
-    return rooms || [];
+    if (!room) {
+      throw new Error("Room not found");
+    }
+
+    const channelName = `user-${userId}`;
+
+    await pusherServer.trigger(channelName, "room-deleted", roomId);
+
+    // Delete all messages in the room
+    await Message.deleteMany({ room: roomId });
+
+    return room;
   },
 
   /**

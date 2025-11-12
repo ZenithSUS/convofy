@@ -15,14 +15,16 @@ import {
 import { useMemo, useState } from "react";
 import MediaCard from "@/app/(views)/chat/profile/components/cards/media-card";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
-import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import LoadMoreButton from "@/app/(views)/chat/profile/components/load-more-button";
+import useHybridSession from "@/hooks/use-hybrid-session";
+import AvatarCard from "../components/avatar-card";
 
 interface MediaPageProps {
-  session: Session;
+  serverSession: Session;
 }
 
-function MediaPageClient({ session }: MediaPageProps) {
+function MediaPageClient({ serverSession }: MediaPageProps) {
+  const { session } = useHybridSession(serverSession);
   const [gridColumns, setGridColumns] = useState<2 | 3>(3);
 
   const {
@@ -53,51 +55,42 @@ function MediaPageClient({ session }: MediaPageProps) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header Background */}
-      <ProfileHeader userId={session.user.id} />
+      <ProfileHeader
+        userId={session.user.id}
+        sessionId={session.user.sessionId}
+      />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">
         {/* Enhanced Profile Card */}
-        <div className="relative -mt-20 mb-8">
-          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl backdrop-blur-lg">
-            <div className="flex flex-col items-center gap-4">
-              <UserImage userImage={session.user.image} />
 
-              <div className="text-center">
-                <h1 className="mb-2 text-3xl font-bold text-gray-900">
-                  Media Gallery
-                </h1>
-                <p className="text-sm text-gray-600">{session.user.name}</p>
+        <AvatarCard session={session} name="Media Gallery">
+          {/* Stats Cards */}
+          <div className="mt-4 grid w-full grid-cols-3 gap-4">
+            <div className="rounded-xl border border-blue-200 bg-linear-to-br from-blue-50 to-blue-100 p-4 text-center">
+              <ImageIcon className="mx-auto mb-2 h-6 w-6 text-blue-600" />
+              <div className="text-2xl font-bold text-blue-900">
+                {mediaStats.images}
               </div>
-
-              {/* Stats Cards */}
-              <div className="mt-4 grid w-full grid-cols-3 gap-4">
-                <div className="rounded-xl border border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 text-center">
-                  <ImageIcon className="mx-auto mb-2 h-6 w-6 text-blue-600" />
-                  <div className="text-2xl font-bold text-blue-900">
-                    {mediaStats.images}
-                  </div>
-                  <div className="text-xs text-blue-700">Images</div>
-                </div>
-                <div className="rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-4 text-center">
-                  <FileText className="mx-auto mb-2 h-6 w-6 text-purple-600" />
-                  <div className="text-2xl font-bold text-purple-900">
-                    {mediaStats.files}
-                  </div>
-                  <div className="text-xs text-purple-700">Files</div>
-                </div>
-                <div className="rounded-xl border border-pink-200 bg-gradient-to-br from-pink-50 to-pink-100 p-4 text-center">
-                  <Download className="mx-auto mb-2 h-6 w-6 text-pink-600" />
-                  <div className="text-2xl font-bold text-pink-900">
-                    {mediaStats.total}
-                  </div>
-                  <div className="text-xs text-pink-700">Total</div>
-                </div>
+              <div className="text-xs text-blue-700">Images</div>
+            </div>
+            <div className="rounded-xl border border-purple-200 bg-linear-to-br from-purple-50 to-purple-100 p-4 text-center">
+              <FileText className="mx-auto mb-2 h-6 w-6 text-purple-600" />
+              <div className="text-2xl font-bold text-purple-900">
+                {mediaStats.files}
               </div>
+              <div className="text-xs text-purple-700">Files</div>
+            </div>
+            <div className="rounded-xl border border-pink-200 bg-linear-to-br from-pink-50 to-pink-100 p-4 text-center">
+              <Download className="mx-auto mb-2 h-6 w-6 text-pink-600" />
+              <div className="text-2xl font-bold text-pink-900">
+                {mediaStats.total}
+              </div>
+              <div className="text-xs text-pink-700">Total</div>
             </div>
           </div>
-        </div>
+        </AvatarCard>
 
         {/* Grid Controls */}
         <div className="mb-6 flex items-center justify-between">
@@ -153,7 +146,7 @@ function MediaPageClient({ session }: MediaPageProps) {
         {/* Empty State */}
         {!isMediaProcessing && mediaData.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
-            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-gray-100 to-gray-200">
+            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-gray-100 to-gray-200">
               <ImageIcon size={40} className="text-gray-400" />
             </div>
             <h3 className="mb-2 text-xl font-semibold text-gray-700">

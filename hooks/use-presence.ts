@@ -1,15 +1,19 @@
+"use client";
+
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
-
 import { useEffect, useMemo, useRef } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 import useConnectionStatus from "@/store/connection-status-store";
+import useHybridSession from "./use-hybrid-session";
 
-const useUserConnectionStatus = (session: Session) => {
+const useUserConnectionStatus = (serverSession: Session) => {
   const isMountedRef = useRef(false);
+
+  const { session } = useHybridSession(serverSession);
   const { status: connectionStatus, setStatus: setConnectionStatus } =
     useConnectionStatus();
 
@@ -72,17 +76,27 @@ const useUserConnectionStatus = (session: Session) => {
   ]);
 
   useEffect(() => {
-    if (!session.user.id) return;
+    if (!session?.user?.id) return;
 
     const getUserStatus = async () => {
-      return await updateUserStatus({
-        userId: session.user.id,
-        status: connectionStatus !== "connected" ? "offline" : "online",
-      }).catch((err) => console.error("Error updating user status:", err));
+      isMountedRef.current = true;
+
+      try {
+        await updateUserStatus({
+          userId: session.user.id,
+          status: connectionStatus !== "connected" ? "offline" : "online",
+        });
+      } catch (err) {
+        console.error("Error updating user status:", err);
+      }
     };
 
     getUserStatus();
-  }, [connectionStatus, session.user.id, updateUserStatus]);
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [connectionStatus, session?.user?.id, updateUserStatus]);
 
   return { connectionStatus };
 };

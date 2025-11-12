@@ -1,4 +1,4 @@
-import { Message, MessageTyping } from "@/types/message";
+import { Message, MessageOutputTyping, MessageTyping } from "@/types/message";
 
 export type PusherState = {
   previous: string;
@@ -21,6 +21,7 @@ export type PusherEventData =
   | PusherState
   | MessageTyping
   | Message
+  | MessageOutputTyping
   | PusherSubsciption;
 
 export type PusherCallback<T = unknown> = (data: T) => void;
@@ -32,8 +33,8 @@ export type PusherEventMap = {
   "new-message": Message;
   "delete-message": Message;
   "edit-message": Message;
-  "typing-start": MessageTyping;
-  "typing-end": MessageTyping;
+  "typing-start": MessageOutputTyping;
+  "typing-end": MessageOutputTyping;
   "status-update": string;
   state_change: PusherState;
   connected: void;

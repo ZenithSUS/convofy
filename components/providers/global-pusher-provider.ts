@@ -4,6 +4,7 @@ import showErrorConnectionMessage from "@/helper/pusher/error";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
+import useConnectionStatus from "@/store/connection-status-store";
 import { RoomContent } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -11,6 +12,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 function GlobalPusherProvider() {
   const { data: session, update } = useSession();
+  const { setStatus: updateConnectionStatus } = useConnectionStatus();
   const queryClient = useQueryClient();
   const isMountedRef = useRef(true);
   const channelRef = useRef<ReturnType<typeof pusherClient.subscribe> | null>(
@@ -21,15 +23,17 @@ function GlobalPusherProvider() {
     () =>
       new ConnectionStatusHandler(
         isMountedRef,
-        update,
+        updateConnectionStatus,
         getHomePusherConnectionState,
         showErrorConnectionMessage,
       ),
-    [update],
+    [updateConnectionStatus],
   );
 
   // Handle Pusher connection state changes to ensure reconnection
   useEffect(() => {
+    if (!session?.user.id) return;
+
     isMountedRef.current = true;
     pusherClient.connection.bind("connected", conHandler.handleConnected);
     pusherClient.connection.bind("disconnected", conHandler.handleDisconnected);
@@ -50,6 +54,7 @@ function GlobalPusherProvider() {
       );
     };
   }, [
+    session?.user.id,
     conHandler.handleConnected,
     conHandler.handleDisconnected,
     conHandler.handleConnecting,
@@ -91,9 +96,36 @@ function GlobalPusherProvider() {
       );
     });
 
+    // Handle room created updates
+    channel.bind("room-created", (data: RoomContent) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+          return [...oldRooms, data];
+        },
+      );
+    });
+
+    // Handle room deleted updates
+    channel.bind("room-deleted", (roomId: string) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+          return oldRooms.filter((room) => room._id !== roomId);
+        },
+      );
+    });
+
     // Handle status updates
     channel.bind("status-update", (status: string) => {
-      console.log("User status updated:", status);
       update({ ...session, user: { ...session.user, status } });
     });
 

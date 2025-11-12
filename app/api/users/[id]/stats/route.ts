@@ -1,12 +1,24 @@
+import { getUserToken } from "@/lib/utils";
 import userService from "@/services/mongodb/user.service";
-import { NextResponse } from "next/server";
+import messageFetchLimit from "@/lib/redis/redis-message-fetch-limit";
+import { Types } from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
+import UserStatsCache from "@/lib/cache/cache-user-stats";
 
 export const GET = async (
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const id = (await params).id;
+    // Authentication
+    const token = await getUserToken(req);
+
+    if (!token || !token.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = token.sub;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
@@ -15,12 +27,69 @@ export const GET = async (
       );
     }
 
+    if (!Types.ObjectId.isValid(id)) {
+      return NextResponse.json(
+        { error: "Invalid user ID format" },
+        { status: 400 },
+      );
+    }
+
+    if (userId !== id) {
+      return NextResponse.json(
+        { error: "Forbidden: You can only view your own statistics" },
+        { status: 403 },
+      );
+    }
+
+    const {
+      success,
+      limit: rateLimit,
+      remaining,
+      reset,
+    } = await messageFetchLimit.limit(userId);
+
+    if (!success) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        {
+          status: 429,
+          headers: {
+            "X-RateLimit-Limit": rateLimit.toString(),
+            "X-RateLimit-Remaining": remaining.toString(),
+            "X-RateLimit-Reset": reset.toString(),
+            "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
+          },
+        },
+      );
+    }
+
+    const cached = await UserStatsCache.get(id);
+
+    if (cached) {
+      return NextResponse.json(cached, {
+        status: 200,
+        headers: {
+          "X-Cache": "HIT",
+          "X-RateLimit-Remaining": remaining.toString(),
+        },
+      });
+    }
+
     const response = await userService.getUserDataStats(id);
-    return NextResponse.json(response, { status: 200 });
+    await UserStatsCache.set(id, response);
+
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        "X-Cache": "MISS",
+        "X-RateLimit-Remaining": remaining.toString(),
+      },
+    });
   } catch (error) {
     console.error("Error fetching user stats:", error);
+
     return NextResponse.json(
-      { error: `Failed to fetch user stats: ${error}` },
+      { error: "Failed to fetch user statistics" },
       { status: 500 },
     );
   }

@@ -2,7 +2,13 @@
 
 // React
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, MessageSquare, Sparkles, TrendingUp } from "lucide-react";
+import {
+  Plus,
+  MessageSquare,
+  Sparkles,
+  TrendingUp,
+  LockIcon,
+} from "lucide-react";
 import { AxiosError } from "axios/";
 
 // Next
@@ -22,15 +28,17 @@ import ErrorMessage from "@/components/ui/error-message";
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
 import useConnectionStatus from "@/store/connection-status-store";
+import useHybridSession from "@/hooks/use-hybrid-session";
 
 interface ChatListClientProps {
-  session: Session;
+  serverSession: Session;
 }
 
-function ChatListClient({ session }: ChatListClientProps) {
+function ChatListClient({ serverSession }: ChatListClientProps) {
   const DEBOUNCE_MS = 500;
   const router = useRouter();
 
+  const { session } = useHybridSession(serverSession);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const { status: connectionStatus } = useConnectionStatus();
@@ -39,6 +47,14 @@ function ChatListClient({ session }: ChatListClientProps) {
     return debouncedSearchQuery.trim().length > 0;
   }, [debouncedSearchQuery]);
 
+  const id = useMemo<string>(() => {
+    return session.user.id;
+  }, [session]);
+
+  const isAvailable = useMemo<boolean>(() => {
+    return session.user.isAvailable;
+  }, [session]);
+
   const {
     data: rooms,
     isLoading,
@@ -46,7 +62,7 @@ function ChatListClient({ session }: ChatListClientProps) {
     isError: roomError,
     error: roomErrorData,
     refetch,
-  } = useGetRoomByUserId(session.user.id, isSearchMode, debouncedSearchQuery);
+  } = useGetRoomByUserId(id, isAvailable, isSearchMode, debouncedSearchQuery);
 
   const roomsList = useMemo<RoomContent[]>(() => {
     if (!rooms) return [];
@@ -76,7 +92,7 @@ function ChatListClient({ session }: ChatListClientProps) {
   }, [searchQuery]);
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
       <div className="flex-1 overflow-y-auto">
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-md">
           {/* Connection Status */}
@@ -90,24 +106,29 @@ function ChatListClient({ session }: ChatListClientProps) {
           </div>
 
           {/* Search Bar */}
-          <div className="px-4 pb-4">
-            <div className="relative">
-              <SearchBar
-                className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
-                onSearch={handleSearch}
-              />
-              {searchQuery && (
-                <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                  <Sparkles size={16} className="animate-pulse text-blue-500" />
-                </div>
-              )}
+          {isAvailable && (
+            <div className="px-4 pb-4">
+              <div className="relative">
+                <SearchBar
+                  className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
+                  onSearch={handleSearch}
+                />
+                {searchQuery && (
+                  <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                    <Sparkles
+                      size={16}
+                      className="animate-pulse text-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Search Results Header */}
           {isSearchMode && (
             <div className="px-4 pb-4">
-              <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+              <div className="rounded-xl border border-blue-100 bg-linear-to-r from-blue-50 to-purple-50 p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-700">
@@ -130,7 +151,7 @@ function ChatListClient({ session }: ChatListClientProps) {
 
         {/* List of chat rooms */}
         <div className="space-y-3 p-4">
-          {roomsList.length > 0 ? (
+          {isAvailable && roomsList.length > 0 ? (
             <>
               {!isSearchMode && (
                 <div className="mb-4 flex items-center justify-between">
@@ -182,9 +203,20 @@ function ChatListClient({ session }: ChatListClientProps) {
                 Loading your chats...
               </p>
             </div>
+          ) : !isAvailable ? (
+            <div className="flex flex-col items-center justify-center py-30">
+              <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100">
+                <LockIcon size={40} className="text-blue-500" />
+              </div>
+
+              <h3>Chat is currently unavailable</h3>
+              <p className="mt-4 text-center text-sm text-gray-500">
+                You deactivated your account. Please reactivate to able to chat.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-purple-100">
+              <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100">
                 <MessageSquare size={40} className="text-blue-500" />
               </div>
               <h3 className="mb-2 text-lg font-semibold text-gray-700">
@@ -197,7 +229,7 @@ function ChatListClient({ session }: ChatListClientProps) {
               </p>
               {!isSearchMode && (
                 <Button
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+                  className="bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
                   onClick={() => router.replace("/chat/create")}
                 >
                   <Plus size={18} className="mr-2" />
@@ -210,18 +242,20 @@ function ChatListClient({ session }: ChatListClientProps) {
       </div>
 
       {/* Floating Action Button */}
-      <div className="sticky bottom-0 border-t border-gray-200 bg-gradient-to-t from-white via-white to-transparent p-4">
-        <Button
-          className="group h-12 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
-          onClick={() => router.replace("/chat/create")}
-        >
-          <Plus
-            size={20}
-            className="mr-2 transition-transform duration-300 group-hover:rotate-90"
-          />
-          Create New Chat Room
-        </Button>
-      </div>
+      {isAvailable ? (
+        <div className="sticky bottom-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4">
+          <Button
+            className="group h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+            onClick={() => router.replace("/chat/create")}
+          >
+            <Plus
+              size={20}
+              className="mr-2 transition-transform duration-300 group-hover:rotate-90"
+            />
+            Create New Chat Room
+          </Button>
+        </div>
+      ) : null}
 
       <style jsx>{`
         @keyframes slideInRight {

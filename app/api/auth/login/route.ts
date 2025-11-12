@@ -24,3 +24,7 @@ export const POST = async (req: Request) => {
     return new Response(err.message || "Error logging in", { status: 401 });
   }
 };
+
+export const GET = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};

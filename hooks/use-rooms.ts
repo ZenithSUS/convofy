@@ -64,16 +64,16 @@ export const useGetRoomById = (
 
 export const useGetRoomByUserId = (
   id: string,
+  isAvailable: boolean,
   isSearch: boolean,
   searchQuery: string = "",
 ): UseQueryResult<RoomContent[], unknown> => {
   const getRoomByUserId = async (isSearch: boolean) => {
-    const route = isSearch ? `/rooms/search` : `/rooms/user/${id}`;
+    const route = isSearch ? `/rooms/search` : `/rooms`;
 
     const response = await client
       .get(route, {
         params: {
-          userId: id,
           query: searchQuery,
         },
       })
@@ -90,7 +90,7 @@ export const useGetRoomByUserId = (
   return useQuery({
     queryKey: ["rooms", id, searchQuery],
     queryFn: async () => getRoomByUserId(isSearch),
-    enabled: !!id,
+    enabled: !!id && isAvailable,
   });
 };
 
@@ -100,7 +100,6 @@ export const useCreateRoom = (): UseMutationResult<
   CreateRoom,
   Room
 > => {
-  const queryClient = useQueryClient();
   const createRoom = async (data: CreateRoom) => {
     const response = await client
       .post("/rooms", data)
@@ -118,14 +117,6 @@ export const useCreateRoom = (): UseMutationResult<
   return useMutation<Room, unknown, CreateRoom, Room>({
     mutationFn: async (data: CreateRoom) => createRoom(data),
     mutationKey: ["createRoom"],
-    onSuccess: () => {
-      // Invalidate rooms query to refetch
-      queryClient.invalidateQueries({ queryKey: ["rooms"] });
-    },
-    onError: (err) => {
-      console.error("Error creating room:", err);
-      throw err;
-    },
   });
 };
 

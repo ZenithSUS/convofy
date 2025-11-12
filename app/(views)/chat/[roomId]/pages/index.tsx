@@ -2,6 +2,7 @@
 // React
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import DOMPurify from "dompurify";
 
 // Zod, Tanstack and React Hook Form
 import z from "zod";
@@ -11,11 +12,11 @@ import { useForm } from "react-hook-form";
 // Next
 import { useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { Session } from "next-auth";
 
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
 import { useGetRoomById } from "@/hooks/use-rooms";
+import useHybridSession from "@/hooks/use-hybrid-session";
 import {
   useCheckTyping,
   useGetMessagesByRoom,
@@ -24,7 +25,7 @@ import {
 import useChannel from "@/hooks/use-channel";
 
 // Types
-import { User } from "@/types/user";
+import { UserTyping } from "@/types/user";
 import { AxiosError } from "axios/";
 import { CreateMessage, Message } from "@/types/message";
 import { FileInfo } from "@/types/file";
@@ -42,6 +43,10 @@ import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
 import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
 import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
 import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
+import { Session } from "@/app/(views)/chat/components/chat-header";
+import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
+import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
+import getFileDirectory from "@/helper/file-directories";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -49,8 +54,9 @@ const schemaMessage = z.object({
 
 type FormData = z.infer<typeof schemaMessage>;
 
-function RoomPageClient({ session }: { session: Session }) {
+function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const { roomId }: { roomId: string } = useParams();
+  const { session } = useHybridSession(serverSession);
 
   const messageForm = useForm<FormData>({
     resolver: zodResolver(schemaMessage),
@@ -62,6 +68,8 @@ function RoomPageClient({ session }: { session: Session }) {
   const [selectedFiles, setSelectedFiles] = useState<FileInfo[]>([]);
   const [currentEditId, setCurrentEditId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [, setIsDetailsVisible] = useState<boolean>(false);
+  const [actionType, setActionType] = useState<"edit" | "view">("view");
 
   const {
     data: room,
@@ -71,6 +79,23 @@ function RoomPageClient({ session }: { session: Session }) {
     error: roomErrorData,
     refetch: refetchRoom,
   } = useGetRoomById(roomId as string);
+
+  const roomData = useMemo(() => room, [room]);
+
+  const {
+    isMountedRef,
+    connectionStatus,
+    isTypingRef,
+    typingIndicatorRef,
+    typingUsers,
+    isMember,
+    typingTimeoutRef,
+    queryClient,
+  } = useChannel({
+    session,
+    roomId,
+    room: roomData,
+  });
 
   const {
     data: messages,
@@ -82,23 +107,11 @@ function RoomPageClient({ session }: { session: Session }) {
     hasNextPage,
     isFetchingNextPage,
     refetch: refetchMessages,
-  } = useGetMessagesByRoom(roomId as string);
-
-  const roomData = useMemo(() => room, [room]);
-
-  const {
-    isMountedRef,
-    connectionStatus,
-    isTypingRef,
-    typingUsers,
-    isMember,
-    typingTimeoutRef,
-    queryClient,
-  } = useChannel({
-    session,
-    roomId,
-    room: roomData,
-  });
+  } = useGetMessagesByRoom(
+    roomId as string,
+    5,
+    isMember && session.user.isAvailable,
+  );
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
   const { mutateAsync: typingSignal } = useCheckTyping();
@@ -122,10 +135,6 @@ function RoomPageClient({ session }: { session: Session }) {
     return roomError || messagesError;
   }, [roomError, messagesError]);
 
-  const chatErrorData = useMemo(() => {
-    return roomErrorData || messagesErrorData;
-  }, [roomErrorData, messagesErrorData]);
-
   const isAllLoading = useMemo(() => {
     if (isChatError) return false;
     return roomLoading || messagesLoading;
@@ -140,6 +149,22 @@ function RoomPageClient({ session }: { session: Session }) {
     if (isChatError) return true;
     return roomData && messagesData && session;
   }, [roomData, messagesData, session, isChatError]);
+
+  const isOtherPersonUnavailable = useMemo(() => {
+    if (roomData?.isPrivate && roomData?.members.length === 2) {
+      const otherPerson = roomData.members.find(
+        (m) => m._id !== session.user.id,
+      );
+
+      // Return true if the other person is NOT available
+      return !(otherPerson?.isAvailable ?? true);
+    }
+    return false;
+  }, [roomData, session.user.id]);
+
+  const isUnavailable = useMemo(() => {
+    return !session.user.isAvailable;
+  }, [session.user.isAvailable]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -209,7 +234,7 @@ function RoomPageClient({ session }: { session: Session }) {
           sender: session.user.id as string,
           room: roomId as string,
           isEdited: false,
-          content: data.message,
+          content: DOMPurify.sanitize(data.message),
           type: "text",
         };
         await sendMessage(messageData);
@@ -217,16 +242,24 @@ function RoomPageClient({ session }: { session: Session }) {
 
       if (selectedFiles.length > 0) {
         const uploadPromises = selectedFiles.map(async (fileInfo) => {
-          const url = await uploadImage(fileInfo.file);
+          const type = fileInfo.type.startsWith("image/") ? "image" : "file";
+
+          const directory = getFileDirectory(
+            type === "file" ? "message" : "roomMedia",
+            session.user.id,
+            roomId,
+          );
+
+          const url = await uploadImage(fileInfo.file, directory);
+
           if (!url) {
             throw new Error(`Failed to upload ${fileInfo.name}`);
           }
-          const type = fileInfo.type.startsWith("image/") ? "image" : "file";
 
           const messageData: CreateMessage = {
             sender: session.user.id as string,
             room: roomId as string,
-            content: url,
+            content: DOMPurify.sanitize(url),
             type,
           };
           return sendMessage(messageData);
@@ -262,7 +295,7 @@ function RoomPageClient({ session }: { session: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as UserTyping,
           isTyping: true,
         });
       } catch (error) {
@@ -288,7 +321,7 @@ function RoomPageClient({ session }: { session: Session }) {
 
         await typingSignal({
           roomId: roomId as string,
-          user: session.user! as Omit<User, "_id"> & { id: string },
+          user: session.user! as UserTyping,
           isTyping: false,
         });
       } catch (error) {
@@ -297,12 +330,19 @@ function RoomPageClient({ session }: { session: Session }) {
     }
   };
 
+  // Loading state
   if (!isAllDataLoaded || isAllLoading) {
     return <LoadingConvo />;
   }
 
+  if (roomError) {
+    return (
+      <RoomError roomErrorData={roomErrorData} handleRefresh={handleRefresh} />
+    );
+  }
+
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
       <RoomHeader
         room={roomData as RoomContent}
         userId={session?.user.id as string}
@@ -317,7 +357,7 @@ function RoomPageClient({ session }: { session: Session }) {
       <div className="flex-1 flex-col-reverse overflow-y-auto p-4 md:p-6">
         {hasNextPage && (
           <div className="mb-6 flex items-center justify-center">
-            {!isFetchingNextPage && !isChatError && isMember && (
+            {!isFetchingNextPage && !messagesError && isMember && (
               <Button
                 onClick={() => fetchNextPage()}
                 variant="outline"
@@ -336,10 +376,10 @@ function RoomPageClient({ session }: { session: Session }) {
           </div>
         )}
 
-        {isChatError && (
+        {messagesError && (
           <div className="my-8">
             <ErrorMessage
-              error={chatErrorData as AxiosError}
+              error={messagesErrorData as AxiosError}
               onClick={handleRefresh}
             />
           </div>
@@ -354,10 +394,10 @@ function RoomPageClient({ session }: { session: Session }) {
           </div>
         )}
 
-        {!isChatError && !isAllFetching && messagesData.length === 0 ? (
+        {!messagesError && !isAllFetching && messagesData.length === 0 ? (
           <StartMessage />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {messagesData.map((msg: Message, index: number) => (
               <div
                 key={msg._id}
@@ -370,6 +410,12 @@ function RoomPageClient({ session }: { session: Session }) {
                   session={session as Session}
                   isThisEditing={currentEditId === msg._id}
                   isAnyEditing={!!currentEditId}
+                  isDetailsVisible={
+                    currentEditId === msg._id && actionType === "view"
+                  }
+                  actionType={actionType}
+                  setActionType={setActionType}
+                  setIsDetailsVisible={setIsDetailsVisible}
                   onEditComplete={() => setCurrentEditId(null)}
                   onCancelEdit={() => setCurrentEditId(null)}
                   setCurrentEditId={setCurrentEditId}
@@ -380,13 +426,16 @@ function RoomPageClient({ session }: { session: Session }) {
         )}
 
         {/* Enhanced Typing Indicator */}
-        {!isChatError && typingUsers.size > 0 && (
-          <TypingIndicator typingUsers={typingUsers} />
+        {!messagesError && typingUsers.size > 0 && (
+          <TypingIndicator
+            typingUsers={typingUsers}
+            typingIndicatorRef={typingIndicatorRef}
+          />
         )}
       </div>
 
-      {/* Enhanced Input Area */}
-      {isMember ? (
+      {/* Input Area */}
+      {isMember && !isOtherPersonUnavailable && !isUnavailable ? (
         <div className="border-t bg-white shadow-lg">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (
@@ -394,6 +443,7 @@ function RoomPageClient({ session }: { session: Session }) {
               selectedFiles={selectedFiles}
               setSelectedFiles={setSelectedFiles}
               handleRemoveFile={handleRemoveFile}
+              isUploading={isUploading}
             />
           )}
 
@@ -409,6 +459,8 @@ function RoomPageClient({ session }: { session: Session }) {
             handleAppendFile={handleAppendFile}
           />
         </div>
+      ) : isMember && (isOtherPersonUnavailable || isUnavailable) ? (
+        <PersonUnavailable isYouUnavailable={isUnavailable} />
       ) : (
         <NotJoinedModal
           roomId={roomId as string}

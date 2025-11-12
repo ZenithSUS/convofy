@@ -13,6 +13,8 @@ function SearchBar({
 }: SearchBarProps) {
   return (
     <Input
+      type="text"
+      name="search"
       placeholder={placeholder}
       className={className}
       onChange={(e) => onSearch && onSearch(e.target.value)}

@@ -22,3 +22,7 @@ export const POST = async (req: Request) => {
     return new Response("Error creating user", { status: 500 });
   }
 };
+
+export const GET = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};

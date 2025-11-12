@@ -136,6 +136,24 @@ export const getMessagesByUserIdAndQuery = async (
 };
 
 /**
+ * Finds a message by its ID.
+ * @param {string} messageId - The ID of the message to find.
+ * @returns {Promise<Message | null>} A promise that resolves with the message if found, or null if not found.
+ * @throws {Error} - If an error occurs while finding the message.
+ */
+export const findMessageById = async (messageId: string) => {
+  try {
+    const message = await Message.findOne({
+      _id: messageId,
+    });
+    return message;
+  } catch (error) {
+    console.error("Error finding message:", error);
+    return null;
+  }
+};
+
+/**
  * This function gets messages by room that are paginated
  * and sorted by createdAt
  * @param roomId
@@ -164,15 +182,20 @@ export const getMessagesByRoom = async (
 };
 
 /**
- * This function gets messages by user filtering by type
- * @param userId
- * @param limit
- * @returns messages of type image and file or an error
+ * Retrieves messages sent by a user and of a specific type (image or file).
+ * The messages are paginated and sorted by createdAt in descending order.
+ * @param {string} userId - The ID of the user to fetch messages for.
+ * @param {number} limit - The maximum number of messages to return.
+ * @param {number} offset - The number of messages to skip before returning the results.
+ * @param {string} [fileType] - The type of file to fetch messages for (image or file). If not provided, all messages of type image or file are returned.
+ * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user and of the specified type.
+ * @throws {Error} - If there was an error while fetching the messages.
  */
 export const getMessagesByUserAndFileType = async (
   userId: string,
   limit: number,
   offset: number,
+  fileType?: string,
 ) => {
   try {
     await connectToDatabase();
@@ -184,11 +207,14 @@ export const getMessagesByUserAndFileType = async (
 
     const userIdObject = new Types.ObjectId(userId);
 
-    // Query messages where sender matches userId AND type is image or file
-    const messages = await Message.find({
-      sender: userIdObject,
-      type: { $in: ["image", "file"] },
-    })
+    const query = fileType
+      ? { sender: userIdObject, type: fileType }
+      : {
+          sender: userIdObject,
+          type: { $in: ["image", "file"] },
+        };
+
+    const messages = await Message.find(query)
       .limit(limit)
       .skip(offset)
       .populate("sender", "name")

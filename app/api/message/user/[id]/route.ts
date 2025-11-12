@@ -1,25 +1,38 @@
+import { getUserToken } from "@/lib/utils";
 import { getMessagesByUserId } from "@/services/mongodb/message.service";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { ObjectId } from "mongodb";
 
 export const GET = async (
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
   try {
-    const url = new URL(req.url).searchParams;
-    const { id }: { id: string } = await params;
+    const token = await getUserToken(req);
 
-    const limit = Number(url.get("limit")) || 0;
-    const offset = Number(url.get("offset")) || 0;
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Missing required field: id" },
-        { status: 400 },
-      );
+    if (!token || !token.sub) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await getMessagesByUserId(id, limit, offset);
+    const userId = token.sub;
+    const url = new URL(req.url).searchParams;
+    const { id: targetUserId }: { id: string } = await params;
+
+    if (userId !== targetUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    let limit = Number(url.get("limit")) || 0;
+    let offset = Number(url.get("offset")) || 0;
+
+    if (limit > 100) limit = 100;
+    if (offset < 0) offset = 0;
+
+    if (!targetUserId || !ObjectId.isValid(targetUserId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
+    const response = await getMessagesByUserId(targetUserId, limit, offset);
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {

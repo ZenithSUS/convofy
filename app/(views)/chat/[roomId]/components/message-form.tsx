@@ -11,7 +11,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import MediaUpload from "@/app/(views)/chat/components/media-upload";
 import { Button } from "@/components/ui/button";
-import EmojiSelection from "@/app/(views)/chat/components/emoji-selection";
+
+import EmojiSelection from "../../components/emoji-selection";
 import { Loader2, Send } from "lucide-react";
 import { ChangeEvent, KeyboardEventHandler } from "react";
 import { UseFormReturn } from "react-hook-form";
@@ -62,7 +63,7 @@ function MessageForm({
                   placeholder={
                     isSending ? "Sending..." : "Type your message..."
                   }
-                  className="max-h-32 min-h-[48px] resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                  className="max-h-32 min-h-12 resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
                   disabled={isSending}
                   onChange={(e) => {
                     field.onChange(e);
@@ -86,7 +87,7 @@ function MessageForm({
           <EmojiSelection onEmojiAppend={handleEmojiAppend} />
           <Button
             type="submit"
-            className="h-12 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
+            className="h-12 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
             disabled={isSending || isUploading}
           >
             {isSending || isUploading ? (

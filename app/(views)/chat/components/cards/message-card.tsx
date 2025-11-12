@@ -1,8 +1,7 @@
 "use client";
 
 import { Message } from "@/types/message";
-import { Session } from "next-auth";
-import { memo, useMemo, useRef, useState, useEffect } from "react";
+import { memo, useMemo, useState, useEffect, useRef } from "react";
 import {
   useDeleteLiveMessage,
   useUpdateLiveMessage,
@@ -14,32 +13,39 @@ import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
 import MessageContent from "../message-content";
 import { Edit } from "lucide-react";
-import MessageEdit from "../message-edit";
+import MessageEdit from "@/app/(views)/chat/components/message-edit";
+import { Session } from "@/app/(views)/chat/components/chat-header";
 
 interface Props {
   message: Message | null;
+  actionType: "edit" | "view";
   session: Session;
   isThisEditing: boolean;
   isAnyEditing: boolean;
+  isDetailsVisible: boolean;
+  setIsDetailsVisible: (value: boolean) => void;
   onEditComplete: () => void;
   onCancelEdit: () => void;
   setCurrentEditId: (id: string | null) => void;
+  setActionType: (type: "edit" | "view") => void;
 }
 
 function MessageCard({
   message,
+  actionType,
   session,
   isThisEditing,
   isAnyEditing,
+  isDetailsVisible,
   onEditComplete,
   onCancelEdit,
   setCurrentEditId,
+  setIsDetailsVisible,
+  setActionType,
 }: Props) {
-  const [isOptionsVisible, setIsOptionsVisible] = useState(false);
-  const [isTimeVisible, setIsTimeVisible] = useState(false);
-  const [isHoveringMessage, setIsHoveringMessage] = useState(false);
-  const [isHoveringIcon, setIsHoveringIcon] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeOutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [isHovering, setIsHovering] = useState(false);
 
   const isUserMessage = useMemo(() => {
     if (!message) return false;
@@ -50,73 +56,36 @@ function MessageCard({
   const { mutateAsync: updateMessage } = useUpdateLiveMessage();
   const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
+  const handleEditMessage = (action: "edit" | "view", messageId: string) => {
+    if (!isUserMessage) return;
 
-  useEffect(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    setActionType(action);
+    setCurrentEditId(messageId);
+    setIsDetailsVisible(true);
+  };
 
-    if (isAnyEditing) {
-      setIsTimeVisible(false);
-      setIsOptionsVisible(false);
+  const handleViewDetails = (action: "edit" | "view", id: string) => {
+    if (isThisEditing && actionType === "edit") {
       return;
     }
 
-    if (isHoveringMessage || isHoveringIcon) {
-      setIsTimeVisible(true);
-      if (isUserMessage) {
-        setIsOptionsVisible(true);
-      }
-    } else {
-      timeoutRef.current = setTimeout(() => {
-        setIsTimeVisible(false);
-        setIsOptionsVisible(false);
-      }, 1000);
-    }
-  }, [isHoveringMessage, isHoveringIcon, isUserMessage, isAnyEditing]);
-
-  const handleMouseEnterMessage = () => {
-    if (isAnyEditing) return;
-    setIsHoveringMessage(true);
-  };
-
-  const handleMouseLeaveMessage = () => {
-    if (isAnyEditing) return;
-    setIsHoveringMessage(false);
-  };
-
-  const handleMouseEnterIcon = () => {
-    if (isAnyEditing) return;
-    setIsHoveringIcon(true);
-  };
-
-  const handleMouseLeaveIcon = () => {
-    if (isAnyEditing) return;
-    setIsHoveringIcon(false);
-  };
-
-  const handleEditMessage = (messageId: string) => {
-    setCurrentEditId(messageId);
-    setIsOptionsVisible(false);
+    setActionType(action);
+    setCurrentEditId(id);
+    setIsDetailsVisible(!isDetailsVisible);
   };
 
   const isEditingMessage = useMemo(
-    () => message?.type === "text" && isThisEditing,
-    [message?.type, isThisEditing],
+    () => message?.type === "text" && isThisEditing && actionType === "edit",
+    [message?.type, isThisEditing, actionType],
   );
 
   const handleDeleteClick = async () => {
     if (!message) return;
     try {
       if (message.type === "file" || message.type === "image") {
-        const publicId = extractPublicId(message.content);
+        let publicId = extractPublicId(message.content);
+        publicId = decodeURIComponent(publicId);
+        publicId = publicId.replace(/\.[^/.]+$/, "");
 
         await Promise.all([deleteFile(publicId), deleteMessage(message._id)]);
         toast.success("Message deleted successfully");
@@ -129,8 +98,8 @@ function MessageCard({
       console.error("Error deleting message:", error);
       toast.error("Failed to delete message");
     } finally {
-      setIsOptionsVisible(false);
-      setIsTimeVisible(false);
+      setIsDetailsVisible(false);
+      setCurrentEditId(null);
     }
   };
 
@@ -144,8 +113,8 @@ function MessageCard({
       console.error("Error updating message:", error);
       toast.error("Failed to update message");
     } finally {
-      setIsOptionsVisible(false);
-      setIsTimeVisible(false);
+      setIsDetailsVisible(false);
+      setCurrentEditId(null);
     }
   };
 
@@ -157,15 +126,50 @@ function MessageCard({
     };
   }, [message]);
 
+  // Show details if visible OR if this message is being edited
+  const shouldShowDetails =
+    isDetailsVisible || (isThisEditing && actionType === "edit");
+
+  useEffect(() => {
+    // Hide details when another message is being edited
+    if (isAnyEditing && !isThisEditing) {
+      if (timeOutRef.current) {
+        clearTimeout(timeOutRef.current);
+        timeOutRef.current = null;
+      }
+      return;
+    }
+
+    // Clear any existing timeout
+    if (timeOutRef.current) {
+      clearTimeout(timeOutRef.current);
+      timeOutRef.current = null;
+    }
+
+    // Set timeout to auto-hide details only for view action
+
+    if (isDetailsVisible) {
+      timeOutRef.current = setTimeout(() => {
+        setCurrentEditId(null);
+      }, 5000);
+    }
+
+    // Cleanup timeout on unmount or when dependencies change
+    return () => {
+      if (timeOutRef.current) {
+        clearTimeout(timeOutRef.current);
+        timeOutRef.current = null;
+      }
+    };
+  }, [isAnyEditing, isThisEditing, isDetailsVisible, setCurrentEditId]);
+
   if (!message) return null;
 
   return (
     <div className="group flex flex-col gap-2">
       {/* Timestamp with enhanced styling */}
-      {isTimeVisible && (
+      {shouldShowDetails && (
         <div
-          onMouseEnter={handleMouseEnterIcon}
-          onMouseLeave={handleMouseLeaveIcon}
           className={`flex items-center gap-2 transition-opacity duration-200 ${
             message.sender._id === session.user.id ? "self-end" : "self-start"
           }`}
@@ -189,17 +193,13 @@ function MessageCard({
         }`}
       >
         {/* Enhanced Options Menu */}
-        {isOptionsVisible && (
-          <div
-            className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200"
-            onMouseEnter={handleMouseEnterIcon}
-            onMouseLeave={handleMouseLeaveIcon}
-          >
+        {isUserMessage && shouldShowDetails && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200">
             <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md">
               <DeleteMessageModal onDelete={handleDeleteClick} />
-              {message.type === "text" && (
+              {message.type === "text" && !isEditingMessage && (
                 <button
-                  onClick={() => handleEditMessage(message._id)}
+                  onClick={() => handleEditMessage("edit", message._id)}
                   className="group rounded-md p-2 transition-colors duration-200 hover:bg-blue-50"
                   title="Edit message"
                 >
@@ -210,21 +210,22 @@ function MessageCard({
           </div>
         )}
 
-        {/* Enhanced Message Bubble */}
+        {/* Message Bubble */}
         <div
+          onClick={() => handleViewDetails("view", message._id)}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
           className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
             message.sender._id === session?.user?.id
-              ? "rounded-br-sm bg-gradient-to-br from-blue-400 to-blue-500 text-white"
+              ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white"
               : "rounded-bl-sm border border-gray-200 bg-white text-gray-800"
           } ${
-            isHoveringMessage
+            isHovering && !isEditingMessage
               ? message.sender._id === session?.user?.id
                 ? "scale-[1.02] shadow-md"
                 : "scale-[1.02] border-gray-300 shadow-md"
               : ""
-          }`}
-          onMouseEnter={handleMouseEnterMessage}
-          onMouseLeave={handleMouseLeaveMessage}
+          } ${isEditingMessage ? "ring-2 ring-blue-400" : ""}`}
         >
           {/* Sender name for non-user messages */}
           {message.sender._id !== session?.user?.id && (
@@ -248,8 +249,8 @@ function MessageCard({
           <div
             className={`absolute -bottom-2 h-0 w-0 ${
               message.sender._id === session?.user?.id
-                ? "right-0 border-t-[12px] border-l-[12px] border-t-blue-500 border-l-transparent"
-                : "left-0 border-t-[12px] border-r-[12px] border-t-white border-r-transparent"
+                ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent"
+                : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent"
             }`}
           />
         </div>

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export const POST = async (req: Request) => {
   try {
-    const data: { id: string } = await req.json();
+    const data = await req.json();
     const { id } = data;
 
     if (!id) {
@@ -13,7 +13,7 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const response = authService.logoutUser(id);
+    const response = await authService.logoutUser(id);
     return NextResponse.json(
       { message: "Logout successful", response },
       { status: 200 },
@@ -25,4 +25,8 @@ export const POST = async (req: Request) => {
       { status: 500 },
     );
   }
+};
+
+export const GET = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
 };

@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import LogoutModal from "./modals/logout-modal";
 import { useRouter } from "next/navigation";
+import { UserLinkedAccount } from "@/types/user";
 
 export interface Session {
   user: {
@@ -12,7 +13,15 @@ export interface Session {
     image: string;
     name: string;
     email: string;
+    avatar?: string;
     status: "online" | "offline";
+    createdAt: Date;
+    lastActive: Date;
+    isAvailable: boolean;
+    isAnonymous: boolean;
+    linkedAccounts: UserLinkedAccount[];
+    sessionId: string;
+    role: "user" | "admin";
   };
 }
 
@@ -48,7 +57,10 @@ function ChatHeader({ session }: { session: Session }) {
               : session.user.name) || session.user.email}
           </div>
 
-          <LogoutModal userId={session.user.id} />
+          <LogoutModal
+            userId={session.user.id}
+            sessionId={session.user.sessionId}
+          />
         </div>
       )}
     </div>

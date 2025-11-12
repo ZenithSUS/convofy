@@ -32,9 +32,12 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Image from "next/image";
+import useHybridSession from "@/hooks/use-hybrid-session";
+import { useDeleteFile } from "@/hooks/use-delete-file";
+import { extractPublicId } from "cloudinary-build-url";
 
 interface ChatHeaderProps {
-  session: Session;
+  serverSession: Session;
 }
 
 const schema = z.object({
@@ -45,17 +48,19 @@ const schema = z.object({
   description: z
     .string()
     .min(1, "Description is required.")
-    .max(200, "Description must be 200 characters or less"),
+    .max(500, "Description must be 500 characters or less"),
   image: z.any(),
 });
 
 type CreateRoomForm = z.infer<typeof schema>;
 
-function CreateRoomClient({ session }: ChatHeaderProps) {
+function CreateRoomClient({ serverSession }: ChatHeaderProps) {
   const router = useRouter();
+  const { session } = useHybridSession(serverSession);
   const [isSubmitting, startTransition] = useTransition();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const { uploadImage, isUploading } = useUploadImage();
+  const { deleteFile } = useDeleteFile();
   const { mutateAsync: createRoom } = useCreateRoom();
 
   const form = useForm<CreateRoomForm>({
@@ -87,6 +92,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
     async (data: CreateRoomForm) => {
       try {
         let avatarUrl: string | undefined;
+        let publicId: string | undefined;
 
         if (data.image) {
           avatarUrl = await uploadImage(data.image![0]);
@@ -95,6 +101,8 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
             toast.error("Failed to upload image");
             return;
           }
+
+          publicId = extractPublicId(avatarUrl);
         }
 
         const roomData: CreateRoom = {
@@ -103,7 +111,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
           image: avatarUrl,
           members: [session.user.id],
           isPrivate: false,
-          createdBy: session.user.id,
+          owner: session.user.id,
           createdAt: new Date(),
         };
 
@@ -117,7 +125,8 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
             }
           } catch (error) {
             toast.error("Failed to create room");
-            throw error;
+            if (avatarUrl && publicId) await deleteFile(publicId);
+            console.error("Failed to create room:", error);
           }
         });
       } catch (error) {
@@ -125,14 +134,21 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
         toast.error("Failed to create room");
       }
     },
-    [createRoom, router, session.user.id, startTransition, uploadImage],
+    [
+      createRoom,
+      router,
+      session.user.id,
+      startTransition,
+      uploadImage,
+      deleteFile,
+    ],
   );
 
   const nameLength = form.watch("name")?.length || 0;
   const descriptionLength = form.watch("description")?.length || 0;
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
       {/* Header */}
       <div className="border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-xl">
         <div className="p-4">
@@ -156,7 +172,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
           <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl">
             {/* Header Section */}
             <div className="mb-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
                 <MessageSquarePlus className="h-8 w-8 text-white" />
               </div>
               <h2 className="mb-2 text-3xl font-bold text-gray-900">
@@ -174,7 +190,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
                 onSubmit={form.handleSubmit(onSubmit)}
               >
                 {/* Room Image Upload */}
-                <div className="rounded-xl border border-blue-100 bg-gradient-to-br from-blue-50 to-purple-50 p-6">
+                <div className="rounded-xl border border-blue-100 bg-linear-to-br from-blue-50 to-purple-50 p-6">
                   <FormField
                     control={form.control}
                     name="image"
@@ -203,7 +219,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-gradient-to-br from-gray-100 to-gray-200 shadow-lg">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-white bg-linear-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28">
                               <Users className="h-12 w-12 text-gray-400" />
                             </div>
                           )}
@@ -276,15 +292,15 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
                           Description
                         </span>
                         <span
-                          className={`text-xs ${descriptionLength > 180 ? "text-orange-600" : "text-gray-500"}`}
+                          className={`text-xs ${descriptionLength > 450 ? "text-orange-600" : "text-gray-500"}`}
                         >
-                          {descriptionLength}/200
+                          {descriptionLength}/500
                         </span>
                       </FormLabel>
                       <Textarea
                         placeholder="Describe the purpose of this room..."
                         className="min-h-[100px] resize-none rounded-xl border-2 border-gray-200 transition-colors focus:border-blue-500"
-                        maxLength={200}
+                        maxLength={500}
                         {...field}
                       />
                       <FormMessage className="text-xs" />
@@ -294,7 +310,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
 
                 {/* Info Box */}
                 <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
                   <div className="flex-1">
                     <p className="text-sm text-gray-700">
                       <span className="font-semibold">Room Settings:</span> Your
@@ -309,7 +325,7 @@ function CreateRoomClient({ session }: ChatHeaderProps) {
                 <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                   <Button
                     variant="default"
-                    className="h-12 flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-12 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
                     type="submit"
                     disabled={
                       isUploading || form.formState.isSubmitting || isSubmitting

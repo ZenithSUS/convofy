@@ -1,22 +1,24 @@
-"use client";
-
-import data from "@emoji-mart/data";
-import Picker from "@emoji-mart/react";
 import { memo } from "react";
+import dynamic from "next/dynamic";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Theme } from "emoji-picker-react";
 
-interface EmojiPickerProps {
+const Picker = dynamic(() => import("emoji-picker-react"), { ssr: false });
+
+interface EmojiPickerV2Props {
   onEmojiAppend: (emoji: string) => void;
 }
 
-export function EmojiPicker({ onEmojiAppend }: EmojiPickerProps) {
+export function EmojiPicker({ onEmojiAppend }: EmojiPickerV2Props) {
+  const isMobile = useIsMobile();
+
   return (
-    <div className="absolute -right-20 bottom-0 w-[300px] overflow-scroll md:-right-22 md:w-[400px] md:max-w-[400px]">
+    <div className="mr-2">
       <Picker
-        theme="dark"
-        data={data}
-        onEmojiSelect={(emoji: { native: string }) =>
-          onEmojiAppend(emoji.native)
-        }
+        height={isMobile ? 300 : 400}
+        width={isMobile ? 300 : 400}
+        onEmojiClick={({ emoji }) => onEmojiAppend(emoji)}
+        theme={Theme.AUTO}
       />
     </div>
   );

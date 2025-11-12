@@ -1,7 +1,7 @@
 "use client";
 
-import { Session } from "next-auth";
-import AnonymousRoomHeader from "../components/anon-room-header";
+import AnonymousRoomHeader from "@/app/(views)/chat/anonymous/components/anon-room-header";
+import { Session } from "@/app/(views)/chat/components/chat-header";
 
 function AnonymousPageClient({ session }: { session: Session }) {
   if (!session) return null;

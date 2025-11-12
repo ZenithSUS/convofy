@@ -4,11 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ProfileLogoutModal from "@/app/(views)/chat/profile/components/modals/profile-logout-modal";
 
-function ProfileHeader({ userId }: { userId: string }) {
+interface ProfileHeaderProps {
+  userId: string;
+  sessionId: string;
+}
+
+function ProfileHeader({ userId, sessionId }: ProfileHeaderProps) {
   const router = useRouter();
 
   return (
-    <div className="relative h-40 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600">
+    <div className="relative h-40 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600">
       <div className="absolute inset-0 bg-black/10"></div>
 
       {/* Back Button - Positioned in header */}
@@ -26,7 +31,7 @@ function ProfileHeader({ userId }: { userId: string }) {
 
       {/* Logout Button - Positioned in header */}
       <div className="absolute top-6 right-6 z-10">
-        <ProfileLogoutModal userId={userId} />
+        <ProfileLogoutModal userId={userId} sessionId={sessionId} />
       </div>
     </div>
   );

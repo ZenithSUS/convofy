@@ -35,7 +35,6 @@ export const pusherClient = getPusherClient()!;
 // Force reconnect function
 export const reconnectPusher = () => {
   if (pusherInstance) {
-    console.log("🔵 Force reconnecting Pusher");
     pusherInstance.disconnect();
     pusherInstance.connect();
   }

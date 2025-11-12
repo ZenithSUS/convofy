@@ -9,12 +9,14 @@ interface MediaPreviewProps {
   selectedFiles: FileInfo[];
   setSelectedFiles: (files: FileInfo[]) => void;
   handleRemoveFile: (index: number) => void;
+  isUploading: boolean;
 }
 
 function MediaPreview({
   selectedFiles,
   setSelectedFiles,
   handleRemoveFile,
+  isUploading,
 }: MediaPreviewProps) {
   return (
     <div className="border-b bg-gray-50 p-4">
@@ -26,6 +28,7 @@ function MediaPreview({
           variant="ghost"
           size="sm"
           onClick={() => setSelectedFiles([])}
+          disabled={isUploading}
           className="text-red-600 hover:bg-red-50 hover:text-red-700"
         >
           Clear All
@@ -50,25 +53,30 @@ function MediaPreview({
                 />
                 <button
                   className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                  disabled={isUploading}
                   onClick={() => handleRemoveFile(index)}
                 >
                   <span className="text-xs font-bold">✕</span>
                 </button>
               </div>
             );
-          } else if (file.type.startsWith("application")) {
+          } else if (
+            file.type.startsWith("application") ||
+            file.type.startsWith("text")
+          ) {
             return (
               <div
                 key={file.id}
                 className="group relative rounded-lg border-2 border-dashed border-gray-300 bg-white transition-all hover:border-blue-400"
               >
                 <div className="flex h-24 items-center gap-2 p-3">
-                  <FileIcon className="h-6 w-6 flex-shrink-0 text-gray-500" />
+                  <FileIcon className="h-6 w-6 shrink-0 text-gray-500" />
                   <span className="flex-1 truncate text-xs">{file.name}</span>
                 </div>
                 <button
                   className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
                   onClick={() => handleRemoveFile(index)}
+                  disabled={isUploading}
                 >
                   <span className="text-xs font-bold">✕</span>
                 </button>

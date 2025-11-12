@@ -15,7 +15,7 @@ export type Room = {
     createdAt: Date;
   };
   isPrivate: boolean;
-  createdBy: string;
+  owner: string;
   createdAt: Date;
 };
 
@@ -23,6 +23,7 @@ export type RoomMembers = {
   _id: string;
   name: string;
   avatar: string;
+  isAvailable: boolean;
 };
 
 export type RoomContent = Omit<Room, "members"> & {

@@ -3,6 +3,7 @@ import cloudinary from "@/lib/cloudinary";
 import getUserRelatedFolders from "@/helper/get-related-folders";
 import roomService from "@/services/mongodb/room.service";
 import { getUserToken } from "@/lib/utils";
+import { UploadApiErrorResponse } from "cloudinary";
 
 export const DELETE = async (
   req: NextRequest,
@@ -73,15 +74,27 @@ export const DELETE = async (
         } while (nextCursor);
       }
 
-      // Try deleting the folder after all resource types are gone
-      try {
-        await cloudinary.api.delete_folder(folder);
-        console.log("Deleted folder:", folder);
-      } catch {
-        console.log(
-          "Folder cannot be deleted yet (maybe nested folders or leftovers):",
-          folder,
-        );
+      const remaining = await cloudinary.api.resources({
+        prefix: folder,
+        type: "upload",
+        max_results: 1,
+      });
+
+      if (remaining.resources.length === 0) {
+        // Try deleting the folder after all resource types are gone
+        try {
+          await cloudinary.api.delete_folder(folder);
+          console.log("Deleted folder:", folder);
+        } catch (err: unknown) {
+          const cloudinaryError = err as UploadApiErrorResponse;
+          console.warn(
+            "Could not delete folder:",
+            folder,
+            cloudinaryError.message,
+          );
+        }
+      } else {
+        console.warn(" Folder not empty, skipping delete:", folder);
       }
     }
 

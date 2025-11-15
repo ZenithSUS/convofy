@@ -196,11 +196,11 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                     name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-700">
+                        <FormLabel className="mb-3 flex items-center justify-center gap-2 truncate text-sm font-semibold text-gray-700 md:justify-start">
                           <ImageIcon size={18} />
                           Room Image (Optional)
                         </FormLabel>
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center gap-4 md:flex-row">
                           {imagePreview ? (
                             <div className="group relative">
                               <Image
@@ -219,7 +219,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border-4 border-white bg-linear-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28">
+                            <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-linear-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28">
                               <Users className="h-12 w-12 text-gray-400" />
                             </div>
                           )}
@@ -241,7 +241,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                                 handleImageChange(e);
                               }}
                             />
-                            <p className="mt-2 text-xs text-gray-600">
+                            <p className="mt-2 text-center text-xs text-gray-600 md:text-start">
                               PNG, JPG up to 5MB
                             </p>
                           </div>

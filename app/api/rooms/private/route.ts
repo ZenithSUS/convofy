@@ -29,9 +29,24 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
+    // Prevent users from creating room with themselves
+    if (userA === userB) {
+      return NextResponse.json(
+        { error: "Cannot create a room with yourself." },
+        { status: 400 },
+      );
+    }
+
     const response = await roomService.getOrCreatePrivateRoom(userA, userB);
 
-    return NextResponse.json(response, { status: 200 });
+    // Return the response with status information
+    return NextResponse.json(
+      {
+        success: true,
+        ...response,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error("Error creating private room:", error);
     return NextResponse.json(

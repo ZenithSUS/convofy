@@ -183,6 +183,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
                         key={item._id}
                         room={item}
                         currentUserId={session.user.id}
+                        isSearchMode={isSearchMode}
                       />
                     )}
                   </div>
@@ -198,10 +199,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             </div>
           ) : isFetching ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loading />
-              <p className="mt-4 text-sm text-gray-500">
-                Loading your chats...
-              </p>
+              <Loading text="Loading your chats..." />
             </div>
           ) : !isAvailable ? (
             <div className="flex flex-col items-center justify-center py-30">
@@ -243,7 +241,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
 
       {/* Floating Action Button */}
       {isAvailable ? (
-        <div className="sticky bottom-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4">
+        <div className="fixed bottom-0 w-full border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4">
           <Button
             className="group h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
             onClick={() => router.replace("/chat/create")}

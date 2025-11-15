@@ -10,9 +10,10 @@ import timeFormat from "@/helper/time-format";
 interface RoomCardProps {
   room: RoomContent;
   currentUserId: string;
+  isSearchMode?: boolean;
 }
 
-const RoomCard = ({ room, currentUserId }: RoomCardProps) => {
+const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
   const router = useRouter();
 
   const handleOpenRoom = () => {
@@ -43,7 +44,7 @@ const RoomCard = ({ room, currentUserId }: RoomCardProps) => {
     >
       <div className="flex min-w-0 flex-1 items-start gap-4">
         {/* Avatar / Room Image */}
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           <Image
             src={displayImage}
             alt={displayName}
@@ -60,12 +61,12 @@ const RoomCard = ({ room, currentUserId }: RoomCardProps) => {
           </h2>
 
           {room.description && !isPrivate && (
-            <p className="line-clamp-2 text-sm break-words text-gray-600">
+            <p className="line-clamp-2 text-sm wrap-break-word text-gray-600">
               {room.description}
             </p>
           )}
 
-          {room.lastMessage && (
+          {!isSearchMode && room.lastMessage && (
             <p className="truncate text-sm text-gray-500">
               <span className="font-medium text-gray-900">
                 {timeFormat(new Date(room.lastMessage.createdAt))} -
@@ -91,11 +92,11 @@ const RoomCard = ({ room, currentUserId }: RoomCardProps) => {
                 </span>
               </div>
 
-              <div className="flex w-full flex-1 flex-shrink-0 flex-row gap-1">
+              <div className="flex w-full flex-1 shrink-0 flex-row gap-1">
                 {Array.from(room.members)
                   .slice(0, 3)
                   .map((member) => (
-                    <div key={member._id} className="flex-shrink-0">
+                    <div key={member._id} className="shrink-0">
                       <Image
                         src={member.avatar || "/default-avatar.png"}
                         alt={member.name}
@@ -106,7 +107,7 @@ const RoomCard = ({ room, currentUserId }: RoomCardProps) => {
                     </div>
                   ))}
                 {room.members.length > 3 && (
-                  <div className="flex flex-shrink-0 items-center">
+                  <div className="flex shrink-0 items-center">
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
                       +{room.members.length - 3}
                     </span>

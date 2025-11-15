@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
+import Link from "next/link";
 
 const schema = z.object({
   email: z
@@ -219,12 +220,12 @@ function LoginPage() {
               </label>
             </div>
 
-            <a
-              href="#"
+            <Link
+              href="/auth/forgot"
               className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           {/* Sign In Button */}
@@ -346,22 +347,7 @@ function LoginPage() {
                 Sign up for free
               </button>
             </div>
-
-            <div>
-              <span className="text-sm text-gray-600">
-                Forgot your password?{" "}
-              </span>
-              <button
-                type="button"
-                onClick={() => router.push("/auth/forgot")}
-                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
-              >
-                Reset password
-              </button>
-            </div>
           </div>
-
-          {/* Forgot */}
         </form>
       </Form>
     </div>

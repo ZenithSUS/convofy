@@ -11,7 +11,7 @@ function Hero() {
   };
 
   return (
-    <section className="relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-gradient-to-br from-white via-blue-50 to-purple-50 px-6 md:grid-cols-2 md:px-16 lg:px-24">
+    <section className="relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-linear-to-br from-white via-blue-50 to-purple-50 px-6 md:grid-cols-2 md:px-16 lg:px-24">
       {/* Animated background elements */}
       <div className="absolute top-20 left-10 h-72 w-72 animate-pulse rounded-full bg-blue-400/20 blur-3xl"></div>
       <div
@@ -26,7 +26,7 @@ function Hero() {
           Welcome to the Future of Messaging
         </div>
 
-        <h1 className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-6xl leading-tight font-extrabold text-transparent md:text-7xl">
+        <h1 className="bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-6xl leading-tight font-extrabold text-transparent md:text-7xl">
           Real Time Chat App
         </h1>
 
@@ -42,7 +42,7 @@ function Hero() {
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <Button
             size="lg"
-            className="group rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl"
+            className="group rounded-xl bg-linear-to-r from-blue-600 to-purple-600 px-8 py-6 text-lg font-bold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-2xl"
             onClick={handleGetStarted}
           >
             Get Started Free
@@ -83,9 +83,9 @@ function Hero() {
       {/* Hero Image */}
       <div className="animate-in fade-in slide-in-from-right relative z-10 flex items-center justify-center duration-1000">
         <div className="relative">
-          <div className="absolute inset-0 animate-pulse rounded-3xl bg-gradient-to-r from-blue-500 to-purple-500 opacity-30 blur-2xl"></div>
+          <div className="absolute inset-0 animate-pulse rounded-3xl bg-linear-to-r from-blue-500 to-purple-500 opacity-30 blur-2xl"></div>
           <Image
-            src="/convofy.png"
+            src="/hero.png"
             alt="Chat Interface"
             width={500}
             height={400}

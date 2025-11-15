@@ -413,6 +413,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
                   isDetailsVisible={
                     currentEditId === msg._id && actionType === "view"
                   }
+                  isPrivate={roomData?.isPrivate || false}
                   actionType={actionType}
                   setActionType={setActionType}
                   setIsDetailsVisible={setIsDetailsVisible}

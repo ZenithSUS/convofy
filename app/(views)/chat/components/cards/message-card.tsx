@@ -23,6 +23,7 @@ interface Props {
   isThisEditing: boolean;
   isAnyEditing: boolean;
   isDetailsVisible: boolean;
+  isPrivate: boolean;
   setIsDetailsVisible: (value: boolean) => void;
   onEditComplete: () => void;
   onCancelEdit: () => void;
@@ -37,6 +38,7 @@ function MessageCard({
   isThisEditing,
   isAnyEditing,
   isDetailsVisible,
+  isPrivate,
   onEditComplete,
   onCancelEdit,
   setCurrentEditId,
@@ -228,7 +230,7 @@ function MessageCard({
           } ${isEditingMessage ? "ring-2 ring-blue-400" : ""}`}
         >
           {/* Sender name for non-user messages */}
-          {message.sender._id !== session?.user?.id && (
+          {message.sender._id !== session?.user?.id && !isPrivate && (
             <div className="mb-1 text-xs font-semibold text-gray-600">
               {message.sender.name}
             </div>

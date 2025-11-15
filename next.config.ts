@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "i.pravatar.cc",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   allowedDevOrigins: ["http://localhost:3000", "http://192.168.*.*"],

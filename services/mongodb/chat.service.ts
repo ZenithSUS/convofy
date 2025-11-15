@@ -4,6 +4,7 @@ import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { Message as IMessage } from "@/types/message";
 import { RoomMembers } from "@/types/room";
+import roomService from "./room.service";
 
 export const chatService = {
   /**
@@ -64,7 +65,7 @@ export const chatService = {
           image: room.isPrivate ? undefined : room.image,
         };
 
-        const pusherPromises = (room.members as unknown as RoomMembers[]).map(
+        const roomPromises = (room.members as unknown as RoomMembers[]).map(
           (member) => {
             const memberId = member._id.toString();
 
@@ -76,7 +77,22 @@ export const chatService = {
           },
         );
 
-        await Promise.all(pusherPromises);
+        await Promise.all(roomPromises);
+      }
+
+      // Update the invited user last message
+      if (room?.isPrivate && room?.invitedUser && room?.isPending) {
+        const invitedUserId = room.invitedUser.toString();
+
+        const invitedRoom = await roomService.getSinglePendingInvite(
+          room._id.toString(),
+        );
+
+        await pusherServer.trigger(
+          `user-${invitedUserId}`,
+          "room-invite-last-message-updated",
+          invitedRoom,
+        );
       }
 
       // Return the populated message
@@ -154,6 +170,21 @@ export const chatService = {
 
       await Promise.all(pusherPromises);
 
+      // Update the invited user last message
+      if (room?.isPrivate && room?.invitedUser && room?.isPending) {
+        const invitedUserId = room.invitedUser.toString();
+
+        const invitedRoom = await roomService.getSinglePendingInvite(
+          room._id.toString(),
+        );
+
+        await pusherServer.trigger(
+          `user-${invitedUserId}`,
+          "room-invite-last-message-updated",
+          invitedRoom,
+        );
+      }
+
       return newEditedMessage;
     } catch (error) {
       throw error;
@@ -228,6 +259,21 @@ export const chatService = {
 
       // Update at the same time
       await Promise.all(pusherPromises);
+
+      // Update the invited user last message
+      if (room?.isPrivate && room?.invitedUser && room?.isPending) {
+        const invitedUserId = room.invitedUser.toString();
+
+        const invitedRoom = await roomService.getSinglePendingInvite(
+          room._id.toString(),
+        );
+
+        await pusherServer.trigger(
+          `user-${invitedUserId}`,
+          "room-invite-last-message-updated",
+          invitedRoom,
+        );
+      }
 
       return message;
     } catch (error) {

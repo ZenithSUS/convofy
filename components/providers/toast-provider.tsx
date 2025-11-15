@@ -6,8 +6,15 @@ import "react-toastify/dist/ReactToastify.css";
 const TOAST_ID = "latest-toast";
 
 export const Toast = {
-  show: (message: string, type: TypeOptions = "default") => {
-    toast(message, { toastId: TOAST_ID, type });
+  show(message: string, type: TypeOptions = "default") {
+    if (toast.isActive(TOAST_ID)) {
+      toast.dismiss(TOAST_ID);
+    }
+    return toast(message, {
+      toastId: TOAST_ID,
+      type,
+      autoClose: 3000,
+    });
   },
   success: (message: string) => Toast.show(message, "success"),
   error: (message: string) => Toast.show(message, "error"),

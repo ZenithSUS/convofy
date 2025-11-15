@@ -89,7 +89,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
             render={({ field }) => (
               <Textarea
                 placeholder="Edit your message..."
-                className="max-h-[200px] min-h-[80px] w-full resize-none rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 text-sm text-black transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 dark:text-white"
+                className="max-h-[200px] min-h-20 w-full resize-none rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 text-sm text-black transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 dark:text-white"
                 maxLength={1000}
                 disabled={isSubmitting}
                 onKeyDown={onKeyDown}
@@ -103,7 +103,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
             <Button
               type="submit"
               size="sm"
-              className="flex-1 rounded-lg bg-gradient-to-r from-green-500 to-green-600 font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-linear-to-r from-green-500 to-green-600 font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
               disabled={!isMessageChanged || isSubmitting}
             >
               {isSubmitting ? (

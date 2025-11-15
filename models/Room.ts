@@ -6,6 +6,10 @@ export interface IRoom {
   name?: string;
   description?: string;
   isPrivate: boolean;
+  isAccepted?: boolean;
+  isPending?: boolean;
+  invitedBy?: Types.ObjectId;
+  invitedUser?: Types.ObjectId;
   image?: string;
   members: Types.ObjectId[];
   lastMessage: Types.ObjectId;
@@ -18,6 +22,10 @@ const RoomSchema = new Schema<IRoom>(
     name: { type: String, required: false },
     description: { type: String },
     isPrivate: { type: Boolean, default: false },
+    isAccepted: { type: Boolean, default: false },
+    isPending: { type: Boolean, default: false },
+    invitedBy: { type: Schema.Types.ObjectId, ref: "User" },
+    invitedUser: { type: Schema.Types.ObjectId, ref: "User" },
     members: [{ type: Schema.Types.ObjectId, ref: "User", required: true }],
     image: { type: String },
     lastMessage: { type: Schema.Types.ObjectId, ref: "Message" },
@@ -30,8 +38,10 @@ const RoomSchema = new Schema<IRoom>(
 // Text index for search
 RoomSchema.index({ name: "text", description: "text" });
 
+// Index for finding pending invitations
+RoomSchema.index({ invitedUser: 1, isPending: 1 });
+
 // Create a unique sparse index on the sorted members array for private rooms only
-// This prevents duplicate private rooms with the same members
 RoomSchema.index(
   { members: 1 },
   {
@@ -46,10 +56,15 @@ RoomSchema.index(
 
 // Sort members to ensure consistent ordering
 RoomSchema.pre("save", function (next) {
-  // Sort members to ensure consistent ordering
   if (this.members && this.members.length > 0) {
     this.members = [...this.members].sort();
   }
+
+  // Set isPending to true for new private rooms
+  if (this.isNew && this.isPrivate && !this.isAccepted) {
+    this.isPending = true;
+  }
+
   next();
 });
 

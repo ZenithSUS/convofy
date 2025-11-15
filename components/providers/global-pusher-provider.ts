@@ -5,7 +5,7 @@ import getHomePusherConnectionState from "@/helper/pusher/home-connection-state"
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import useConnectionStatus from "@/store/connection-status-store";
-import { RoomContent } from "@/types/room";
+import { RoomContent, RoomRequest } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useRef } from "react";
@@ -120,6 +120,53 @@ function GlobalPusherProvider() {
         (oldRooms) => {
           if (!oldRooms) return oldRooms;
           return oldRooms.filter((room) => room._id !== roomId);
+        },
+      );
+    });
+
+    // Handle room invites updates
+    channel.bind("room-invite-received", (data: RoomRequest) => {
+      queryClient.setQueriesData<RoomRequest[]>(
+        {
+          queryKey: ["roomInvites", session.user.id],
+        },
+        (oldInvites) => {
+          if (!oldInvites) return oldInvites;
+          return [...oldInvites, data];
+        },
+      );
+    });
+
+    // Handle room last message invites updates
+    channel.bind("room-invite-last-message-updated", (data: RoomRequest) => {
+      queryClient.setQueriesData<RoomRequest[]>(
+        {
+          queryKey: ["roomInvites", session.user.id],
+          exact: false,
+        },
+        (oldInvites) => {
+          if (!oldInvites) return oldInvites;
+
+          const idx = oldInvites.findIndex((invite) => invite._id === data._id);
+          if (idx === -1) return oldInvites;
+
+          const newInvites = [...oldInvites];
+          newInvites[idx] = { ...newInvites[idx], ...data };
+          return newInvites;
+        },
+      );
+    });
+
+    // Handle room accept updates
+    channel.bind("room-accepted", (data: RoomContent) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+          return [...oldRooms, data];
         },
       );
     });

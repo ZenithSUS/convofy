@@ -19,15 +19,6 @@ export const GET = async (
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    const isMember = room.members.some((m) => m._id.toString() === token.sub);
-
-    if (!isMember) {
-      return NextResponse.json(
-        { error: "Access denied: you are not part of this room" },
-        { status: 403 },
-      );
-    }
-
     return NextResponse.json(room, { status: 200 });
   } catch (error) {
     console.error("Error fetching room:", error);

@@ -10,7 +10,6 @@ import {
   useGetRoomInvites,
 } from "@/hooks/use-room-invite";
 import { useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import Loading from "@/components/ui/loading";
 import RequestCard from "@/app/(views)/chat/components/cards/request-card";
 import { Toast } from "@/components/providers/toast-provider";
@@ -22,7 +21,6 @@ interface RequestListClientProps {
 }
 
 function RequestListClient({ serverSession }: RequestListClientProps) {
-  const router = useRouter();
   const { session } = useHybridSession(serverSession);
   const { status: connectionStatus } = useConnectionStatus();
   const {
@@ -90,29 +88,8 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
           )}
 
           <div className="px-4 py-3">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => router.push("/chat")}
-                className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-gray-100"
-                aria-label="Back to chats"
-              >
-                <svg
-                  className="h-5 w-5 text-gray-700"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-              </button>
-              <div className="flex-1">
-                <ChatHeader session={session} />
-              </div>
+            <div className="flex-1">
+              <ChatHeader session={session} />
             </div>
           </div>
         </div>

@@ -32,7 +32,7 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100">
       {/* Header Background */}
       <ProfileHeader
         userId={session.user.id}
@@ -78,7 +78,7 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
             >
               <div className="flex items-center gap-4 p-4">
                 <div
-                  className={`h-12 w-12 flex-shrink-0 rounded-xl bg-gradient-to-br ${setting.color} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                  className={`h-12 w-12 shrink-0 rounded-xl bg-linear-to-br ${setting.color} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
                 >
                   {setting.icon}
                 </div>

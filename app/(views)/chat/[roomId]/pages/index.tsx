@@ -47,6 +47,7 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
 import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
 import getFileDirectory from "@/helper/file-directories";
+import RoomRequest from "../components/room-request";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -165,6 +166,16 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const isUnavailable = useMemo(() => {
     return !session.user.isAvailable;
   }, [session.user.isAvailable]);
+
+  const isPendingPrivateRoom = useMemo(() => {
+    if (!roomData) return false;
+
+    return (
+      roomData.isPending &&
+      roomData.isPrivate &&
+      roomData.invitedUser === session.user.id
+    );
+  }, [roomData, session.user.id]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -436,7 +447,10 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       </div>
 
       {/* Input Area */}
-      {isMember && !isOtherPersonUnavailable && !isUnavailable ? (
+      {isMember &&
+      !isOtherPersonUnavailable &&
+      !isUnavailable &&
+      !isPendingPrivateRoom ? (
         <div className="border-t bg-white shadow-lg">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (
@@ -462,6 +476,8 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         </div>
       ) : isMember && (isOtherPersonUnavailable || isUnavailable) ? (
         <PersonUnavailable isYouUnavailable={isUnavailable} />
+      ) : isPendingPrivateRoom ? (
+        <RoomRequest userId={session?.user?.id as string} roomId={roomId} />
       ) : (
         <NotJoinedModal
           roomId={roomId as string}

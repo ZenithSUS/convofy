@@ -1,8 +1,7 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 import ProfileLogoutModal from "@/app/(views)/chat/profile/components/modals/profile-logout-modal";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 interface ProfileHeaderProps {
   userId: string;
@@ -10,27 +9,22 @@ interface ProfileHeaderProps {
 }
 
 function ProfileHeader({ userId, sessionId }: ProfileHeaderProps) {
-  const router = useRouter();
-
   return (
-    <div className="relative h-40 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600">
+    <div className="relative h-40 overflow-hidden bg-linear-to-r from-blue-600 via-purple-600 to-pink-600">
+      {/* Animated background overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
       <div className="absolute inset-0 bg-black/10"></div>
 
-      {/* Back Button - Positioned in header */}
-      <div className="absolute top-6 left-6 z-10">
-        <button
-          onClick={() => router.back()}
-          className="group flex items-center gap-2 rounded-xl bg-white/90 px-4 py-2.5 shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-white hover:shadow-xl"
-        >
-          <ArrowLeft className="h-5 w-5 text-gray-700 transition-colors duration-300 group-hover:-translate-x-1 group-hover:text-blue-600" />
-          <span className="font-semibold text-gray-700 transition-colors group-hover:text-blue-600">
-            Back
-          </span>
-        </button>
-      </div>
+      {/* Decorative circles */}
+      <div className="absolute -top-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+      <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
 
-      {/* Logout Button - Positioned in header */}
-      <div className="absolute top-6 right-6 z-10">
+      {/* Header Content */}
+      <div className="relative z-10 flex h-full items-start justify-between p-6">
+        {/* Sidebar Trigger - Blended with header */}
+        <SidebarTrigger className="flex items-center gap-2" />
+
+        {/* Logout Button - Positioned in header */}
         <ProfileLogoutModal userId={userId} sessionId={sessionId} />
       </div>
     </div>

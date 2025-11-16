@@ -68,9 +68,10 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
 
           {!isSearchMode && room.lastMessage && (
             <p className="truncate text-sm text-gray-500">
-              <span className="font-medium text-gray-900">
-                {timeFormat(new Date(room.lastMessage.createdAt))} -
-              </span>{" "}
+              <span className="font-medium text-gray-700">
+                {timeFormat(new Date(room.lastMessage.createdAt))}
+              </span>
+              {" - "}
               {room.lastMessage.type === "text"
                 ? room.lastMessage.content
                 : room.lastMessage.type === "file"

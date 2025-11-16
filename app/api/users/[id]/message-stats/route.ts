@@ -50,7 +50,7 @@ export const GET = async (
       );
     }
 
-    const cached = UserMessageCacheStats.get(id);
+    const cached = await UserMessageCacheStats.get(id);
 
     if (cached) {
       return NextResponse.json(cached, {

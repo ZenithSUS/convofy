@@ -158,11 +158,11 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 md:p-8">
-        <div className="mx-auto max-w-2xl">
+        <div className="mx-auto">
           {/* Back Button */}
           <button
             onClick={() => router.push("/chat")}
-            className="group mb-6 flex items-center gap-2 text-gray-600 transition-colors hover:text-blue-600"
+            className="group mb-6 flex items-center gap-2 text-gray-600 transition-colors hover:text-blue-600 md:hidden"
           >
             <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
             <span className="font-semibold">Back to Chats</span>

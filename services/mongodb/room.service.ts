@@ -243,23 +243,7 @@ export const roomService = {
       .lean();
 
     if (room) {
-      // If room exists and is accepted, return it
-      if (room.isAccepted) {
-        return {
-          room,
-          status: "accepted",
-          message: "Room already exists",
-        };
-      }
-
-      // If room exists but is pending
-      if (room.isPending) {
-        return {
-          room,
-          status: "pending",
-          message: "Invitation already sent and pending acceptance",
-        };
-      }
+      return room;
     }
 
     // Create a new private room with pending status

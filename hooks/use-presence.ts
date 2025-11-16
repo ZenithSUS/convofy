@@ -3,7 +3,7 @@
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import { pusherClient } from "@/lib/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
@@ -12,8 +12,12 @@ import useHybridSession from "./use-hybrid-session";
 
 const useUserConnectionStatus = (serverSession: Session) => {
   const isMountedRef = useRef(false);
+  const lastStatusRef = useRef<string | null>(null);
+  const statusUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { session } = useHybridSession(serverSession);
+  const userId = session?.user?.id;
+
   const { status: connectionStatus, setStatus: setConnectionStatus } =
     useConnectionStatus();
 
@@ -30,10 +34,41 @@ const useUserConnectionStatus = (serverSession: Session) => {
     [setConnectionStatus],
   );
 
-  useEffect(() => {
-    if (!session) return;
+  // Debounce status updates
+  const updateStatus = useCallback(
+    (status: string) => {
+      if (!userId) return;
 
-    // Pusher connection status handler
+      // Clear any pending timeout
+      if (statusUpdateTimeoutRef.current) {
+        clearTimeout(statusUpdateTimeoutRef.current);
+      }
+
+      // Debounce status updates by 1 second
+      statusUpdateTimeoutRef.current = setTimeout(async () => {
+        if (!isMountedRef.current) return;
+
+        try {
+          await updateUserStatus({
+            userId,
+            status,
+          });
+          lastStatusRef.current = status;
+        } catch (err) {
+          console.error("Error updating user status:", err);
+        }
+      }, 1000);
+    },
+    [userId, updateUserStatus],
+  );
+
+  // Setup Pusher connection listeners
+  useEffect(() => {
+    if (!userId) return;
+
+    isMountedRef.current = true;
+
+    // Bind Pusher connection status handlers
     pusherClient.connection.bind("connected", conHandler.handleConnected);
     pusherClient.connection.bind("disconnected", conHandler.handleDisconnected);
     pusherClient.connection.bind("connecting", conHandler.handleConnecting);
@@ -42,10 +77,14 @@ const useUserConnectionStatus = (serverSession: Session) => {
     pusherClient.connection.bind("state_change", conHandler.handleStateChange);
     pusherClient.connection.bind("error", conHandler.handleError);
 
+    // Set initial connection status
     const initialState = pusherClient.connection.state;
     setConnectionStatus(initialState);
 
     return () => {
+      isMountedRef.current = false;
+
+      // Unbind all handlers
       pusherClient.connection.unbind("error", conHandler.handleError);
       pusherClient.connection.unbind(
         "state_change",
@@ -62,41 +101,39 @@ const useUserConnectionStatus = (serverSession: Session) => {
         "unavailable",
         conHandler.handleUnavailable,
       );
-    };
-  }, [
-    session,
-    conHandler.handleStateChange,
-    conHandler.handleError,
-    conHandler.handleConnecting,
-    conHandler.handleDisconnected,
-    conHandler.handleConnected,
-    conHandler.handleFailed,
-    conHandler.handleUnavailable,
-    setConnectionStatus,
-  ]);
 
-  useEffect(() => {
-    if (!session?.user?.id) return;
-
-    const getUserStatus = async () => {
-      isMountedRef.current = true;
-
-      try {
-        await updateUserStatus({
-          userId: session.user.id,
-          status: connectionStatus !== "connected" ? "offline" : "online",
-        });
-      } catch (err) {
-        console.error("Error updating user status:", err);
+      // Clear any pending timeouts
+      if (statusUpdateTimeoutRef.current) {
+        clearTimeout(statusUpdateTimeoutRef.current);
       }
     };
+  }, [userId, conHandler, setConnectionStatus]);
 
-    getUserStatus();
+  // Update user status when connection status changes
+  useEffect(() => {
+    if (!userId) return;
 
+    const newStatus = connectionStatus === "connected" ? "online" : "offline";
+
+    // Only update if status actually changed
+    if (lastStatusRef.current !== newStatus) {
+      updateStatus(newStatus);
+    }
+  }, [connectionStatus, userId, updateStatus]);
+
+  // Cleanup on unmount - set user offline
+  useEffect(() => {
     return () => {
-      isMountedRef.current = false;
+      if (userId && lastStatusRef.current === "online") {
+        updateUserStatus({
+          userId,
+          status: "offline",
+        }).catch((err) => {
+          console.error("Error updating user status on unmount:", err);
+        });
+      }
     };
-  }, [connectionStatus, session?.user?.id, updateUserStatus]);
+  }, [userId, updateUserStatus]);
 
   return { connectionStatus };
 };

@@ -57,6 +57,7 @@ export const useAcceptRoomInvite = (): UseBaseMutationResult<
       queryClient.setQueryData(
         ["roomInvites", variables.userId],
         (prevInvites: RoomRequest[]) => {
+          if (!prevInvites) return [];
           return prevInvites.filter((prev) => prev._id !== variables.roomId);
         },
       );
@@ -90,6 +91,7 @@ export const useDeclineRoomInvite = (): UseBaseMutationResult<
       queryClient.setQueryData(
         ["roomInvites", variables.userId],
         (prevInvites: RoomRequest[]) => {
+          if (!prevInvites) return [];
           return prevInvites.filter((prev) => prev._id !== variables.roomId);
         },
       );

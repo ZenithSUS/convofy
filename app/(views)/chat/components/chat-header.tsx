@@ -5,11 +5,12 @@ import Image from "next/image";
 import LogoutModal from "./modals/logout-modal";
 import { useRouter } from "next/navigation";
 import { UserLinkedAccount } from "@/types/user";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import NotificationBell from "./notification-request";
 import { useGetRoomInvites } from "@/hooks/use-room-invite";
 import { useMemo } from "react";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export interface Session {
   user: {
@@ -49,12 +50,7 @@ function ChatHeader({ session }: { session: Session }) {
       <div className="flex items-center justify-between gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
         {/* Logo Section */}
         <div className="flex min-w-0 shrink items-center gap-1.5 sm:gap-2">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 sm:h-10 sm:w-10">
-            <MessageSquare className="h-4 w-4 text-white sm:h-5 sm:w-5" />
-          </div>
-          <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl">
-            Convofy
-          </h1>
+          <SidebarTrigger className="flex w-fit cursor-pointer items-center gap-2" />
         </div>
 
         {/* Right Section */}

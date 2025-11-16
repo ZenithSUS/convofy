@@ -121,7 +121,7 @@ function SessionManagement({ session }: { session: Session }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <SessionRemoveWarning
-            description="This will log you out from all devices except the current one."
+            description="This will log you out from all devices."
             handleRemoveSession={handleLogoutAllDevices}
           >
             <Button

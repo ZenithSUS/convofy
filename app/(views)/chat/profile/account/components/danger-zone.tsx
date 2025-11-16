@@ -125,8 +125,8 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
                 </h3>
                 <p className="mt-1 text-xs text-gray-600 sm:text-sm">
                   {session.user.isAvailable
-                    ? "Temporarily disable your account. You can reactivate it anytime by logging in."
-                    : "Re-enable your account. You can deactivate it anytime by logging in."}
+                    ? "Temporarily disable your account. You can reactivate it anytime."
+                    : "Re-enable your account. You can deactivate it anytime."}
                 </p>
               </div>
             </div>
@@ -157,8 +157,8 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
                 </DialogTitle>
                 <DialogDescription className="text-xs sm:text-sm">
                   {session.user.isAvailable
-                    ? "Your account will be temporarily disabled. You can reactivat it by logging in again."
-                    : "Your account will be re-enabled. You can deactivate it by logging in again."}
+                    ? "Your account will be temporarily disabled. You can reactivate it again."
+                    : "Your account will be re-enabled. You can deactivate it again."}
                 </DialogDescription>
               </DialogHeader>
 

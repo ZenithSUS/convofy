@@ -8,6 +8,7 @@ import {
   Sparkles,
   TrendingUp,
   LockIcon,
+  RefreshCw,
 } from "lucide-react";
 import { AxiosError } from "axios/";
 
@@ -23,6 +24,7 @@ import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
+import { Toast } from "@/components/providers/toast-provider";
 
 // Hooks
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
@@ -41,6 +43,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
   const { session } = useHybridSession(serverSession);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { status: connectionStatus } = useConnectionStatus();
 
   const isSearchMode = useMemo<boolean>(() => {
@@ -83,6 +86,21 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
     setSearchQuery(query);
   }, []);
 
+  const handleRefresh = useCallback(async () => {
+    if (isRefreshing || isFetching) return;
+
+    setIsRefreshing(true);
+    try {
+      await refetch();
+      Toast.success("Chats refreshed successfully");
+    } catch (error) {
+      Toast.error("Failed to refresh chats");
+      console.error("Refresh error:", error);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
+  }, [isRefreshing, isFetching, refetch]);
+
   useEffect(() => {
     const delay = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -92,7 +110,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
   }, [searchQuery]);
 
   return (
-    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
+    <div className="relative flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
       <div className="flex-1 overflow-y-auto">
         <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-md">
           {/* Connection Status */}
@@ -105,22 +123,43 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             <ChatHeader session={session} />
           </div>
 
-          {/* Search Bar */}
+          {/* Search Bar with Refresh Button */}
           {isAvailable && (
             <div className="px-4 pb-4">
-              <div className="relative">
-                <SearchBar
-                  className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
-                  onSearch={handleSearch}
-                />
-                {searchQuery && (
-                  <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                    <Sparkles
-                      size={16}
-                      className="animate-pulse text-blue-500"
-                    />
-                  </div>
-                )}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <SearchBar
+                    className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
+                    onSearch={handleSearch}
+                  />
+                  {searchQuery && (
+                    <div className="absolute top-1/2 right-3 -translate-y-1/2">
+                      <Sparkles
+                        size={16}
+                        className="animate-pulse text-blue-500"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* Refresh Button */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleRefresh}
+                  disabled={isRefreshing || isFetching}
+                  className="h-10 w-10 shrink-0 rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50"
+                  aria-label="Refresh chats"
+                >
+                  <RefreshCw
+                    size={18}
+                    className={`text-gray-600 transition-all duration-500 ${
+                      isRefreshing || isFetching
+                        ? "animate-spin text-blue-600"
+                        : ""
+                    }`}
+                  />
+                </Button>
               </div>
             </div>
           )}
@@ -150,7 +189,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
         </div>
 
         {/* List of chat rooms */}
-        <div className="space-y-3 p-4">
+        <div className="space-y-3 p-4 pb-24 md:pb-4">
           {isAvailable && roomsList.length > 0 ? (
             <>
               {!isSearchMode && (
@@ -241,7 +280,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
 
       {/* Floating Action Button */}
       {isAvailable ? (
-        <div className="fixed bottom-0 w-full border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4">
+        <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4 md:hidden">
           <Button
             className="group h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
             onClick={() => router.replace("/chat/create")}

@@ -191,7 +191,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
-            <SidebarMenu className="space-y-5">
+            <SidebarMenu className="space-y-5 overflow-x-hidden overflow-y-auto">
               {isLoading ? (
                 <div className="px-3 py-8 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />

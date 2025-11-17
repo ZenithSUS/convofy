@@ -1,4 +1,9 @@
-import { Message, MessageOutputTyping, MessageTyping } from "@/types/message";
+import {
+  Message,
+  MessageOutputTyping,
+  MessageTyping,
+  NewSeenMessage,
+} from "@/types/message";
 
 export type PusherState = {
   previous: string;
@@ -33,6 +38,7 @@ export type PusherEventMap = {
   "new-message": Message;
   "delete-message": Message;
   "edit-message": Message;
+  "update-seen-by": NewSeenMessage;
   "typing-start": MessageOutputTyping;
   "typing-end": MessageOutputTyping;
   "status-update": string;

@@ -15,6 +15,14 @@ export type Message = {
   isEdited?: boolean;
   content: string;
   type: "text" | "image" | "file";
+  status: {
+    deliveredTo: string[];
+    seenBy: {
+      _id: string;
+      name: string;
+      avatar: string | null;
+    }[];
+  };
   createdAt: Date;
 };
 
@@ -31,7 +39,10 @@ export type MediaMessage = Omit<Message, "type"> & {
   type: "image" | "file";
 };
 
-export type CreateMessage = Omit<Message, "_id" | "createdAt" | "sender"> & {
+export type CreateMessage = Omit<
+  Message,
+  "_id" | "createdAt" | "sender" | "status"
+> & {
   sender: string;
 };
 
@@ -47,4 +58,14 @@ export type MessageOutputTyping = {
     name: string;
     avatar: string | null;
   };
+};
+
+export type NewSeenMessage = {
+  messageId: string;
+  seenBy: {
+    _id: string;
+    name: string;
+    avatar: string | null;
+  }[];
+  deliveredTo: string[];
 };

@@ -1,11 +1,14 @@
-import { Types } from "mongoose";
-
 export type LastRoomMessage = {
-  _id: Types.ObjectId | string;
-  room: Types.ObjectId | string;
-  sender: Types.ObjectId | string;
+  _id: string;
+  room: string;
+  sender: string;
   content: string;
   type: "text" | "image" | "file";
+  isEdited: boolean;
+  status: {
+    deliveredTo: string[];
+    seenBy: string[];
+  };
   createdAt: Date;
 };
 
@@ -36,10 +39,15 @@ export type RoomMembers = {
   isAvailable: boolean;
 };
 
-export type RoomContent = Omit<Room, "members"> & {
+export type RoomContent = Omit<Room, "members" | "lastMessage"> & {
   members: RoomMembers[];
   type: "room" | "user";
   avatar?: string;
+  lastMessage: Omit<LastRoomMessage, "status"> & {
+    status: {
+      seenBy: string[];
+    };
+  };
 };
 
 export type RoomRequest = Omit<
@@ -55,3 +63,9 @@ export type RoomRequest = Omit<
 };
 
 export type CreateRoom = Omit<Room, "_id">;
+
+export type Seen = {
+  _id: string;
+  name: string;
+  avatar: string;
+};

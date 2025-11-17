@@ -59,8 +59,6 @@ function RecoverPasswordPage() {
     error: recoveryTokenError,
   } = useGetRecoveryToken(token);
 
-  console.log(recoveryToken);
-
   const {
     mutateAsync: recoverPassword,
     isPending: isRecoverPasswordPending,
@@ -101,7 +99,7 @@ function RecoverPasswordPage() {
         Toast.success("Password changed successfully!");
         router.push("/auth/login");
       } catch (error: unknown) {
-        console.log("Error changing password:", error);
+        console.error("Error changing password:", error);
       }
     },
     [recoverPassword, token, router],

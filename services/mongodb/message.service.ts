@@ -6,6 +6,8 @@ import Room from "@/models/Room";
 import { CreateMessage } from "@/types/message";
 import { ObjectId } from "mongodb";
 import { Types } from "mongoose";
+import { pusherServer } from "@/lib/pusher-server";
+import User from "@/models/User";
 
 /**
  * This function creates a new message
@@ -156,12 +158,14 @@ export const findMessageById = async (messageId: string) => {
 /**
  * This function gets messages by room that are paginated
  * and sorted by createdAt
- * @param roomId
- * @param limit
- * @param offset
+ * @param userId The ID of the user
+ * @param roomId The ID of the room
+ * @param limit The maximum number of messages to return
+ * @param offset  The number of messages to skip before returning the results
  * @returns An array of messages or an error
  */
 export const getMessagesByRoom = async (
+  userId: string,
   roomId: string,
   limit: number = 5,
   offset: number = 0,
@@ -173,7 +177,41 @@ export const getMessagesByRoom = async (
       .limit(limit)
       .skip(offset)
       .populate("sender", ["name", "avatar"])
+      .populate("status.seenBy", ["name", "avatar", "_id"])
       .sort({ createdAt: -1 });
+
+    if (!messages) return new Error("No messages found");
+
+    await Message.updateMany(
+      { room: roomId, sender: { $ne: userId } },
+      { $addToSet: { "status.seenBy": userId } },
+    );
+
+    // Trigger a pusher event to update seenBy status
+    const roomChannel = `presence-chat-${roomId}`;
+    const response = await pusherServer.get({
+      path: `/channels/${roomChannel}/users`,
+    });
+
+    const { users }: { users: { id: string }[] } = await response.json();
+    const onlineUserIds = users.map((user) => user.id);
+
+    const onlineUsers = await User.find(
+      { _id: { $in: onlineUserIds } },
+      { name: 1, avatar: 1 },
+    );
+
+    if (messages.length > 0) {
+      await pusherServer.trigger(roomChannel, "update-seen-by", {
+        messageId: messages[0]._id,
+        seenBy: onlineUsers,
+      });
+    }
+
+    await pusherServer.trigger(`user-${userId}`, "message-seen", {
+      roomId,
+      userId,
+    });
 
     return messages;
   } catch (error) {

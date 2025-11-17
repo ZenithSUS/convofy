@@ -171,6 +171,42 @@ function GlobalPusherProvider() {
       );
     });
 
+    // Handle message seen updates
+    channel.bind("message-seen", (data: { roomId: string; userId: string }) => {
+      queryClient.setQueriesData<RoomContent[]>(
+        {
+          queryKey: ["rooms", session.user.id],
+          exact: false,
+        },
+        (oldRooms) => {
+          if (!oldRooms) return oldRooms;
+
+          const idx = oldRooms.findIndex((room) => room._id === data.roomId);
+          if (idx === -1) return oldRooms;
+
+          const newRooms = [...oldRooms];
+
+          if (!newRooms[idx].lastMessage) return newRooms;
+
+          // Add the user to the seenBy array of the last message
+          newRooms[idx] = {
+            ...newRooms[idx],
+            lastMessage: {
+              ...newRooms[idx].lastMessage,
+              status: {
+                ...newRooms[idx].lastMessage.status,
+                seenBy: [
+                  ...newRooms[idx].lastMessage.status.seenBy,
+                  data.userId,
+                ],
+              },
+            },
+          };
+          return newRooms;
+        },
+      );
+    });
+
     // Handle status updates
     channel.bind("status-update", (status: string) => {
       update({ ...session, user: { ...session.user, status } });

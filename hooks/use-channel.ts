@@ -44,6 +44,8 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
   const channelRef = useRef<PusherChannel>(null);
   const currentRoomIdRef = useRef<string | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const prevConnectionStatusRef = useRef(connectionStatus);
+  const isInitialMount = useRef(true);
 
   // Memos
   const channelEventHandler = useMemo(
@@ -75,6 +77,68 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
       ),
     [setConnectionStatus],
   );
+
+  // Handle reconnection and data sync
+  useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      prevConnectionStatusRef.current = connectionStatus;
+      return;
+    }
+
+    const wasDisconnected = prevConnectionStatusRef.current !== "connected";
+    const isNowConnected = connectionStatus === "connected";
+
+    console.log("Prev connection status:", prevConnectionStatusRef.current);
+    console.log("Current connection status:", connectionStatus);
+
+    // If we just reconnected and user is a member of the room
+    if (wasDisconnected && isNowConnected && isMember && roomId) {
+      // Clear the existing messages cache to force a fresh fetch
+      queryClient.removeQueries({ queryKey: ["messages", roomId] });
+
+      queryClient.invalidateQueries({
+        queryKey: ["messages", roomId],
+        refetchType: "active",
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: ["rooms", roomId],
+        refetchType: "active",
+      });
+    }
+
+    // Update the ref for next comparison
+    prevConnectionStatusRef.current = connectionStatus;
+  }, [connectionStatus, isMember, roomId, queryClient]);
+
+  // Handle browser online/offline events
+  useEffect(() => {
+    const handleOnline = () => {
+      console.log("Browser is back online");
+
+      // Wait briefly for connection to stabilize
+      if (isMember && roomId) {
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["messages", roomId] });
+          queryClient.invalidateQueries({ queryKey: ["rooms", roomId] });
+        }, 500);
+      }
+    };
+
+    const handleOffline = () => {
+      console.log("Browser went offline");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [isMember, roomId, queryClient]);
 
   // Channel event handlers
   useEffect(() => {
@@ -168,7 +232,7 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
 
     currentRoomIdRef.current = roomId as string;
 
-    const channelName = `chat-${roomId}`;
+    const channelName = `presence-chat-${roomId}`;
 
     if (!channelRef.current || channelRef.current.name !== channelName) {
       const existingChannel = pusherClient.channel(channelName);

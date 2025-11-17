@@ -103,6 +103,12 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
     });
   }, [rooms]);
 
+  const isNotSeen = (room: RoomContent) => {
+    if (!room.lastMessage.status) return false;
+
+    return !room.lastMessage.status.seenBy.includes(userId);
+  };
+
   const privateRoomChatName = (room: RoomContent) => {
     const otherUser = room.members.find((m) => m._id !== userId);
     return otherUser?.name || "Unknown User";
@@ -269,14 +275,18 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                                 {room.name || privateRoomChatName(room)}
                               </p>
                               {room.lastMessage?.createdAt && (
-                                <span className="flex shrink-0 items-center gap-1 text-xs text-gray-400">
+                                <span
+                                  className={`flex shrink-0 items-center gap-1 text-xs ${isNotSeen(room) ? "text-blue-600" : "text-gray-400"} `}
+                                >
                                   <Clock className="h-3 w-3" />
                                   {formatTimeAgo(room.lastMessage.createdAt)}
                                 </span>
                               )}
                             </div>
                             {room.lastMessage?.content && (
-                              <p className="mt-0.5 truncate text-xs text-gray-500">
+                              <p
+                                className={`mt-0.5 truncate text-xs ${isNotSeen(room) ? "text-blue-600" : "text-gray-400"}`}
+                              >
                                 {room.lastMessage.type === "text"
                                   ? room.lastMessage.content
                                   : room.lastMessage.type === "file"

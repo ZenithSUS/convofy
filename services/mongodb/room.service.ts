@@ -4,7 +4,7 @@ import { Room as IRoom } from "@/types/room";
 import User from "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
-import { pusherServer } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import Message from "@/models/Message";
 
 export const roomService = {
@@ -74,7 +74,16 @@ export const roomService = {
     await connectToDatabase();
     const room = await Room.findById(id)
       .populate("members", ["name", "avatar", "_id", "status"])
-      .populate("lastMessage", ["content", "type", "createdAt"])
+      .populate({
+        path: "lastMessage",
+        select: "content type createdAt sender status.deliveredTo",
+        populate: [
+          {
+            path: "status.seenBy",
+            select: "name avatar _id",
+          },
+        ],
+      })
       .lean();
 
     return room;
@@ -87,11 +96,19 @@ export const roomService = {
    */
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
-    const room = await Room.findById(id).populate("members", [
-      "name",
-      "avatar",
-      "isAvailable",
-    ]);
+    const room = await Room.findById(id)
+      .populate("members", ["name", "avatar", "isAvailable"])
+      .populate({
+        path: "lastMessage",
+        select: "content type createdAt sender status.deliveredTo",
+        populate: [
+          {
+            path: "status.seenBy",
+            select: "name avatar _id",
+          },
+        ],
+      })
+      .lean<IRoom[]>();
 
     return room;
   },
@@ -142,7 +159,14 @@ export const roomService = {
 
       const rooms = await Room.find(query)
         .populate("members", ["name", "avatar", "_id", "status"])
-        .populate("lastMessage", ["content", "type", "createdAt", "sender"])
+        .populate("lastMessage", [
+          "content",
+          "type",
+          "createdAt",
+          "sender",
+          "status.seenBy",
+          "status.deliveredTo",
+        ])
         .sort({ createdAt: -1 })
         .lean<IRoom[]>();
 

@@ -1,10 +1,11 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import { pusherServer } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { Message as IMessage } from "@/types/message";
 import { RoomMembers } from "@/types/room";
 import roomService from "./room.service";
+import User from "@/models/User";
 
 export const chatService = {
   /**
@@ -19,10 +20,6 @@ export const chatService = {
   async sendLiveMessage(data: IMessage) {
     try {
       await connectToDatabase();
-
-      // Create the message
-      const message = await Message.create(data);
-
       const room = await Room.findById(data.room).populate("members", [
         "avatar",
         "_id",
@@ -30,10 +27,24 @@ export const chatService = {
         "name",
       ]);
 
-      if (room) {
-        await Room.updateOne({ _id: room._id }, { lastMessage: message._id });
-        await room.save();
+      if (!room) {
+        throw new Error("Room not found");
       }
+
+      const deliveredTo = room.members
+        .filter((m) => m._id.toString() !== data.sender.toString())
+        .map((m) => m._id);
+
+      const message = await Message.create({
+        ...data,
+        status: {
+          deliveredTo: deliveredTo,
+          seenBy: [data.sender],
+        },
+      });
+
+      // Update room last message
+      await Room.updateOne({ _id: room._id }, { lastMessage: message._id });
 
       // Get the new last message
       const lastMessage = await Message.findById(message._id)
@@ -43,6 +54,7 @@ export const chatService = {
       // Populate the sender information before sending to Pusher
       const populatedMessage = await Message.findById(message._id)
         .populate("sender", ["name", "avatar"])
+        .populate("status.seenBy", ["name", "avatar", "_id"])
         .lean();
 
       if (!populatedMessage) {
@@ -50,38 +62,34 @@ export const chatService = {
       }
 
       // Send to Pusher with populated data
-      const channelName = `chat-${data.room}`;
+      const channelName = `presence-chat-${data.room}`;
       await pusherServer.trigger(channelName, "new-message", populatedMessage);
 
       // Update the room last message of all related members
-      if (room?.members && room.members.length > 0) {
+      if (room.members && room.members.length > 0) {
         const roomContentData = {
           _id: room._id.toString(),
           members: room.members as unknown as RoomMembers[],
           name: room.isPrivate ? undefined : room.name,
           description: room.isPrivate ? undefined : room.description,
-          lastMessage: lastMessage,
+          lastMessage,
           isPrivate: room.isPrivate,
           image: room.isPrivate ? undefined : room.image,
         };
 
-        const roomPromises = (room.members as unknown as RoomMembers[]).map(
-          (member) => {
-            const memberId = member._id.toString();
-
-            return pusherServer.trigger(
-              `user-${memberId}`,
+        await Promise.all(
+          (room.members as unknown as RoomMembers[]).map((member) =>
+            pusherServer.trigger(
+              `user-${member._id.toString()}`,
               "room-updated",
               roomContentData,
-            );
-          },
+            ),
+          ),
         );
-
-        await Promise.all(roomPromises);
       }
 
-      // Update the invited user last message
-      if (room?.isPrivate && room?.invitedUser && room?.isPending) {
+      // Update invited user last message (private rooms with pending invite)
+      if (room.isPrivate && room.invitedUser && room.isPending) {
         const invitedUserId = room.invitedUser.toString();
 
         const invitedRoom = await roomService.getSinglePendingInvite(
@@ -95,7 +103,32 @@ export const chatService = {
         );
       }
 
-      // Return the populated message
+      // Update the seenBy field based on the current connected room channel
+      const response = await pusherServer.get({
+        path: `/channels/${channelName}/users`,
+      });
+
+      const { users }: { users: { id: string }[] } = await response.json();
+      const onlineUserIds = users.map((u) => u.id);
+
+      const onlineUsers = await User.find(
+        { _id: { $in: onlineUserIds } },
+        { avatar: 1, name: 1 },
+      ).lean();
+
+      if (onlineUserIds.length > 0) {
+        await Message.updateOne(
+          { _id: message._id },
+          { $addToSet: { "status.seenBy": { $each: onlineUserIds } } },
+        );
+
+        await pusherServer.trigger(channelName, "update-seen-by", {
+          messageId: message._id,
+          seenBy: onlineUsers,
+          deliveredTo,
+        });
+      }
+
       return populatedMessage;
     } catch (error) {
       throw error;
@@ -132,7 +165,7 @@ export const chatService = {
         .lean();
 
       // Send to Pusher
-      const channelName = `chat-${editMessage.room}`;
+      const channelName = `presence-chat-${editMessage.room}`;
       await pusherServer.trigger(channelName, "edit-message", newEditedMessage);
 
       // Update the room last message of all related members
@@ -221,7 +254,7 @@ export const chatService = {
       }
 
       // Send to Pusher
-      const channelName = `chat-${message?.room}`;
+      const channelName = `presence-chat-${message?.room}`;
       await pusherServer.trigger(channelName, "delete-message", message);
 
       // Update the room last message of all related members

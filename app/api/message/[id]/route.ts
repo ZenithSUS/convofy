@@ -79,7 +79,12 @@ export const GET = async (
     if (offset < 0) offset = 0;
 
     // Fetch messages
-    const messages = await getMessagesByRoom(roomId, limit, offset);
+    const messages = await getMessagesByRoom(
+      userId.toString(),
+      roomId,
+      limit,
+      offset,
+    );
 
     return NextResponse.json(messages, {
       status: 200,

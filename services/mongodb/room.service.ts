@@ -108,7 +108,7 @@ export const roomService = {
           },
         ],
       })
-      .lean<IRoom[]>();
+      .lean();
 
     return room;
   },

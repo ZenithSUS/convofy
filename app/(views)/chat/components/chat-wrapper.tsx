@@ -17,7 +17,7 @@ function ChatWrapper({
   return (
     <SidebarProvider defaultOpen className="flex h-full w-full">
       <AppSidebar serverSession={serverSession} />
-      <main className="w-full flex-1 overflow-hidden">{children}</main>
+      <div className="w-full flex-1 overflow-hidden">{children}</div>
     </SidebarProvider>
   );
 }

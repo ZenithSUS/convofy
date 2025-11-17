@@ -1,5 +1,5 @@
 import { InfiniteData, QueryClient } from "@tanstack/react-query";
-import { Message, MessageOutputTyping } from "@/types/message";
+import { Message, MessageOutputTyping, NewSeenMessage } from "@/types/message";
 import { PusherChannel, PusherState, PusherSubsciption } from "@/types/pusher";
 import { toast } from "react-toastify";
 
@@ -31,6 +31,7 @@ export class ChannelEventHandler {
     this.bindSubscriptionEvents(channel);
     this.bindMessageEvents(channel);
     this.bindTypingEvents(channel);
+    this.bindNewSeenMessageEvents(channel);
   }
 
   /**
@@ -59,6 +60,13 @@ export class ChannelEventHandler {
     channel.bind("new-message", this.handleNewMessage);
     channel.bind("delete-message", this.handleDeleteMessage);
     channel.bind("edit-message", this.handleEditMessage);
+  }
+
+  /**
+   * Bind new seen message events
+   */
+  private bindNewSeenMessageEvents(channel: PusherChannel) {
+    channel.bind("update-seen-by", this.handleSeenLastMessage);
   }
 
   /**
@@ -194,5 +202,54 @@ export class ChannelEventHandler {
       newMap.delete(data.user._id);
       return newMap;
     });
+  };
+
+  private handleSeenLastMessage = (data: NewSeenMessage) => {
+    if (
+      !this.isMountedRef.current ||
+      this.currentRoomIdRef.current !== this.roomId
+    ) {
+      return;
+    }
+
+    this.queryClient.setQueryData<InfiniteData<Message[]>>(
+      ["messages", this.roomId],
+      (oldMessages) => {
+        if (!oldMessages) return oldMessages;
+
+        const newPages = oldMessages.pages.map((page) => {
+          if (!page.some((msg) => msg._id === data.messageId)) {
+            return page;
+          }
+
+          return page.map((msg) => {
+            if (msg._id !== data.messageId) return msg;
+
+            // Create a set of existing seenBy users avoiding duplicates
+            const existingSeenByIds = new Set(
+              msg.status.seenBy.map((user) => user._id),
+            );
+
+            // Add new seenBy users
+            const newSeenByUsers = data.seenBy.filter(
+              (user) => !existingSeenByIds.has(user._id),
+            );
+
+            return {
+              ...msg,
+              status: {
+                seenBy: [...msg.status.seenBy, ...newSeenByUsers],
+                deliveredTo: data.deliveredTo || msg.status.deliveredTo,
+              },
+            };
+          });
+        });
+
+        return {
+          ...oldMessages,
+          pages: newPages,
+        };
+      },
+    );
   };
 }

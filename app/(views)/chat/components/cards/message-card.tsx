@@ -15,8 +15,9 @@ import MessageContent from "../message-content";
 import { Edit } from "lucide-react";
 import MessageEdit from "@/app/(views)/chat/components/message-edit";
 import { Session } from "@/app/(views)/chat/components/chat-header";
+import Image from "next/image";
 
-interface Props {
+interface MessageCardProps {
   message: Message | null;
   actionType: "edit" | "view";
   session: Session;
@@ -24,6 +25,7 @@ interface Props {
   isAnyEditing: boolean;
   isDetailsVisible: boolean;
   isPrivate: boolean;
+  isLatestSeenMessage?: boolean; // New prop to identify latest seen message
   setIsDetailsVisible: (value: boolean) => void;
   onEditComplete: () => void;
   onCancelEdit: () => void;
@@ -39,12 +41,13 @@ function MessageCard({
   isAnyEditing,
   isDetailsVisible,
   isPrivate,
+  isLatestSeenMessage = false,
   onEditComplete,
   onCancelEdit,
   setCurrentEditId,
   setIsDetailsVisible,
   setActionType,
-}: Props) {
+}: MessageCardProps) {
   const timeOutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isHovering, setIsHovering] = useState(false);
@@ -80,6 +83,49 @@ function MessageCard({
     () => message?.type === "text" && isThisEditing && actionType === "edit",
     [message?.type, isThisEditing, actionType],
   );
+
+  const isUserSeenMessage = useMemo(() => {
+    if (!message) return false;
+    return message.status.seenBy.some((user) => user._id === session?.user?.id);
+  }, [message, session?.user?.id]);
+
+  const seenUsers = useMemo<string>(() => {
+    if (!message) return "";
+
+    const totalSeenUsers = message.status.seenBy.length;
+
+    if (totalSeenUsers <= 2) {
+      return message.status.seenBy
+        .map((user) => (user.name === session?.user?.name ? "You" : user.name))
+        .join(" & ");
+    }
+
+    return totalSeenUsers > 2
+      ? `${message.status.seenBy
+          .slice(0, 2)
+          .map((u) => u.name.split(" ")[0])
+          .join(", ")} + ${totalSeenUsers - 2}`
+      : "";
+  }, [message, session?.user?.name]);
+
+  const isSeenByUser = useMemo(() => {
+    if (!message || !isPrivate) return false;
+
+    // Check if any user other than the sender has seen the message
+    const hasOtherUserSeen = message.status.seenBy.some(
+      (user) => user._id !== message.sender._id,
+    );
+
+    return hasOtherUserSeen;
+  }, [message, isPrivate]);
+
+  // Get seen by users
+  const seenByOthers = useMemo(() => {
+    if (!message) return [];
+    return message.status.seenBy.filter(
+      (user) => user._id !== message.sender._id,
+    );
+  }, [message]);
 
   const handleDeleteClick = async () => {
     if (!message) return;
@@ -213,50 +259,110 @@ function MessageCard({
         )}
 
         {/* Message Bubble */}
-        <div
-          onClick={() => handleViewDetails("view", message._id)}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-          className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
-            message.sender._id === session?.user?.id
-              ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white"
-              : "rounded-bl-sm border border-gray-200 bg-white text-gray-800"
-          } ${
-            isHovering && !isEditingMessage
-              ? message.sender._id === session?.user?.id
-                ? "scale-[1.02] shadow-md"
-                : "scale-[1.02] border-gray-300 shadow-md"
-              : ""
-          } ${isEditingMessage ? "ring-2 ring-blue-400" : ""}`}
-        >
-          {/* Sender name for non-user messages */}
-          {message.sender._id !== session?.user?.id && !isPrivate && (
-            <div className="mb-1 text-xs font-semibold text-gray-600">
-              {message.sender.name}
+        <div className="flex flex-col gap-2">
+          <div
+            onClick={() => handleViewDetails("view", message._id)}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
+              message.sender._id === session?.user?.id
+                ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white"
+                : "rounded-bl-sm border border-gray-200 bg-white text-gray-800"
+            } ${
+              isHovering && !isEditingMessage
+                ? message.sender._id === session?.user?.id
+                  ? "scale-[1.02] shadow-md"
+                  : "scale-[1.02] border-gray-300 shadow-md"
+                : ""
+            } ${isEditingMessage ? "ring-2 ring-blue-400" : ""}`}
+          >
+            {/* Sender name for non-user messages */}
+            {message.sender._id !== session?.user?.id && !isPrivate && (
+              <div className="mb-1 text-xs font-semibold text-gray-600">
+                {message.sender.name}
+              </div>
+            )}
+
+            {/* Message content */}
+            {isEditingMessage && editMessageValues ? (
+              <MessageEdit
+                editMessage={editMessageValues}
+                onEditMessage={onEditMessage}
+                onCancelEdit={onCancelEdit}
+              />
+            ) : (
+              <MessageContent message={message} />
+            )}
+
+            {/* Message tail */}
+            <div
+              className={`absolute -bottom-2 h-0 w-0 ${
+                message.sender._id === session?.user?.id
+                  ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent"
+                  : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent"
+              }`}
+            />
+          </div>
+
+          {/* Avatar bubbles for latest seen message - Shows for all messages */}
+          {isLatestSeenMessage && isUserMessage && seenByOthers.length > 0 && (
+            <div
+              className={`animate-in fade-in slide-in-from-bottom-1 flex items-center gap-1 duration-200 ${
+                message.sender._id === session?.user?.id
+                  ? "self-end"
+                  : "self-start"
+              }`}
+            >
+              <div className="flex -space-x-2">
+                {seenByOthers.slice(0, 5).map((user, index) => (
+                  <div
+                    key={user._id}
+                    className="relative"
+                    style={{ zIndex: seenByOthers.length - index }}
+                    title={user.name}
+                  >
+                    {user.avatar ? (
+                      <Image
+                        src={user.avatar}
+                        alt={user.name}
+                        width={20}
+                        height={20}
+                        className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
+                      />
+                    ) : (
+                      <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-linear-to-br from-blue-400 to-blue-600 text-[10px] font-medium text-white shadow-sm">
+                        {user.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {seenByOthers.length > 5 && (
+                  <div
+                    className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-gray-400 text-[9px] font-semibold text-white shadow-sm"
+                    title={`+${seenByOthers.length - 5} more`}
+                  >
+                    +{seenByOthers.length - 5}
+                  </div>
+                )}
+              </div>
             </div>
           )}
-
-          {/* Message content */}
-          {isEditingMessage && editMessageValues ? (
-            <MessageEdit
-              editMessage={editMessageValues}
-              onEditMessage={onEditMessage}
-              onCancelEdit={onCancelEdit}
-            />
-          ) : (
-            <MessageContent message={message} />
-          )}
-
-          {/* Message tail */}
-          <div
-            className={`absolute -bottom-2 h-0 w-0 ${
-              message.sender._id === session?.user?.id
-                ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent"
-                : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent"
-            }`}
-          />
         </div>
       </div>
+
+      {shouldShowDetails && isUserSeenMessage && (
+        <h1
+          className={`text-xs text-gray-400 ${message.sender._id === session?.user?.id ? "self-end" : "self-start"}`}
+        >
+          {isPrivate
+            ? isSeenByUser
+              ? "Seen"
+              : "Delivered"
+            : seenByOthers.length > 0
+              ? `Seen By ${seenUsers}`
+              : "Delivered"}
+        </h1>
+      )}
     </div>
   );
 }

@@ -20,7 +20,6 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
     router.push(`/chat/${room._id}`);
   };
 
-  // 🧠 Determine display name and image
   const isPrivate = useMemo<boolean>(() => {
     return room.isPrivate || (room.members.length === 2 && !room.name);
   }, [room]);
@@ -34,6 +33,12 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
   const displayImage = isPrivate
     ? otherUser?.avatar || "/default-avatar.png"
     : room.image || "/default-avatar.png";
+
+  const notSeen = useMemo<boolean>(() => {
+    if (!room.lastMessage?.status) return false;
+
+    return !room.lastMessage.status.seenBy.includes(currentUserId);
+  }, [room, currentUserId]);
 
   if (!room) return null;
 
@@ -67,8 +72,10 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
           )}
 
           {!isSearchMode && room.lastMessage && (
-            <p className="truncate text-sm text-gray-500">
-              <span className="font-medium text-gray-700">
+            <p
+              className={`truncate text-sm ${notSeen ? "font-bold text-gray-900" : "text-gray-600"}`}
+            >
+              <span className="font-medium">
                 {timeFormat(new Date(room.lastMessage.createdAt))}
               </span>
               {" - "}

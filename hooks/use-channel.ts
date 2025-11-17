@@ -90,9 +90,6 @@ export const useChannel = ({ session, roomId, room }: useChannelProps) => {
     const wasDisconnected = prevConnectionStatusRef.current !== "connected";
     const isNowConnected = connectionStatus === "connected";
 
-    console.log("Prev connection status:", prevConnectionStatusRef.current);
-    console.log("Current connection status:", connectionStatus);
-
     // If we just reconnected and user is a member of the room
     if (wasDisconnected && isNowConnected && isMember && roomId) {
       // Clear the existing messages cache to force a fresh fetch

@@ -47,7 +47,7 @@ import { Session } from "@/app/(views)/chat/components/chat-header";
 import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
 import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
 import getFileDirectory from "@/helper/file-directories";
-import RoomRequest from "../components/room-request";
+import RoomRequest from "@/app/(views)/chat/[roomId]/components/room-request";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -131,6 +131,28 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     }
     return unique.reverse();
   }, [messages]);
+
+  const getLatestSeenMessageId = useMemo<string | null>(() => {
+    if (!messages || !session?.user?.id) return null;
+
+    // Flatten all messages from pages
+    const allMessages = messages.pages.flat().reverse();
+
+    // Find the latest message that has been seen by at least one person (excluding the sender)
+    for (let i = allMessages.length - 1; i >= 0; i--) {
+      const msg = allMessages[i];
+      // Check if anyone other than the sender has seen this message
+      const hasBeenSeenByOthers = msg.status.seenBy.some(
+        (user) => user._id !== msg.sender._id,
+      );
+
+      if (hasBeenSeenByOthers) {
+        return msg._id;
+      }
+    }
+
+    return null;
+  }, [messages, session?.user?.id]);
 
   const isChatError = useMemo(() => {
     return roomError || messagesError;
@@ -428,6 +450,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
                   actionType={actionType}
                   setActionType={setActionType}
                   setIsDetailsVisible={setIsDetailsVisible}
+                  isLatestSeenMessage={msg._id === getLatestSeenMessageId}
                   onEditComplete={() => setCurrentEditId(null)}
                   onCancelEdit={() => setCurrentEditId(null)}
                   setCurrentEditId={setCurrentEditId}

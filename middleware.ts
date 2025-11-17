@@ -102,22 +102,29 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Allow public access to auth pages when already logged in (optional redirect to home)
-  if (
-    pathname.startsWith("/auth/login") ||
-    pathname.startsWith("/auth/register")
-  ) {
+  // Define public auth routes that don't need authentication
+  const publicAuthRoutes = [
+    "/auth/login",
+    "/auth/register",
+    "/auth/error",
+    "/auth/verify-email-change",
+    "/auth/recover-password",
+  ];
+
+  // Allow public access to auth pages when already logged in (redirect to chat)
+  if (publicAuthRoutes.some((route) => pathname.startsWith(route))) {
     if (token) {
       const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
       const redirectUrl = new URL(callbackUrl || "/chat", request.url);
       return NextResponse.redirect(redirectUrl);
     }
+    // If no token, allow access to these public auth routes
   }
 
   const response = NextResponse.next();
   response.headers.set("x-pathname", pathname);
 
-  // Add security headers
+  // Security headers
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-Frame-Options", "DENY");
   response.headers.set("X-XSS-Protection", "1; mode=block");

@@ -254,10 +254,13 @@ function Sidebar({
 }
 
 function SidebarTrigger({
+  hideLabel = false,
   className,
   onClick,
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: React.ComponentProps<typeof Button> & {
+  hideLabel?: boolean;
+}) {
   const { toggleSidebar } = useSidebar();
 
   return (
@@ -276,9 +279,11 @@ function SidebarTrigger({
       <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700">
         <MessageSquare className="h-5 w-5 text-white" />
       </div>
-      <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl">
-        Convofy
-      </h1>
+      {!hideLabel && (
+        <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl">
+          Convofy
+        </h1>
+      )}
 
       <span className="sr-only">Toggle Sidebar</span>
     </Button>

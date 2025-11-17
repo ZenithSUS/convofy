@@ -9,7 +9,7 @@ import {
 } from "@/types/user";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
-import { pusherServer } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import bcrypt from "bcrypt";
 
 export const userService = {

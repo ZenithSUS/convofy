@@ -1,20 +1,27 @@
 "use client";
 
-import { toast, ToastContainer, TypeOptions } from "react-toastify";
+import { toast, ToastContainer, TypeOptions, Id } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const TOAST_ID = "latest-toast";
+let currentToastId: Id | null = null;
 
 export const Toast = {
   show(message: string, type: TypeOptions = "default") {
-    if (toast.isActive(TOAST_ID)) {
-      toast.dismiss(TOAST_ID);
+    // Dismiss the current toast if it exists
+    if (currentToastId !== null) {
+      toast.dismiss(currentToastId);
     }
-    return toast(message, {
-      toastId: TOAST_ID,
+
+    // Show new toast and store its ID
+    currentToastId = toast(message, {
       type,
       autoClose: 3000,
+      onClose: () => {
+        currentToastId = null;
+      },
     });
+
+    return currentToastId;
   },
   success: (message: string) => Toast.show(message, "success"),
   error: (message: string) => Toast.show(message, "error"),
@@ -29,6 +36,9 @@ export const ToastProvider = () => {
       autoClose={3000}
       limit={1}
       newestOnTop
+      closeOnClick
+      pauseOnHover
+      draggable
     />
   );
 };

@@ -1,4 +1,4 @@
-import { pusherServer } from "@/lib/pusher";
+import { pusherServer } from "@/lib/pusher-server";
 import { getUserToken } from "@/lib/utils";
 import typingRateLimit from "@/lib/redis/redis-typing-limit";
 import roomService from "@/services/mongodb/room.service";
@@ -113,7 +113,7 @@ export const POST = async (req: NextRequest) => {
 
     // Trigger Pusher event
     await pusherServer.trigger(
-      `chat-${roomId}`,
+      `presence-chat-${roomId}`,
       isTyping ? "typing-start" : "typing-end",
       { user: safeUserData },
     );

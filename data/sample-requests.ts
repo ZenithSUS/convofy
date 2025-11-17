@@ -20,6 +20,11 @@ export const sampleMessageRequests: RoomRequest[] = [
         "Hey! I saw your profile and would love to connect. Are you interested in discussing the new project?",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 5), // 5 minutes ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 5),
   },
@@ -41,6 +46,11 @@ export const sampleMessageRequests: RoomRequest[] = [
       content: "Hi there! Want to collaborate on the upcoming event?",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 30),
   },
@@ -63,6 +73,11 @@ export const sampleMessageRequests: RoomRequest[] = [
         "Hello! I noticed we have mutual friends. Would be great to chat! 👋",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2),
   },
@@ -84,6 +99,11 @@ export const sampleMessageRequests: RoomRequest[] = [
       content: "Quick question about the documentation you shared last week",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5),
   },
@@ -105,6 +125,11 @@ export const sampleMessageRequests: RoomRequest[] = [
       content: "Thanks for the recommendation! Can we discuss it further?",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
   },
@@ -126,6 +151,11 @@ export const sampleMessageRequests: RoomRequest[] = [
       content: "I have some ideas for the presentation. Let's connect!",
       type: "text",
       createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+      status: {
+        deliveredTo: [],
+        seenBy: [],
+      },
+      isEdited: false,
     },
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2),
   },

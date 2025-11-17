@@ -22,6 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,6 +32,7 @@ import { RoomContent } from "@/types/room";
 import Image from "next/image";
 import useHybridSession from "@/hooks/use-hybrid-session";
 import { Session } from "@/app/(views)/chat/components/chat-header";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Menu items
 const items = [
@@ -79,6 +81,8 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
   const userId = session?.user?.id;
   const isAvailable = session?.user?.isAvailable;
+  const isMobile = useIsMobile();
+  const { setOpenMobile, isMobile: isMobileSidebar } = useSidebar();
 
   // Fetch rooms only when in a chat room
   const { data: rooms, isLoading } = useGetRoomByUserId(
@@ -107,6 +111,12 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
   const privateRoomChatImage = (room: RoomContent) => {
     const otherUser = room.members.find((m) => m._id !== userId);
     return otherUser?.avatar || "/default-avatar.png";
+  };
+
+  const handleLinkClick = () => {
+    if (isMobile || isMobileSidebar) {
+      setOpenMobile(false);
+    }
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -152,6 +162,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                     >
                       <Link
                         href={item.url}
+                        onClick={handleLinkClick}
                         className="flex items-center gap-3 rounded-lg px-3 py-2"
                       >
                         <item.icon
@@ -175,7 +186,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
         <SidebarSeparator className="my-2" />
 
-        <SidebarGroup className="space-y-4">
+        <SidebarGroup className="relative space-y-4 overflow-y-auto">
           <SidebarGroupLabel className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-blue-600" />
@@ -190,8 +201,8 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
             )}
           </SidebarGroupLabel>
 
-          <SidebarGroupContent>
-            <SidebarMenu className="space-y-5 overflow-x-hidden overflow-y-auto">
+          <SidebarGroupContent className="overflow-y-auto">
+            <SidebarMenu className="space-y-5">
               {isLoading ? (
                 <div className="px-3 py-8 text-center">
                   <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
@@ -283,18 +294,19 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                 })
               )}
             </SidebarMenu>
-
-            {roomsList.length > 10 && (
-              <div className="mt-3 px-3">
-                <Link
-                  href="/chat"
-                  className="block w-full rounded-lg bg-gray-100 px-3 py-2 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200"
-                >
-                  View all chats
-                </Link>
-              </div>
-            )}
           </SidebarGroupContent>
+          {roomsList.length > 10 && (
+            <div className="mt-3 px-3">
+              <Link
+                href="/chat"
+                title="View all chats"
+                onClick={handleLinkClick}
+                className="absolute bottom-0 left-0 w-full rounded-lg border-t border-gray-200 bg-gray-100 px-3 py-4 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200"
+              >
+                View all chats
+              </Link>
+            </div>
+          )}
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

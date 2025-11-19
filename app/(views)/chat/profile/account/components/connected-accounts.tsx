@@ -90,7 +90,10 @@ function ConnectedAccounts({
       id: "github",
       name: "GitHub",
       icon: "image",
-      imageSrc: "/github.png",
+      imageSrc:
+        session.user.preferences.theme === "dark"
+          ? "/github-dark.png"
+          : "/github.png",
       isConnected: isGitHubAuth,
     },
     {

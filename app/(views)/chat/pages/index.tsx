@@ -177,7 +177,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
           )}
 
           {/* Search Results Header */}
-          {isSearchMode && (
+          {!isAnonymous && isSearchMode && (
             <div className="px-4 pb-4">
               <div className="rounded-xl border border-blue-100 bg-linear-to-r from-blue-50 to-purple-50 p-4 dark:border-blue-900/50 dark:from-blue-950/50 dark:to-purple-950/50">
                 <div className="flex items-center justify-between">
@@ -205,7 +205,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
 
         {/* List of chat rooms */}
         <div className="space-y-3 p-4 pb-24 md:pb-4">
-          {isAvailable && roomsList.length > 0 ? (
+          {!isAnonymous && isAvailable && roomsList.length > 0 ? (
             <>
               {!isSearchMode && (
                 <div className="mb-4 flex items-center justify-between">
@@ -256,7 +256,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             </div>
           ) : isFetching ? (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loading text="Loading your chats..." />
+              <Loading text="Getting your conversations" />
             </div>
           ) : !isAvailable ? (
             <div className="flex flex-col items-center justify-center py-30">

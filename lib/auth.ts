@@ -607,7 +607,6 @@ export const authOptions: NextAuthOptions = {
         const sessionExists = sessions.some(
           (session: UserSession) => session.sessionId === token.sessionId,
         );
-        console.log("sessionExists", sessionExists);
 
         if (!sessionExists) {
           console.warn("Session no longer exists, invalidating token");

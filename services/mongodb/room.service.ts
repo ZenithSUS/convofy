@@ -130,7 +130,7 @@ export const roomService = {
       if (searchQuery) {
         query.name = { $regex: searchQuery, $options: "i" };
       }
-
+      await connectToDatabase();
       const rooms = await Room.find(query)
         .populate("members", ["name", "avatar", "_id", "status"])
         .populate("lastMessage", [

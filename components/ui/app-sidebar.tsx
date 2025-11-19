@@ -83,13 +83,18 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
   const isAvailable = session?.user?.isAvailable;
   const isMobile = useIsMobile();
   const { setOpenMobile, isMobile: isMobileSidebar } = useSidebar();
+  const isAnonymous = useMemo<boolean>(() => {
+    return (
+      (session.user.isAnonymous || session.user.role === "anonymous") ?? false
+    );
+  }, [session]);
 
   // Fetch rooms only when in a chat room
   const { data: rooms, isLoading } = useGetRoomByUserId(
     userId,
     isAvailable || false,
     false,
-    false,
+    !isAnonymous,
     "",
   );
 

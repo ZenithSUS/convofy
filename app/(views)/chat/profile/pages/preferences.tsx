@@ -5,17 +5,19 @@ import ProfileHeader from "../components/profile-header";
 import useHybridSession from "@/hooks/use-hybrid-session";
 import AvatarCard from "../components/avatar-card";
 import { Sun, EyeOff, MessageSquare, Activity, Moon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useUpdatePreferences } from "@/hooks/use-user";
 import { Toast } from "@/components/providers/toast-provider";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PreferencesPageProps {
   serverSession: Session;
 }
 
 function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
+  const queryClient = useQueryClient();
   const { session, update } = useHybridSession(serverSession);
   const { toggleDarkMode, isDarkMode } = useTheme();
   const { mutateAsync: updatePreferences, isPending: isUpdating } =
@@ -35,6 +37,10 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
 
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const isChangeAnonymity = useMemo(() => {
+    return session.user.isAnonymous !== settings.anonymousMode;
+  }, [session.user.isAnonymous, settings.anonymousMode]);
 
   const handleSavePreferences = useCallback(async () => {
     try {
@@ -68,6 +74,12 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
         },
       });
 
+      if (isChangeAnonymity) {
+        queryClient.removeQueries({ queryKey: ["rooms"] });
+        queryClient.removeQueries({ queryKey: ["room"] });
+        queryClient.removeQueries({ queryKey: ["messages"] });
+      }
+
       document.documentElement.classList.toggle("dark", settings.theme);
       Toast.success("Preferences updated successfully.");
     } catch (error) {
@@ -75,7 +87,15 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
       Toast.error("Failed to update preferences. Please try again.");
       return;
     }
-  }, [updatePreferences, session.user, settings, isUpdating, update]);
+  }, [
+    updatePreferences,
+    session.user,
+    settings,
+    isUpdating,
+    update,
+    isChangeAnonymity,
+    queryClient,
+  ]);
 
   const settingsList = [
     {

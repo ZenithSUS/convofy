@@ -89,6 +89,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
     userId,
     isAvailable || false,
     false,
+    false,
     "",
   );
 

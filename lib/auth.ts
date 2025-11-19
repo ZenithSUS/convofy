@@ -649,7 +649,12 @@ export const authOptions: NextAuthOptions = {
           token.name = dbUser.name;
           token.picture = dbUser.avatar || dbUser.anonAvatar;
           token.isAnonymous = dbUser.isAnonymous;
-          token.preferences = dbUser.preferences;
+          token.preferences = {
+            theme: dbUser.preferences?.theme || "light",
+            hideStatus: dbUser.preferences?.hideStatus || false,
+            hideTypingIndicator:
+              dbUser.preferences?.hideTypingIndicator || false,
+          };
           token.linkedAccounts = dbUser.linkedAccounts?.length
             ? dbUser.linkedAccounts.map((account) => ({
                 provider: account.provider,

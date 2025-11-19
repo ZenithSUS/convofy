@@ -27,6 +27,22 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
     [isLoading, isFetching],
   );
 
+  const userAvatar = useMemo(() => {
+    if (session.user.isAnonymous) {
+      return session.user.anonAvatar || "/default-avatar.png";
+    }
+
+    return session.user.image || "/default-avatar.png";
+  }, [session.user]);
+
+  const userName = useMemo(() => {
+    if (session.user.isAnonymous) {
+      return session.user.anonAlias || "Anonymous";
+    }
+
+    return session.user.name || "User";
+  }, [session.user]);
+
   if (!session) return null;
 
   return (
@@ -43,10 +59,10 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
         <div className="relative -mt-20 mb-8">
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xl backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800">
             <div className="flex flex-col items-center gap-3">
-              <UserImage userImage={session.user.image} />
+              <UserImage userImage={userAvatar} />
               <div className="flex flex-col items-center gap-1 text-center">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {session.user.name}
+                  {userName}
                 </h1>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {session.user.email}

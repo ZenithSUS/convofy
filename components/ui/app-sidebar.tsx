@@ -34,7 +34,7 @@ import useHybridSession from "@/hooks/use-hybrid-session";
 import { Session } from "@/app/(views)/chat/components/chat-header";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-// Menu items
+// Menu items normal items
 const items = [
   {
     title: "Chats",
@@ -75,6 +75,25 @@ const items = [
   },
 ];
 
+// Menu items for anonymous users
+const itemsAnonymous = [
+  {
+    title: "Chats",
+    url: "/chat",
+    icon: MessageCircleCode,
+  },
+  {
+    title: "Profile",
+    url: "/chat/profile",
+    icon: User,
+  },
+  {
+    title: "Settings",
+    url: "/chat/profile/account",
+    icon: Settings,
+  },
+];
+
 export function AppSidebar({ serverSession }: { serverSession: Session }) {
   const pathname = usePathname();
   const { session } = useHybridSession(serverSession);
@@ -97,6 +116,10 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
     !isAnonymous,
     "",
   );
+
+  const navigatonItems = useMemo(() => {
+    return isAnonymous ? itemsAnonymous : items;
+  }, [isAnonymous]);
 
   const roomsList = useMemo<RoomContent[]>(() => {
     if (!rooms) return [];
@@ -160,7 +183,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {items.map((item) => {
+              {navigatonItems.map((item) => {
                 const isActive = pathname === item.url;
                 return (
                   <SidebarMenuItem key={item.title}>

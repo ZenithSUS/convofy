@@ -23,6 +23,11 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
 
   const isMobile = useIsMobile();
   const accountCreationDate = new Date(session.user.createdAt || "2024-01-01");
+  const isAnonymous = useMemo<boolean>(() => {
+    return (
+      (session.user.isAnonymous || session.user.role === "anonymous") ?? false
+    );
+  }, [session]);
 
   const isGoogleAuth = session.user.linkedAccounts.some(
     (account) => account.provider === "google",
@@ -64,30 +69,36 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         />
 
         {/* Change Password */}
-        {isCredentialsAuth && <ChangePassword session={session} />}
+        {!isAnonymous && isCredentialsAuth && (
+          <ChangePassword session={session} />
+        )}
 
         {/* Change Email */}
-        {isCredentialsAuth && <ChangeEmail session={session} />}
+        {!isAnonymous && isCredentialsAuth && <ChangeEmail session={session} />}
 
         {/* Connected Accounts */}
-        <ConnectedAccounts
-          session={session}
-          isCredentialsAuth={isCredentialsAuth}
-          isGoogleAuth={isGoogleAuth}
-          isGitHubAuth={isGitHubAuth}
-          isDiscordAuth={isDiscordAuth}
-          isAnyOAuth={isAnyOAuth}
-          isMobile={isMobile}
-        />
+        {!isAnonymous && (
+          <ConnectedAccounts
+            session={session}
+            isCredentialsAuth={isCredentialsAuth}
+            isGoogleAuth={isGoogleAuth}
+            isGitHubAuth={isGitHubAuth}
+            isDiscordAuth={isDiscordAuth}
+            isAnyOAuth={isAnyOAuth}
+            isMobile={isMobile}
+          />
+        )}
 
         {/* Session Management */}
         <SessionManagement session={session} />
 
         {/* Danger Zone */}
-        <DangerZone
-          session={session}
-          linkedAccounts={session.user.linkedAccounts}
-        />
+        {!isAnonymous && (
+          <DangerZone
+            session={session}
+            linkedAccounts={session.user.linkedAccounts}
+          />
+        )}
       </div>
     </div>
   );

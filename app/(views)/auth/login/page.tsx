@@ -20,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import Image from "next/image";
 import Link from "next/link";
+import anonymousName from "@/helper/anonymous-name";
+import generateAnonymousAvatar from "@/helper/anonymous-avatar";
 
 const schema = z.object({
   email: z
@@ -46,6 +48,7 @@ function LoginPage() {
   const [authError, setAuthError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isCredentialsLoading, startCredentialsTransition] = useTransition();
+  const [isAnonymousLoading, startAnonymousTransition] = useTransition();
   const [isGoogleLoading, startGoogleTransition] = useTransition();
   const [isGithubLoading, startGithubTransition] = useTransition();
   const [isDiscordLoading, startDiscordTransition] = useTransition();
@@ -67,6 +70,21 @@ function LoginPage() {
       }
 
       form.reset();
+      router.push("/chat");
+    });
+  };
+
+  const handleAnonymousLogin = async () => {
+    const alias = anonymousName();
+    const avatar = generateAnonymousAvatar(alias);
+    startAnonymousTransition(async () => {
+      const res = await signIn("anonymous", { alias, avatar, redirect: false });
+
+      if (res?.error) {
+        setAuthError(res.error);
+        return;
+      }
+
       router.push("/chat");
     });
   };
@@ -241,6 +259,23 @@ function LoginPage() {
               </>
             ) : (
               "Sign In"
+            )}
+          </Button>
+
+          {/* Anonymous Sign In */}
+          <Button
+            type="button"
+            onClick={handleAnonymousLogin}
+            disabled={!isAnonymousLoading}
+            className="h-12 w-full rounded-xl bg-linear-to-r from-black via-gray-900 to-gray-700 font-semibold text-white shadow-lg transition-all duration-300 hover:from-black/30 hover:via-gray-950 hover:to-gray-800 hover:shadow-xl disabled:opacity-50"
+          >
+            {isAnonymousLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Please Wait...
+              </>
+            ) : (
+              "Anonymous Mode"
             )}
           </Button>
 

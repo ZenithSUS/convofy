@@ -21,11 +21,11 @@ function UserMessageCard({ message }: UserMessageCardProps) {
   }, [isPrivate, message.sender.name, message.room.name]);
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow-md">
+    <div className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow-md dark:bg-gray-800">
       <span className="text-sm font-semibold">{displayName}</span>
 
       <MessageContent message={message} />
-      <span className="text-xs text-gray-500">
+      <span className="text-xs text-gray-500 dark:text-gray-400">
         {timeFormat(new Date(message.createdAt))}
       </span>
     </div>

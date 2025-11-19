@@ -21,7 +21,7 @@ function ViewImageModal({ children, content, user }: ViewImageModalProps) {
       <DialogTrigger className="flex cursor-pointer justify-center">
         {children}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="from-gray-50 via-white to-gray-50 dark:bg-linear-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <DialogHeader>
           <DialogTitle className="text-center">
             {user.split(" ")[0]}&apos;s Image

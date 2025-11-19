@@ -63,12 +63,12 @@ function AccountCard({
     <div
       className={`flex items-center justify-between gap-2 rounded-xl border bg-linear-to-r ${
         provider.isConnected
-          ? "border-green-200 from-green-50 to-green-50"
-          : "border-gray-200 from-gray-100 to-gray-50"
+          ? "border-green-200 from-green-50 to-green-50 dark:border-green-700 dark:from-green-900 dark:to-green-900"
+          : "border-gray-200 from-gray-100 to-gray-50 dark:border-gray-700 dark:from-gray-900 dark:to-gray-900"
       } p-3 sm:p-4`}
     >
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm sm:h-12 sm:w-12 dark:bg-gray-800">
           {provider.icon === "lock" ? (
             <Lock className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
           ) : (
@@ -81,10 +81,10 @@ function AccountCard({
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-gray-900 sm:text-base">
+          <p className="text-sm font-semibold text-gray-900 sm:text-base dark:text-white">
             {provider.name}
           </p>
-          <p className="truncate text-xs text-gray-600 sm:text-sm">
+          <p className="truncate text-xs text-gray-600 sm:text-sm dark:text-gray-400">
             {providerAccount}
           </p>
         </div>
@@ -92,8 +92,8 @@ function AccountCard({
 
       {provider.isConnected ? (
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 sm:h-5 sm:w-5" />
-          <span className="hidden text-sm font-semibold text-green-600 sm:inline">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-green-600 sm:h-5 sm:w-5 dark:text-green-300" />
+          <span className="hidden text-sm font-semibold text-green-600 sm:inline dark:text-green-300">
             Connected
           </span>
           <UnlinkWarning

@@ -103,7 +103,7 @@ function ConnectedAccounts({
   ];
 
   return (
-    <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
+    <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6 dark:border-gray-700 dark:bg-gray-800">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Link2 className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />

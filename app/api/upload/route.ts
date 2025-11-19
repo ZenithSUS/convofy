@@ -1,4 +1,4 @@
-import baseFolder from "@/constants/baseFolder";
+import { baseFolder } from "@/constants/base";
 import cloudinary from "@/lib/cloudinary";
 import { NextRequest, NextResponse } from "next/server";
 import { Readable } from "stream";

@@ -375,7 +375,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   }
 
   return (
-    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
       <RoomHeader
         room={roomData as RoomContent}
         userId={session?.user.id as string}
@@ -394,7 +394,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
               <Button
                 onClick={() => fetchNextPage()}
                 variant="outline"
-                className="border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md"
+                className="border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-600 dark:hover:shadow-md"
               >
                 {isFetchingNextPage ? (
                   <>
@@ -419,9 +419,12 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         )}
 
         {isAllFetching && (
-          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4">
-            <Loader2 className="animate-spin text-blue-600" size={24} />
-            <h1 className="text-base font-medium text-blue-900">
+          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
+            <Loader2
+              className="animate-spin text-blue-600 dark:text-blue-400"
+              size={24}
+            />
+            <h1 className="text-base font-medium text-blue-900 dark:text-blue-300">
               Loading messages...
             </h1>
           </div>
@@ -474,7 +477,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       !isOtherPersonUnavailable &&
       !isUnavailable &&
       !isPendingPrivateRoom ? (
-        <div className="border-t bg-white shadow-lg">
+        <div className="border-t bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-900">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (
             <MediaPreview

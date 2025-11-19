@@ -62,7 +62,7 @@ function RoomHeader({ room, userId }: RoomHeaderProps) {
                   className="ring-border h-12 w-12 rounded-full object-cover ring-2"
                 />
                 {isPrivate && (
-                  <div className="ring-background absolute right-0 bottom-0 h-3 w-3 rounded-full bg-green-500 ring-2" />
+                  <div className="ring-background absolute right-0 bottom-0 h-3 w-3 rounded-full bg-green-500 ring-2 dark:bg-green-400" />
                 )}
               </div>
             )}

@@ -38,7 +38,7 @@ function UserCard({ user, userId }: UserCardProps) {
 
   return (
     <div
-      className="flex cursor-pointer items-center gap-3 rounded-lg border bg-white p-3 shadow-sm hover:shadow-md"
+      className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
       onClick={handleGetOrCreatePrivateRoom}
     >
       <Image
@@ -48,8 +48,12 @@ function UserCard({ user, userId }: UserCardProps) {
         height={40}
         className="h-10 w-10 rounded-full"
       />
-      <span className="font-medium text-gray-700">{user.name}</span>
-      <span className="ml-auto text-xs text-gray-500">Start chat</span>
+      <span className="font-medium text-gray-700 dark:text-gray-200">
+        {user.name}
+      </span>
+      <span className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+        Start chat
+      </span>
     </div>
   );
 }

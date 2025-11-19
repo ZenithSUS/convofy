@@ -1,4 +1,4 @@
-import baseUrl from "@/constants/baseUrl";
+import { baseUrl } from "@/constants/base";
 import transporter from "./config";
 
 export interface SendRecoveryEmailParams {

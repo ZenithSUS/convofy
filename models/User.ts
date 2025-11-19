@@ -26,6 +26,11 @@ export interface IUser extends Document {
   createdAt: Date;
   isAvailable: boolean;
   isAnonymous?: boolean;
+  preferences: {
+    theme: "light" | "dark";
+    hideStatus: boolean;
+    hideTypingIndicator: boolean;
+  };
   anonAlias?: string | null;
   anonAvatar?: string | null;
   linkedAccounts: {
@@ -34,7 +39,7 @@ export interface IUser extends Document {
     providerAccountId: string;
   }[];
   activeSessions: UserSession[];
-  role: string;
+  role: "user" | "anonymous" | "admin";
 }
 
 const UserSchema = new Schema<IUser>(
@@ -46,6 +51,11 @@ const UserSchema = new Schema<IUser>(
     status: { type: String, enum: ["online", "offline"], default: "offline" },
     lastActive: { type: Date },
     isAvailable: { type: Boolean, default: true },
+    preferences: {
+      theme: { type: String, enum: ["light", "dark"], default: "light" },
+      hideStatus: { type: Boolean, default: false },
+      hideTypingIndicator: { type: Boolean, default: false },
+    },
     isAnonymous: { type: Boolean, default: false },
     anonAlias: { type: String },
     anonAvatar: { type: String },
@@ -53,7 +63,7 @@ const UserSchema = new Schema<IUser>(
       {
         provider: {
           type: String,
-          enum: ["credentials", "google", "github", "discord"],
+          enum: ["credentials", "anonymous", "google", "github", "discord"],
           required: true,
         },
         providerAccount: {
@@ -82,7 +92,7 @@ const UserSchema = new Schema<IUser>(
     ],
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: ["user", "anonymous", "admin"],
       default: "user",
     },
   },
@@ -96,7 +106,7 @@ UserSchema.index(
     "linkedAccounts.providerAccount": 1,
     "linkedAccounts.providerAccountId": 1,
   },
-  { unique: true },
+  { unique: true, sparse: true },
 );
 
 // Session ID should be unique

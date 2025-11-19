@@ -20,7 +20,7 @@ function DeleteMessageModal({ onDelete }: DeleteMessageModalProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Trash2Icon className="h-6 w-6 cursor-pointer" />
+        <Trash2Icon className="h-6 w-6 cursor-pointer text-red-600 dark:text-red-500" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

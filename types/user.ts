@@ -16,7 +16,13 @@ export type User = {
   lastActive: Date;
   createdAt: Date;
   isAvailable: boolean;
+  isDarkMode: boolean;
   isAnonymous?: boolean;
+  preferences: {
+    theme: "light" | "dark";
+    hideStatus: boolean;
+    hideTypingIndicator: boolean;
+  };
   anonAlias?: string | null;
   anonAvatar?: string | null;
   linkedAccounts: {
@@ -26,10 +32,13 @@ export type User = {
   }[];
   activeSessions: UserSession[];
   sessionId?: string;
-  role: "user" | "admin";
+  role: "user" | "anonymous" | "admin";
 };
 
-export type UserCreate = Omit<User, "_id" | "activeSessions" | "isAvailable">;
+export type UserCreate = Omit<
+  User,
+  "_id" | "activeSessions" | "isAvailable" | "isDarkMode" | "preferences"
+>;
 
 export type UserLinkedAccount = {
   provider: UserOAuthProviders;
@@ -66,4 +75,9 @@ export type UserChangePassword = {
 
 export type UserTyping = Omit<User, "_id" | "activeSessions"> & {
   id: string;
+};
+
+export type UserUpdatePreferences = Pick<User, "preferences"> & {
+  userId: string;
+  isAnonymous: boolean;
 };

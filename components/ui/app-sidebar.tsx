@@ -139,15 +139,15 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
   };
 
   return (
-    <Sidebar className="overflow border-r border-gray-200">
-      <SidebarContent className="overflow-hidden bg-linear-to-b from-gray-50 to-white">
+    <Sidebar className="overflow border-r border-gray-200 dark:border-gray-800">
+      <SidebarContent className="overflow-hidden bg-linear-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
         {/* Navigation Section */}
         <SidebarGroup className="space-y-4 p-4">
           <SidebarGroupLabel className="flex items-center gap-2 px-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-blue-600 to-purple-600 shadow-md">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-r from-blue-600 to-purple-600 shadow-md dark:from-blue-500 dark:to-purple-500">
               <Navigation2 className="h-4 w-4 text-white" />
             </div>
-            <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent">
+            <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent dark:from-blue-400 dark:to-purple-400">
               Navigation
             </h1>
           </SidebarGroupLabel>
@@ -162,8 +162,8 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                       asChild
                       className={`transition-all duration-200 ${
                         isActive
-                          ? "bg-linear-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
-                          : "hover:bg-gray-100"
+                          ? "bg-linear-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 dark:from-blue-600 dark:to-purple-600 dark:hover:from-blue-500 dark:hover:to-purple-500"
+                          : "hover:bg-gray-100 dark:hover:bg-gray-800"
                       }`}
                     >
                       <Link
@@ -172,10 +172,10 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                         className="flex items-center gap-3 rounded-lg px-3 py-2"
                       >
                         <item.icon
-                          className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600"}`}
+                          className={`h-5 w-5 ${isActive ? "text-white" : "text-gray-600 dark:text-gray-400"}`}
                         />
                         <span
-                          className={`font-medium ${isActive ? "text-white" : "text-gray-700"}`}
+                          className={`font-medium ${isActive ? "text-white" : "text-gray-700 dark:text-gray-300"}`}
                         >
                           {item.title}
                         </span>
@@ -190,18 +190,18 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
         {/* Recent Chats Section */}
 
-        <SidebarSeparator className="my-2" />
+        <SidebarSeparator className="my-2 dark:bg-gray-800" />
 
         <SidebarGroup className="relative space-y-4 overflow-y-auto">
           <SidebarGroupLabel className="flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-blue-600" />
-              <span className="text-sm font-semibold text-gray-700">
+              <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                 Recent Chats
               </span>
             </div>
             {roomsList.length > 0 && (
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600">
+              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
                 {roomsList.length}
               </span>
             )}
@@ -211,13 +211,17 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
             <SidebarMenu className="space-y-5">
               {isLoading ? (
                 <div className="px-3 py-8 text-center">
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                  <p className="mt-2 text-xs text-gray-500">Loading chats...</p>
+                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400" />
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    Loading chats...
+                  </p>
                 </div>
               ) : roomsList.length === 0 ? (
                 <div className="px-3 py-8 text-center">
-                  <MessageCircleCode className="mx-auto h-8 w-8 text-gray-300" />
-                  <p className="mt-2 text-xs text-gray-500">No chats yet</p>
+                  <MessageCircleCode className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-700" />
+                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                    No chats yet
+                  </p>
                 </div>
               ) : (
                 roomsList.slice(0, 10).map((room) => {
@@ -230,8 +234,8 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                         asChild
                         className={`transition-all duration-200 ${
                           isCurrentRoom
-                            ? "border border-blue-200 bg-blue-50"
-                            : "hover:bg-gray-50"
+                            ? "border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
                         } px-3 py-5`}
                       >
                         <Link
@@ -242,13 +246,13 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                           {/* Avatar */}
                           <div className="relative shrink-0">
                             {isGroupChat ? (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-pink-400">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-pink-400 dark:from-purple-500 dark:to-pink-500">
                                 <Image
                                   src={room.image || "/default-avatar.png"}
                                   alt={room.name || "Avatar"}
                                   width={40}
                                   height={40}
-                                  className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm"
+                                  className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-gray-800"
                                 />
                               </div>
                             ) : (
@@ -257,7 +261,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                                 alt={room.name || "Avatar"}
                                 width={40}
                                 height={40}
-                                className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm"
+                                className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-gray-800"
                               />
                             )}
                           </div>
@@ -268,15 +272,15 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                               <p
                                 className={`truncate text-sm font-medium ${
                                   isCurrentRoom
-                                    ? "text-blue-700"
-                                    : "text-gray-800"
+                                    ? "text-blue-700 dark:text-blue-400"
+                                    : "text-gray-800 dark:text-gray-200"
                                 }`}
                               >
                                 {room.name || privateRoomChatName(room)}
                               </p>
                               {room.lastMessage?.createdAt && (
                                 <span
-                                  className={`flex shrink-0 items-center gap-1 text-xs ${isNotSeen(room) ? "text-blue-600" : "text-gray-400"} `}
+                                  className={`flex shrink-0 items-center gap-1 text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} `}
                                 >
                                   <Clock className="h-3 w-3" />
                                   {formatTimeAgo(room.lastMessage.createdAt)}
@@ -285,7 +289,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                             </div>
                             {room.lastMessage?.content && (
                               <p
-                                className={`mt-0.5 truncate text-xs ${isNotSeen(room) ? "text-blue-600" : "text-gray-400"}`}
+                                className={`mt-0.5 truncate text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`}
                               >
                                 {room.lastMessage.type === "text"
                                   ? room.lastMessage.content
@@ -311,7 +315,7 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                 href="/chat"
                 title="View all chats"
                 onClick={handleLinkClick}
-                className="absolute bottom-0 left-0 w-full rounded-lg border-t border-gray-200 bg-gray-100 px-3 py-4 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200"
+                className="absolute bottom-0 left-0 w-full rounded-lg border-t border-gray-200 bg-gray-100 px-3 py-4 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 View all chats
               </Link>

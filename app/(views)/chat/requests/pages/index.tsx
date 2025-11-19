@@ -79,10 +79,10 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
   );
 
   return (
-    <div className="flex h-screen flex-col bg-linear-to-br from-slate-50 via-white to-blue-50/30">
+    <div className="flex h-screen flex-col bg-linear-to-br from-slate-50 via-white to-blue-50/30 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950/20">
       <div className="flex-1 overflow-y-auto">
         {/* Sticky Header */}
-        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-xl">
+        <div className="sticky top-0 z-10 border-b border-gray-100 bg-white/90 shadow-sm backdrop-blur-xl dark:border-gray-800 dark:bg-gray-900/90">
           {connectionStatus !== "connected" && (
             <ConnectionStatus connectionStatus={connectionStatus} />
           )}
@@ -107,10 +107,10 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
               {/* Header Section */}
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     Message Requests
                   </h1>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     {messageRequestsData.length} pending{" "}
                     {messageRequestsData.length === 1 ? "request" : "requests"}
                   </p>
@@ -143,9 +143,9 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
           ) : (
             <div className="flex flex-col items-center justify-center py-32">
               <div className="space-y-3 text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-blue-50 to-indigo-100">
+                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-blue-50 to-indigo-100 dark:from-blue-950/50 dark:to-indigo-950/50">
                   <svg
-                    className="h-10 w-10 text-blue-400"
+                    className="h-10 w-10 text-blue-400 dark:text-blue-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -159,10 +159,10 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                     All caught up!
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     You don&apos;t have any message requests at the moment
                   </p>
                 </div>

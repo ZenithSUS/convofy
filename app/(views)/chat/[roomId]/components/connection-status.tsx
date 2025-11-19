@@ -13,10 +13,10 @@ function ConnectionStatus({ connectionStatus }: ConnectionStatusProps) {
     <div
       className={`flex items-center justify-between border-l-4 px-6 py-3 shadow-sm ${
         connectionStatus === "failed"
-          ? "border-red-500 bg-red-50 text-red-800"
+          ? "border-red-500 bg-red-50 text-red-800 dark:border-rose-400 dark:bg-rose-50 dark:text-rose-800"
           : connectionStatus === "unavailable"
-            ? "border-orange-500 bg-orange-50 text-orange-800"
-            : "border-yellow-500 bg-yellow-50 text-yellow-800"
+            ? "border-orange-500 bg-orange-50 text-orange-800 dark:border-amber-400 dark:bg-amber-50 dark:text-amber-800"
+            : "border-yellow-500 bg-yellow-50 text-yellow-800 dark:border-amber-400 dark:bg-amber-50 dark:text-amber-800"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -49,7 +49,7 @@ function ConnectionStatus({ connectionStatus }: ConnectionStatusProps) {
           size="sm"
           variant="outline"
           onClick={() => window.location.reload()}
-          className="bg-white hover:bg-gray-50"
+          className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700"
         >
           <RefreshCw size={16} className="mr-1" />
           Refresh

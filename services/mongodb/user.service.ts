@@ -11,15 +11,10 @@ import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { pusherServer } from "@/lib/pusher-server";
 import bcrypt from "bcrypt";
+import anonymousName from "@/helper/anonymous-name";
+import generateAnonymousAvatar from "@/helper/anonymous-avatar";
 
 export const userService = {
-  /**
-   * Creates a new user in the database.
-   *
-   * @param {UserType} data - User data to be inserted into the database.
-   * @returns {Promise<UserType>} - A promise that resolves with the newly created user.
-   * @throws {Error} - If there was an error while creating the user.
-   */
   async createUser(data: UserType): Promise<UserType> {
     try {
       await connectToDatabase();
@@ -30,12 +25,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Retrieves all users from the database, excluding passwords.
-   *
-   * @returns {Promise<UserType[]>} - A promise that resolves with an array of users.
-   * @throws {Error} - If there was an error while fetching the users.
-   */
   async getUsers(): Promise<UserType[]> {
     try {
       await connectToDatabase();
@@ -46,13 +35,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Fetches a user from the database by their ID, excluding passwords.
-   *
-   * @param {string} id - The ID of the user to fetch.
-   * @param {boolean} excludePassword - Whether to exclude the password field from the response.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
-   */
   async getUserById(
     id: string,
     excludePassword = true,
@@ -62,25 +44,12 @@ export const userService = {
     return user;
   },
 
-  /**
-   * Fetches a user from the database by their email, excluding passwords.
-   *
-   * @param {string} email - The email of the user to fetch.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the user if found, or null if not found.
-   */
   async getUserByEmail(email: string): Promise<UserType | null> {
     await connectToDatabase();
     const user = await User.findOne({ email }, "-password");
     return user;
   },
 
-  /**
-   * Fetches user data stats, including the number of messages, media, and contacts.
-   *
-   * @param {string} userId - The ID of the user to fetch data for.
-   * @returns {Promise<UserDataStats>} - A promise that resolves with the user data stats.
-   * @throws {Error} - If there was an error while fetching the data.
-   */
   async getUserDataStats(userId: string): Promise<UserMediaDataStats> {
     try {
       await connectToDatabase();
@@ -101,13 +70,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Retrieves user message stats, including the number of messages, edited messages, and deleted messages.
-   *
-   * @param {string} userId - The ID of the user to fetch message stats for.
-   * @returns {Promise<UserMessageDataStats>} - A promise that resolves with the user message stats.
-   * @throws {Error} - If there was an error while fetching the message stats.
-   */
   async getUserMessageStats(userId: string): Promise<UserMessageDataStats> {
     try {
       await connectToDatabase();
@@ -131,12 +93,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Updates a user in the database.
-   * @param {Partial<UserType>} data - The user data to update.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
-   * @throws {Error} - If there was an error while updating the user.
-   */
   async updateUser(data: Partial<UserType>): Promise<UserType | null> {
     try {
       await connectToDatabase();
@@ -152,13 +108,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Updates a user's password in the database.
-   * @param {string} id - The ID of the user to update.
-   * @param {string} newPassword - The new password of the user.
-   * @returns {Promise<boolean>} - A promise that resolves with true if the user was found and updated, or false if not found.
-   * @throws {Error} - If there was an error while updating the user.
-   */
   async updatePassword(id: string, newPassword: string): Promise<boolean> {
     try {
       await connectToDatabase();
@@ -177,11 +126,6 @@ export const userService = {
 
   /**
    * Changes the password of a user by first verifying the current password.
-   * If the current password is valid, it hashes the new password and updates the user's password.
-   * @param {string} id - The ID of the user to change the password of.
-   * @param {string} currentPassword - The current password of the user.
-   * @param {string} newPassword - The new password of the user.
-   * @returns {Promise<UserType>} - A promise that resolves with the updated user, excluding the password.
    * @throws {Error} - If the user is not found or if the current password is invalid.
    */
   async changePassword(
@@ -214,12 +158,36 @@ export const userService = {
     }
   },
 
-  /**
-   * Updates the status of a user in the database.
-   * @param {string} id - The ID of the user to update.
-   * @param {"online" | "offline"} status - The new status of the user.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
-   */
+  async updateUserPreferences(
+    id: string,
+    isAnonymous: boolean,
+    preferences: Partial<UserType["preferences"]>,
+  ): Promise<UserType | null> {
+    try {
+      const anonName = anonymousName();
+      const setAnonymous = {
+        anonAlias: anonName,
+        anonAvatar: generateAnonymousAvatar(anonName),
+      };
+      await connectToDatabase();
+      const user = await User.findOneAndUpdate(
+        { _id: id },
+        {
+          $set: { preferences: preferences },
+          isAnonymous: isAnonymous,
+          ...(isAnonymous
+            ? setAnonymous
+            : { anonAlias: null, anonAvatar: null }),
+        },
+        { new: true, fields: "-password" },
+      );
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   async updateUserStatus(
     id: string,
     status: "online" | "offline",
@@ -234,10 +202,7 @@ export const userService = {
   },
 
   /**
-   * Updates the status of a user in the database and broadcasts the new status to the user's Pusher channel.
-   * @param {string} id - The ID of the user to update.
-   * @param {"online" | "offline"} status - The new status of the user.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
+   * Updates user status and broadcasts the change via Pusher.
    */
   async updateLiveUserStatus(
     id: string,
@@ -247,8 +212,8 @@ export const userService = {
     const user = await User.findOneAndUpdate(
       { _id: id },
       { status, lastActive: new Date() },
-      { new: true, fields: "-password" },
-    );
+      { new: true },
+    ).select("status");
 
     const channelName = `user-${id}`;
 
@@ -262,12 +227,8 @@ export const userService = {
   },
 
   /**
-   * Links a user's credentials to an existing user account.
-   * @param {string} id - The ID of the user to link credentials to.
-   * @param {string} credentials - The email and password of the user to link.
-   * @param {UserLinkedAccount} linkedAccounts - The linked OAuth account to add.
-   * @returns {Promise<UserType>} - A promise that resolves with the updated user if found, or null if not found.
-   * @throws {Error} - If the email is already registered or if there was an error while linking the credentials.
+   * Links OAuth credentials to an existing user account.
+   * @throws {Error} - If the email is already registered.
    */
   async linkedUserCredentials(
     id: string,
@@ -309,13 +270,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Find a user by their linked OAuth account
-   * @param provider - The OAuth provider (google, github, etc.)
-   * @param providerAccount - The provider's account email
-   * @param providerAccountId - The provider's account ID
-   * @returns The user if found, null otherwise
-   */
   async getUserByLinkedAccount(
     provider: UserOAuthProviders,
     providerAccount: string,
@@ -339,13 +293,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Updates a user's linked accounts in the database.
-   * @param {string} userId - The ID of the user to update.
-   * @param {{ provider: string; providerAccount: string; providerAccountId: string }} account - The linked account to add.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
-   * @throws {Error} - If there was an error while updating the user.
-   */
   async updateLinkedAccount(
     userId: string,
     account: UserLinkedAccount,
@@ -363,16 +310,9 @@ export const userService = {
     }
   },
 
-  /**
-   * Replaces a user's linked credential provider in the database.
-   * @param {string} accountId - The ID of the user to update.
-   * @param {Partial<UserLinkedAccount>} account - The linked credential provider to replace.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
-   * @throws {Error} - If there was an error while updating the user.
-   */
   async replaceCredentialProvider(
     accountId: string,
-    account: Partial<UserLinkedAccount>, // allows partial updates (e.g., only email)
+    account: Partial<UserLinkedAccount>,
   ) {
     try {
       await connectToDatabase();
@@ -401,13 +341,6 @@ export const userService = {
     }
   },
 
-  /**
-   * Unlinks a user's linked account from their profile in the database.
-   * @param {string} userId - The ID of the user to unlink.
-   * @param {{ provider: string; providerAccount: string; providerAccountId: string }} account - The linked account to unlink.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the updated user if found, or null if not found.
-   * @throws {Error} - If there was an error while unlinking the account.
-   */
   async unlinkAccount(
     userId: string,
     account: UserLinkedAccount,
@@ -435,14 +368,8 @@ export const userService = {
     }
   },
 
-  /**
-   * Adds a new active session to a user's profile in the database.
-   * @param {string} userId - The ID of the user to add the session to.
-   * @param {UserSession} session - The active session to add.
-   * @returns {Promise<UserType>} - A promise that resolves with the updated user.
-   * @throws {Error} - If there was an error while updating the user.
-   */
   async addUserSession(userId: string, session: UserSession) {
+    await connectToDatabase();
     return await User.findByIdAndUpdate(
       userId,
       {
@@ -453,13 +380,8 @@ export const userService = {
     );
   },
 
-  /**
-   * Updates the last active date of a user's active session in the database.
-   * @param {string} userId - The ID of the user to update.
-   * @param {string} sessionId - The ID of the active session to update.
-   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
-   */
   async updateSessionActivity(userId: string, sessionId: string) {
+    await connectToDatabase();
     return await User.updateOne(
       {
         _id: userId,
@@ -474,13 +396,8 @@ export const userService = {
     );
   },
 
-  /**
-   * Revokes an active session of a user in the database.
-   * @param {string} userId - The ID of the user to revoke the session of.
-   * @param {string} sessionId - The ID of the active session to revoke.
-   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
-   */
   async revokeSession(userId: string, sessionId: string) {
+    await connectToDatabase();
     return await User.findByIdAndUpdate(
       { _id: userId },
       { $pull: { activeSessions: { sessionId } } },
@@ -488,13 +405,8 @@ export const userService = {
     );
   },
 
-  /**
-   * Revokes all active sessions of a user in the database, except for the specified session ID.
-   * @param {string} userId - The ID of the user to revoke the sessions of.
-   * @param {string} [exceptSessionId] - The ID of the active session to exclude from revocation.
-   * @returns {Promise<Document>} - A promise that resolves with the updated user document.
-   */
   async revokeAllSessions(userId: string, exceptSessionId?: string) {
+    await connectToDatabase();
     const update = exceptSessionId
       ? { $pull: { activeSessions: { sessionId: { $ne: exceptSessionId } } } }
       : { $set: { activeSessions: [] } };
@@ -503,11 +415,10 @@ export const userService = {
   },
 
   /**
-   * Removes all expired active sessions from all users in the database.
-   * This should be run as a cron job to clean up expired sessions periodically.
+   * Removes all expired sessions from all users.
+   * Should be run as a cron job.
    */
   async cleanExpiredSessions() {
-    // Run this as a cron job
     return await User.updateMany(
       {},
       {
@@ -520,23 +431,14 @@ export const userService = {
     );
   },
 
-  /**
-   * Fetches all active sessions of a user from the database.
-   * @param {string} userId - The ID of the user to fetch active sessions for.
-   * @returns {Promise<UserSession[]>} - A promise that resolves with an array of active sessions of the user.
-   */
   async getUserActiveSessions(userId: string) {
+    await connectToDatabase();
     const user = await User.findById(userId).select("activeSessions");
     return user?.activeSessions || [];
   },
 
-  /**
-   * Fetches the current active session ID of a user from the database.
-   * @param {string} userId - The ID of the user to fetch the active session for.
-   * @param {string} sessionId - The ID of the active session to fetch.
-   * @returns {Promise<UserSession["sessionId"]>} - A promise that resolves with the current active session ID of the user.
-   */
   async getCurrentSessionID(userId: string, sessionId: string) {
+    await connectToDatabase();
     const user = await User.findById(userId).select("activeSessions");
     const currentSessionID = user?.activeSessions.find(
       (session: UserSession) => session.sessionId === sessionId,
@@ -545,25 +447,13 @@ export const userService = {
     return currentSessionID;
   },
 
-  /**
-   * Deletes a user by their ID.
-   * @param {string} userId - The ID of the user to delete.
-   * @returns {Promise<UserType | null>} - A promise that resolves with the deleted user if found, or null if not found.
-   * @throws {Error} - If there was an error while deleting the user.
-   */
   async deleteUserById(userId: string) {
     await connectToDatabase();
     return await User.findOneAndDelete({ _id: userId });
   },
 
-  /**
-   * Verifies if a given password matches the hashed password of a user.
-   * If the user is not found, it returns false.
-   * @param {string} userId - The ID of the user to verify.
-   * @param {string} password - The password to verify.
-   * @returns {Promise<boolean>} - A promise that resolves with true if the password is valid, or false if not.
-   */
   async verifyPassword(userId: string, password: string): Promise<boolean> {
+    await connectToDatabase();
     const user = await User.findById(userId).select("password");
     if (!user) return false;
 

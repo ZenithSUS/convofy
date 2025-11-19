@@ -9,6 +9,7 @@ import {
   UserLinkedAccount,
   UserMediaDataStats,
   UserMessageDataStats,
+  UserUpdatePreferences,
 } from "@/types/user";
 import {
   UseBaseQueryResult,
@@ -308,5 +309,32 @@ export const useChangeEmail = (): UseMutationResult<
   return useMutation({
     mutationKey: ["changeEmail"],
     mutationFn: async (data: EmailChangeData) => changeEmail(data),
+  });
+};
+
+export const useUpdatePreferences = (): UseMutationResult<
+  User,
+  AxiosErrorMessage,
+  UserUpdatePreferences,
+  unknown
+> => {
+  const updatePreferences = async (
+    userId: string,
+    data: UserUpdatePreferences,
+  ) => {
+    const response = await client
+      .put(`users/${userId}/preferences`, data)
+      .then((res) => res.data)
+      .catch((err) => {
+        console.error("There is something wrong in updating preferences:", err);
+        throw err;
+      });
+    return response;
+  };
+
+  return useMutation({
+    mutationKey: ["updatePreferences"],
+    mutationFn: async (data: UserUpdatePreferences) =>
+      updatePreferences(data.userId, data),
   });
 };

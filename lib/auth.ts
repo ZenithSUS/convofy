@@ -39,7 +39,12 @@ declare module "next-auth" {
       lastActive?: Date | null;
       createdAt?: Date | null;
       isAnonymous?: boolean;
-      anonAlias?: string;
+      preferences?: {
+        theme: "light" | "dark";
+        hideStatus: boolean;
+        hideTypingIndicator: boolean;
+      };
+      anonAlias?: string | null;
       anonAvatar?: string | null;
       linkedAccounts?: {
         provider: UserOAuthProviders;
@@ -48,6 +53,7 @@ declare module "next-auth" {
       }[];
       sessionId?: string;
       role?: string;
+      sessionRevoked?: boolean;
     };
   }
 
@@ -61,6 +67,11 @@ declare module "next-auth" {
     createdAt?: Date | null;
     isAvailable?: boolean;
     isAnonymous?: boolean;
+    preferences?: {
+      theme: "light" | "dark";
+      hideStatus: boolean;
+      hideTypingIndicator: boolean;
+    };
     anonAlias?: string;
     anonAvatar?: string | null;
     linkedAccounts?: {
@@ -84,6 +95,11 @@ declare module "next-auth/jwt" {
     picture?: string | null;
     isAvailable?: boolean;
     isAnonymous?: boolean;
+    preferences?: {
+      theme: "light" | "dark";
+      hideStatus: boolean;
+      hideTypingIndicator: boolean;
+    };
     anonAlias?: string;
     anonAvatar?: string | null;
     linkedAccounts?: {
@@ -93,6 +109,10 @@ declare module "next-auth/jwt" {
     }[];
     userId?: string;
     role?: string;
+    lastRefresh?: number;
+    accessToken?: string;
+    provider?: string;
+    sessionRevoked?: boolean;
   }
 }
 
@@ -137,7 +157,50 @@ export const authOptions: NextAuthOptions = {
         }
       },
     }),
+    CredentialsProvider({
+      id: "anonymous",
+      name: "Anonymous",
+      credentials: {
+        alias: { label: "Alias", type: "text" },
+        avatar: { label: "Avatar", type: "text" },
+      },
 
+      async authorize(credentials) {
+        try {
+          if (!credentials?.alias || !credentials?.avatar)
+            throw new Error("Please provide alias and avatar.");
+
+          const alias = credentials.alias;
+          const avatarUrl = credentials.avatar;
+          const { data: anonymous } = await client.post<User>(
+            "/auth/anonymous",
+            {
+              alias: alias,
+              avatar: avatarUrl,
+            },
+          );
+
+          if (!anonymous?._id) throw new Error("Invalid user data returned.");
+
+          return {
+            id: anonymous._id.toString(),
+            name: anonymous.anonAlias,
+            email: anonymous.email,
+            image: anonymous.anonAvatar,
+            status: anonymous.status,
+            isAvailable: anonymous.isAvailable,
+            lastActive: anonymous.lastActive,
+            createdAt: anonymous.createdAt,
+            linkedAccounts: anonymous.linkedAccounts,
+            role: anonymous.role,
+          };
+        } catch (err: unknown) {
+          const error = err as { response: { data: string } };
+          const message = error.response.data || "Invalid credentials";
+          throw new Error(message);
+        }
+      },
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -168,96 +231,142 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
-      if (!user?.email) return false;
-
       try {
+        const notAllowedProviders = ["credentials", "anonymous"];
         const currentProvider = account?.provider || "credentials";
         const currentProviderAccountId = account?.providerAccountId || "";
         const currentAccountEmail = user.email || "";
 
-        // ---- Login flow ----
-        let existingUser = await userService.getUserByLinkedAccount(
-          currentProvider as UserOAuthProviders,
-          currentAccountEmail,
-          currentProviderAccountId,
-        );
+        // Get request headers for device info
+        const headers = await import("next/headers");
+        const headersList = await headers.headers();
+        const userAgent = headersList.get("user-agent") || "";
+        const ip =
+          headersList.get("x-forwarded-for") ||
+          headersList.get("x-real-ip") ||
+          "unknown";
 
-        // If the user linked account is not found, try to get the user by email
-        if (!existingUser) {
-          existingUser = await userService.getUserByEmail(user.email);
+        const sessionId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+        const deviceInfo = getDeviceInfo(userAgent, ip);
+
+        // ---- Anonymous flow (early return) ----
+        if (currentProvider === "anonymous" && user.role === "anonymous") {
+          if (!user.name || !user.id) return false;
+
+          const anonymousSession: UserSession = {
+            sessionId,
+            deviceInfo,
+            createdAt: new Date(),
+            lastActive: new Date(),
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          };
+
+          await userService.addUserSession(user.id, anonymousSession);
+          user.sessionId = sessionId;
+
+          return true;
         }
 
-        // Try to get the current session (may be null)
-        const session = await getServerSession(authOptions).catch(() => null);
+        if (!user?.email) return false;
 
-        // ---- Linking flow ----
-        if (
-          session?.user?.id &&
-          session?.user?.sessionId &&
-          currentProvider !== "credentials"
-        ) {
-          // Get the current user and current session
-          const currentUser = await userService.getUserById(session.user.id);
-          const currentSession = await userService.getCurrentSessionID(
-            session.user.id,
-            session.user.sessionId,
-          );
+        // ---- Authenticated user flow ----
+        let existingUser = await userService.getUserByEmail(user.email);
 
-          if (!currentUser) return false;
-
-          const linkedAccount = await userService.getUserByLinkedAccount(
+        // Only check linked account if user not found by email
+        if (!existingUser && currentProvider !== "credentials") {
+          existingUser = await userService.getUserByLinkedAccount(
             currentProvider as UserOAuthProviders,
             currentAccountEmail,
             currentProviderAccountId,
           );
+        }
 
+        // Get session once (non-blocking, use Promise)
+        const sessionPromise = getServerSession(authOptions).catch(() => null);
+
+        // ---- Linking flow ----
+        const session = await sessionPromise;
+
+        if (
+          session?.user?.id &&
+          session?.user?.sessionId &&
+          !notAllowedProviders.includes(currentProvider)
+        ) {
+          // Parallel fetch current user and session
+          const [currentUser, currentSession] = await Promise.all([
+            userService.getUserById(session.user.id),
+            userService.getCurrentSessionID(
+              session.user.id,
+              session.user.sessionId,
+            ),
+          ]);
+
+          if (!currentUser) return false;
+
+          // Check if this linked account belongs to a different user
           if (
-            linkedAccount &&
-            linkedAccount._id.toString() !== currentUser._id.toString()
+            existingUser &&
+            existingUser._id.toString() !== currentUser._id.toString()
           ) {
             return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
+          // Update linked account (non-blocking if possible)
           await userService.updateLinkedAccount(currentUser._id.toString(), {
             provider: currentProvider as UserOAuthProviders,
             providerAccount: currentAccountEmail,
             providerAccountId: currentProviderAccountId,
           });
 
-          // Make the current user the logged in user
-          user.sessionId = currentSession;
-          user.id = currentUser._id.toString();
-          user.name = currentUser.name;
-          user.email = currentUser.email;
-          user.image = currentUser.avatar;
-          user.status = currentUser.status;
-          user.isAvailable = currentUser.isAvailable;
-          user.lastActive = currentUser.lastActive;
-          user.createdAt = currentUser.createdAt;
-          user.linkedAccounts = currentUser.linkedAccounts;
-          user.role = currentUser.role;
+          // Populate user object
+          Object.assign(user, {
+            sessionId: currentSession,
+            id: currentUser._id.toString(),
+            name: currentUser.name,
+            email: currentUser.email,
+            image: currentUser.avatar,
+            status: currentUser.status,
+            isAvailable: currentUser.isAvailable,
+            lastActive: currentUser.lastActive,
+            createdAt: currentUser.createdAt,
+            isAnonymous: currentUser.isAnonymous,
+            linkedAccounts: currentUser.linkedAccounts,
+            preferences: currentUser.preferences,
+            role: currentUser.role,
+          });
 
           return true;
         }
 
-        // ---- Normal OAuth / Credentials SignIn ----
+        // ---- Validate OAuth account uniqueness ----
         if (
           account?.provider &&
           user.email &&
-          account.provider !== "credentials"
+          !notAllowedProviders.includes(account.provider)
         ) {
-          const existingLinked = await userService.getUserByLinkedAccount(
-            account.provider as UserOAuthProviders,
-            user.email,
-            account.providerAccountId!,
-          );
+          // Only check if we found a user by email but not by linked account
+          if (existingUser) {
+            const accountBelongsToUser = existingUser.linkedAccounts?.some(
+              (acc) =>
+                acc.provider === currentProvider &&
+                acc.providerAccountId === currentProviderAccountId,
+            );
 
-          if (
-            existingLinked &&
-            (!existingUser ||
-              existingLinked._id.toString() !== existingUser._id.toString())
-          ) {
-            return "/auth/error?error=AccountExistsWithDifferentCredential";
+            if (!accountBelongsToUser) {
+              // Check if this linked account belongs to someone else
+              const existingLinked = await userService.getUserByLinkedAccount(
+                account.provider as UserOAuthProviders,
+                user.email,
+                account.providerAccountId!,
+              );
+
+              if (
+                existingLinked &&
+                existingLinked._id.toString() !== existingUser._id.toString()
+              ) {
+                return "/auth/error?error=AccountExistsWithDifferentCredential";
+              }
+            }
           }
         }
 
@@ -284,27 +393,28 @@ export const authOptions: NextAuthOptions = {
 
             await client.post("/auth/register", newUserData);
             existingUser = await userService.getUserByEmail(user.email);
+
+            if (!existingUser) {
+              console.error("User creation failed for", user.email);
+              return false;
+            }
           } else {
-            return "auth/error?error=UserNotFound";
+            return "/auth/error?error=UserNotFound";
           }
         }
 
-        if (!existingUser) {
-          console.error("User creation failed for", user.email);
-          return false;
+        // ---- Update user if needed (batch updates) ----
+        const updates: Partial<typeof existingUser> = {};
+        const now = new Date();
+
+        // Check if lastActive needs update
+        if (existingUser.lastActive.getTime() < now.getTime() - 60000) {
+          // Only update if > 1 min old
+          updates.lastActive = now;
         }
 
-        // Ensure arrays exist
+        // Check if linked account needs to be added
         existingUser.linkedAccounts ??= [];
-
-        let needsUpdate = false;
-
-        // Update lastActive
-        if (existingUser.lastActive.getTime() < Date.now()) {
-          existingUser.lastActive = new Date();
-          needsUpdate = true;
-        }
-
         const accountExists = existingUser.linkedAccounts.some(
           (acc: UserLinkedAccount) =>
             acc.provider === currentProvider &&
@@ -312,57 +422,57 @@ export const authOptions: NextAuthOptions = {
             acc.providerAccountId === currentProviderAccountId,
         );
 
-        if (!accountExists) {
-          existingUser.linkedAccounts.push({
-            provider: currentProvider as UserOAuthProviders,
-            providerAccount: currentAccountEmail,
-            providerAccountId: currentProviderAccountId,
+        if (!accountExists && currentProvider !== "credentials") {
+          updates.linkedAccounts = [
+            ...existingUser.linkedAccounts,
+            {
+              provider: currentProvider as UserOAuthProviders,
+              providerAccount: currentAccountEmail,
+              providerAccountId: currentProviderAccountId,
+            },
+          ];
+        }
+
+        // Only update if there are changes
+        if (Object.keys(updates).length > 0) {
+          await userService.updateUser({
+            ...existingUser,
+            ...updates,
           });
-          needsUpdate = true;
+          // Update local reference
+          Object.assign(existingUser, updates);
         }
 
-        if (needsUpdate) {
-          await userService.updateUser(existingUser);
-        }
-
-        // Get request headers for device info
-        const headers = await import("next/headers");
-        const headersList = await headers.headers();
-        const userAgent = headersList.get("user-agent") || "";
-        const ip =
-          headersList.get("x-forwarded-for") ||
-          headersList.get("x-real-ip") ||
-          "unknown";
-
-        const sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const deviceInfo = getDeviceInfo(userAgent, ip);
-
+        // ---- Create and add session ----
         const newSession: UserSession = {
           sessionId,
           deviceInfo,
-          createdAt: new Date(),
-          lastActive: new Date(),
-          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          createdAt: now,
+          lastActive: now,
+          expiresAt: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000), // 30 days
         };
 
-        // Add session to user's active sessions
         await userService.addUserSession(
           existingUser._id.toString(),
           newSession,
         );
 
-        // Set user properties
-        user.sessionId = sessionId;
-        user.id = existingUser._id.toString();
-        user.name = existingUser.name;
-        user.email = existingUser.email;
-        user.image = existingUser.avatar;
-        user.status = existingUser.status;
-        user.isAvailable = existingUser.isAvailable;
-        user.lastActive = existingUser.lastActive;
-        user.createdAt = existingUser.createdAt;
-        user.linkedAccounts = existingUser.linkedAccounts;
-        user.role = existingUser.role;
+        // ---- Populate user object ----
+        Object.assign(user, {
+          sessionId,
+          id: existingUser._id.toString(),
+          name: existingUser.name,
+          email: existingUser.email,
+          image: existingUser.avatar,
+          status: existingUser.status,
+          isAvailable: existingUser.isAvailable,
+          lastActive: existingUser.lastActive,
+          createdAt: existingUser.createdAt,
+          isAnonymous: existingUser.isAnonymous,
+          preferences: existingUser.preferences,
+          linkedAccounts: existingUser.linkedAccounts,
+          role: existingUser.role,
+        });
 
         return true;
       } catch (error) {
@@ -376,16 +486,27 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token, trigger, newSession }) {
-      if (trigger === "update" && newSession) {
-        token.email = newSession.user?.email ?? token.email;
-        token.name = newSession.user?.name ?? token.name;
-        token.picture = newSession.user?.image ?? token.picture;
-        token.status = newSession.user?.status ?? token.status;
-        token.isAvailable = newSession.user?.isAvailable ?? token.isAvailable;
-        token.linkedAccounts =
-          newSession.user?.linkedAccounts ?? token.linkedAccounts;
+      // ---- Handle invalidated/revoked sessions ----
+      if (token.sessionRevoked || token.invalidated) {
+        throw new Error("Session revoked.");
       }
 
+      // ---- Handle session updates ----
+      if (trigger === "update" && newSession?.user) {
+        token.email = newSession.user.email ?? token.email;
+        token.name = newSession.user.name ?? token.name;
+        token.picture = newSession.user.image ?? token.picture;
+        token.status = newSession.user.status ?? token.status;
+        token.preferences = newSession.user.preferences ?? token.preferences;
+        token.isAvailable = newSession.user.isAvailable ?? token.isAvailable;
+        token.linkedAccounts =
+          newSession.user.linkedAccounts ?? token.linkedAccounts;
+        token.anonAlias = newSession.user.anonAlias ?? token.anonAlias;
+        token.anonAvatar = newSession.user.anonAvatar ?? token.anonAvatar;
+        token.role = newSession.user.role ?? token.role;
+      }
+
+      // ---- Populate session from token ----
       if (session.user) {
         session.user.id = token.userId ?? token.sub!;
         session.user.sessionId = token.sessionId;
@@ -398,114 +519,158 @@ export const authOptions: NextAuthOptions = {
         session.user.createdAt = token.createdAt!;
         session.user.linkedAccounts = token.linkedAccounts!;
         session.user.role = token.role!;
-      }
-
-      try {
-        const existingUser = await userService.getUserByEmail(
-          session.user.email!,
-        );
-        if (!existingUser) {
-          throw new Error("User no longer exists!");
-        }
-
-        // Validate session
-        if (token.sessionId) {
-          const sessionExists =
-            existingUser.activeSessions?.some(
-              (s) => s.sessionId === token.sessionId,
-            ) ?? false;
-
-          if (!sessionExists) {
-            throw new Error("Session revoked");
-          }
-        }
-      } catch (err) {
-        console.warn("Session validation failed:", err);
-        throw new Error("Session validation failed");
+        session.user.isAnonymous = token.isAnonymous!;
+        session.user.preferences = token.preferences!;
+        session.user.anonAlias = token.anonAlias ?? null;
+        session.user.anonAvatar = token.anonAvatar ?? null;
+        session.user.role = token.role!;
+        session.user.sessionRevoked = token.sessionRevoked;
       }
 
       return session;
     },
 
     async jwt({ token, account, user, trigger, session }) {
-      if (trigger === "update" && session) {
-        token.name = session.user?.name ?? token.name;
-        token.email = session.user?.email ?? token.email;
-        token.picture = session.user?.image ?? token.picture;
-        token.status = session.user?.status ?? token.status;
-        token.isAvailable = session.user?.isAvailable ?? token.isAvailable;
-        token.linkedAccounts =
-          session.user?.linkedAccounts ?? token.linkedAccounts;
-        return token;
+      // ---- Handle session updates (early return) ----
+      if (trigger === "update" && session?.user) {
+        return {
+          ...token,
+          name: session.user.name ?? token.name,
+          email: session.user.email ?? token.email,
+          picture: session.user.image ?? token.picture,
+          status: session.user.status ?? token.status,
+          isAvailable: session.user.isAvailable ?? token.isAvailable,
+          preferences: session.user.preferences ?? token.preferences,
+          linkedAccounts: session.user.linkedAccounts ?? token.linkedAccounts,
+          isAnonymous: session.user.isAnonymous ?? token.isAnonymous,
+          anonAlias: session.user.anonAlias ?? token.anonAlias,
+          anonAvatar: session.user.anonAvatar ?? token.anonAvatar,
+          role: session.user.role ?? token.role,
+          sessionRevoked: session.user.sessionRevoked ?? token.sessionRevoked,
+        };
       }
 
-      if (user) {
+      // ---- Handle anonymous provider ----
+      if (account?.provider === "anonymous" || token.role === "anonymous") {
+        return {
+          ...token,
+          isAnonymous: true,
+          picture: user.anonAvatar,
+          anonAlias: user.anonAlias,
+          anonAvatar: user.anonAvatar,
+          status: user.status,
+          sessionId: user.sessionId,
+          preferences: {
+            theme: "light",
+            hideStatus: false,
+            hideTypingIndicator: false,
+          },
+        };
+      }
+
+      // ---- Handle authenticated user (initial sign-in) ----
+      if (user && token.role !== "anonymous") {
         token.sessionId = user.sessionId;
         token.userId = user.id;
         token.name = user.name;
         token.picture = user.image;
         token.status = user.status;
         token.isAvailable = user.isAvailable;
+        token.preferences = user.preferences;
         token.lastActive = user.lastActive;
         token.createdAt = user.createdAt;
-        token.linkedAccounts =
-          user.linkedAccounts?.map((account) => ({
-            provider: account.provider,
-            providerAccount: account.providerAccount,
-            providerAccountId: account.providerAccountId,
-          })) ?? [];
+        token.linkedAccounts = user.linkedAccounts?.length
+          ? user.linkedAccounts.map((account) => ({
+              provider: account.provider,
+              providerAccount: account.providerAccount,
+              providerAccountId: account.providerAccountId,
+            }))
+          : [];
         token.role = user.role;
+        token.lastRefresh = Date.now();
+        token.isAnonymous = user.isAnonymous;
+        token.anonAlias = user.anonAlias;
+        token.anonAvatar = user.anonAvatar;
       }
 
+      // ---- Handle account provider info ----
       if (account) {
         token.accessToken = account.access_token;
         token.provider = account.provider;
       }
 
-      // ---- Refresh token ----
-      if (!user && token.email && token.sessionId) {
+      // ---- Refresh token with caching ----
+      if (!user && token.email && token.userId && token.sessionId) {
+        // Check if session is still valid
+
+        const sessions = await userService.getUserActiveSessions(token.userId);
+        const sessionExists = sessions.some(
+          (session: UserSession) => session.sessionId === token.sessionId,
+        );
+        console.log("sessionExists", sessionExists);
+
+        if (!sessionExists) {
+          console.warn("Session no longer exists, invalidating token");
+          // Mark token as invalid instead of throwing
+          return { ...token, sessionRevoked: true, invalidated: true };
+        }
+
+        // Only refresh from DB periodically (every 5 minutes)
+        const lastRefresh = (token.lastRefresh as number) || 0;
+        const now = Date.now();
+        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+        // Skip DB call if recently refreshed
+        if (now - lastRefresh < REFRESH_INTERVAL) {
+          return token;
+        }
+
         try {
           const dbUser = await userService.getUserByEmail(token.email);
-          if (dbUser) {
-            const sessionExists =
-              dbUser.activeSessions?.some(
-                (session) => session.sessionId === token.sessionId,
-              ) ?? false;
 
-            if (!sessionExists) {
-              throw new Error("Session revoked");
-            }
+          if (!dbUser) {
+            console.warn("User no longer exists, invalidating token");
+            // Return token marked for deletion instead of throwing
+            return { ...token, sessionRevoked: true, invalidated: true };
+          }
 
-            await userService.updateSessionActivity(
+          // Update session activity (non-blocking, fire and forget)
+          userService
+            .updateSessionActivity(
               dbUser._id.toString(),
               token.sessionId as string,
-            );
+            )
+            .catch((err) => console.error("Session update failed:", err));
 
-            token.status = dbUser.status;
-            token.isAvailable = dbUser.isAvailable;
-            token.lastActive = dbUser.lastActive;
-            token.createdAt = dbUser.createdAt;
-            token.name = dbUser.name;
-            token.picture = dbUser.avatar;
-            token.linkedAccounts =
-              dbUser.linkedAccounts?.map((account) => ({
+          // Update token with fresh data
+          token.status = dbUser.status;
+          token.isAvailable = dbUser.isAvailable;
+          token.lastActive = dbUser.lastActive;
+          token.createdAt = dbUser.createdAt;
+          token.name = dbUser.name;
+          token.picture = dbUser.avatar || dbUser.anonAvatar;
+          token.isAnonymous = dbUser.isAnonymous;
+          token.preferences = dbUser.preferences;
+          token.linkedAccounts = dbUser.linkedAccounts?.length
+            ? dbUser.linkedAccounts.map((account) => ({
                 provider: account.provider,
                 providerAccount: account.providerAccount,
                 providerAccountId: account.providerAccountId,
-              })) ?? [];
-            token.role = dbUser.role;
-          } else {
-            throw new Error("User No longer exists!");
-          }
+              }))
+            : [];
+          token.role = dbUser.role;
+          token.lastRefresh = now;
         } catch (err) {
-          console.warn("JWT refresh failed:", err);
-          throw err;
+          console.error("JWT refresh failed:", err);
+          // Mark token as invalid instead of throwing
+          return { ...token, sessionRevoked: true, invalidated: true };
         }
       }
 
-      // ---- Invalid session ----
-      if (!token.sessionId) {
-        throw new Error("Invalid session");
+      // ---- Validate session exists ----
+      if (!token.sessionId && !user) {
+        console.warn("Missing sessionId, invalidating token");
+        return { ...token, sessionRevoked: true, invalidated: true };
       }
 
       return token;

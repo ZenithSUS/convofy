@@ -1,4 +1,4 @@
-import baseFolder from "@/constants/baseFolder";
+import { baseFolder } from "@/constants/base";
 import cloudinary from "@/lib/cloudinary";
 import { getUserToken } from "@/lib/utils";
 import roomService from "@/services/mongodb/room.service";

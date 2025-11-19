@@ -52,13 +52,15 @@ function DeleteAccount({ userId, image }: { userId: string; image: string }) {
   };
 
   return (
-    <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4">
+    <div className="rounded-xl border-2 border-red-300 bg-red-50 p-4 shadow-sm dark:border-red-700 dark:bg-red-900/30">
       <div className="mb-3 flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <Trash2 className="mt-1 h-6 w-6 text-red-600" />
+          <Trash2 className="mt-1 h-6 w-6 text-red-600 dark:text-red-500" />
           <div>
-            <h3 className="font-semibold text-gray-900">Delete Account</h3>
-            <p className="mt-1 text-sm text-gray-600">
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              Delete Account
+            </h3>
+            <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">
               Permanently delete your account and all associated data. This
               action cannot be undone.
             </p>
@@ -70,7 +72,7 @@ function DeleteAccount({ userId, image }: { userId: string; image: string }) {
         <DialogTrigger asChild>
           <Button
             variant="destructive"
-            className="h-10 w-full rounded-lg font-semibold"
+            className="h-10 w-full rounded-lg bg-red-600 font-semibold hover:bg-red-500 dark:bg-red-700 dark:hover:bg-red-600"
           >
             <Trash2 className="mr-2 h-5 w-5" />
             Delete Account Permanently
@@ -78,7 +80,7 @@ function DeleteAccount({ userId, image }: { userId: string; image: string }) {
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
+            <DialogTitle className="flex items-center gap-2 text-lg text-red-700 sm:text-xl dark:text-red-600">
               <AlertTriangle className="h-5 w-5" />
               Delete Account Permanently
             </DialogTitle>

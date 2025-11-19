@@ -222,11 +222,11 @@ function MessageCard({
             message.sender._id === session.user.id ? "self-end" : "self-start"
           }`}
         >
-          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+          <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
             {timeFormat(new Date(message.createdAt))}
           </span>
           {message.isEdited && (
-            <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700 italic">
+            <span className="rounded-full bg-blue-50 px-2 py-1 text-xs text-blue-700 italic dark:bg-blue-900 dark:text-blue-300">
               edited
             </span>
           )}
@@ -243,15 +243,15 @@ function MessageCard({
         {/* Enhanced Options Menu */}
         {isUserMessage && shouldShowDetails && (
           <div className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200">
-            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md">
+            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md dark:border-gray-700 dark:bg-gray-800">
               <DeleteMessageModal onDelete={handleDeleteClick} />
               {message.type === "text" && !isEditingMessage && (
                 <button
                   onClick={() => handleEditMessage("edit", message._id)}
-                  className="group rounded-md p-2 transition-colors duration-200 hover:bg-blue-50"
+                  className="group rounded-md p-2 transition-colors duration-200 hover:bg-blue-50 dark:hover:bg-blue-900"
                   title="Edit message"
                 >
-                  <Edit className="h-4 w-4 text-gray-600 group-hover:text-blue-600" />
+                  <Edit className="h-4 w-4 text-gray-600 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400" />
                 </button>
               )}
             </div>
@@ -266,15 +266,15 @@ function MessageCard({
             onMouseLeave={() => setIsHovering(false)}
             className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
               message.sender._id === session?.user?.id
-                ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white"
-                : "rounded-bl-sm border border-gray-200 bg-white text-gray-800"
+                ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white dark:bg-linear-to-br dark:from-blue-700 dark:to-blue-600"
+                : "rounded-bl-sm border border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
             } ${
               isHovering && !isEditingMessage
                 ? message.sender._id === session?.user?.id
                   ? "scale-[1.02] shadow-md"
-                  : "scale-[1.02] border-gray-300 shadow-md"
+                  : "scale-[1.02] border-gray-300 shadow-md dark:border-gray-600"
                 : ""
-            } ${isEditingMessage ? "ring-2 ring-blue-400" : ""}`}
+            } ${isEditingMessage ? "ring-2 ring-blue-400 dark:ring-blue-500" : ""}`}
           >
             {/* Sender name for non-user messages */}
             {message.sender._id !== session?.user?.id && !isPrivate && (
@@ -298,8 +298,8 @@ function MessageCard({
             <div
               className={`absolute -bottom-2 h-0 w-0 ${
                 message.sender._id === session?.user?.id
-                  ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent"
-                  : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent"
+                  ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent dark:border-t-blue-600 dark:border-l-transparent"
+                  : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent dark:border-t-gray-800 dark:border-r-transparent"
               }`}
             />
           </div>

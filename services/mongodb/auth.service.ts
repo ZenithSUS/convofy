@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import User from "@/models/User";
 import { User as UserType } from "@/types/user";
+import { connectToDatabase } from "@/lib/mongodb";
 
 export const authService = {
   /**
@@ -13,6 +14,7 @@ export const authService = {
    */
   async registerUser(data: UserType) {
     try {
+      await connectToDatabase();
       const existing = await User.findOne({ email: data.email });
       if (existing) throw new Error("Email already registered");
 
@@ -51,6 +53,7 @@ export const authService = {
    */
   async loginUser(email: string, password: string) {
     try {
+      await connectToDatabase();
       const user = await User.findOne({ email });
 
       if (!user) throw new Error("Invalid credentials");
@@ -78,6 +81,7 @@ export const authService = {
    */
   async logoutUser(id: string) {
     try {
+      await connectToDatabase();
       const user = await User.findByIdAndUpdate(
         { _id: id },
         { status: "offline", lastActive: new Date() },
@@ -85,6 +89,39 @@ export const authService = {
       );
 
       if (!user) throw new Error("User not found");
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  /**
+   * Logs in as an anonymous user.
+   * Creates a new user with the provided alias and avatar, and marks them as anonymous.
+   * The user's email will be in the format of `${alias}@anonymous.com`.
+   * The user's status will be set to "online" and their last active date will be set to the current time.
+   * The user's role will be set to "anonymous".
+   * @param {string} alias - The alias of the anonymous user.
+   * @param {string} avatar - The avatar of the anonymous user.
+   * @returns {Promise<UserType>} - A promise that resolves with the newly created anonymous user.
+   * @throws {Error} - If there was an error while creating the anonymous user.
+   */
+  async loginAsAnonymous(alias: string, avatar: string) {
+    try {
+      await connectToDatabase();
+      const user = await User.create({
+        email: `${alias}@anonymous.com`,
+        name: alias,
+        isAnonymous: true,
+        anonAlias: alias,
+        anonAvatar: avatar,
+        status: "online",
+        linkedAccounts: [],
+        lastActive: new Date(),
+        createdAt: new Date(),
+        role: "anonymous",
+      });
 
       return user;
     } catch (error) {
@@ -103,6 +140,7 @@ export const authService = {
    */
   async verifyUser(id: string, password: string) {
     try {
+      await connectToDatabase();
       const user = await User.findOne({ _id: id });
 
       if (!user) throw new Error("User not found");

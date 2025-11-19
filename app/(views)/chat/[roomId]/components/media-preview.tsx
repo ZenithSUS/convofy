@@ -19,9 +19,9 @@ function MediaPreview({
   isUploading,
 }: MediaPreviewProps) {
   return (
-    <div className="border-b bg-gray-50 p-4">
+    <div className="border-b bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           Selected Files ({selectedFiles.length})
         </h3>
         <Button
@@ -29,7 +29,7 @@ function MediaPreview({
           size="sm"
           onClick={() => setSelectedFiles([])}
           disabled={isUploading}
-          className="text-red-600 hover:bg-red-50 hover:text-red-700"
+          className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-500 dark:hover:bg-red-50 dark:hover:text-red-400"
         >
           Clear All
         </Button>
@@ -52,7 +52,7 @@ function MediaPreview({
                   priority
                 />
                 <button
-                  className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                  className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-600 dark:hover:bg-red-700"
                   disabled={isUploading}
                   onClick={() => handleRemoveFile(index)}
                 >
@@ -67,14 +67,14 @@ function MediaPreview({
             return (
               <div
                 key={file.id}
-                className="group relative rounded-lg border-2 border-dashed border-gray-300 bg-white transition-all hover:border-blue-400"
+                className="group relative rounded-lg border-2 border-dashed border-gray-300 bg-white transition-all hover:border-blue-400 dark:border-gray-700 dark:bg-gray-800"
               >
                 <div className="flex h-24 items-center gap-2 p-3">
-                  <FileIcon className="h-6 w-6 shrink-0 text-gray-500" />
+                  <FileIcon className="h-6 w-6 shrink-0 text-gray-500 dark:text-gray-400" />
                   <span className="flex-1 truncate text-xs">{file.name}</span>
                 </div>
                 <button
-                  className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                  className="absolute top-1 right-1 rounded-full bg-red-500 p-1.5 text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-600 dark:hover:bg-red-700"
                   onClick={() => handleRemoveFile(index)}
                   disabled={isUploading}
                 >

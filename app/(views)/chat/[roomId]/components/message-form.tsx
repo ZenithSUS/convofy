@@ -48,7 +48,7 @@ function MessageForm({
   return (
     <Form {...messageForm}>
       <form
-        className="flex gap-2 p-4"
+        className="flex gap-2 border-t border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
         onSubmit={messageForm.handleSubmit(handleSendMessage)}
       >
         <FormField
@@ -63,7 +63,7 @@ function MessageForm({
                   placeholder={
                     isSending ? "Sending..." : "Type your message..."
                   }
-                  className="max-h-32 min-h-12 resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                  className="max-h-32 min-h-12 resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:bg-gray-800 dark:focus:ring-blue-400"
                   disabled={isSending}
                   onChange={(e) => {
                     field.onChange(e);
@@ -87,7 +87,7 @@ function MessageForm({
           <EmojiSelection onEmojiAppend={handleEmojiAppend} />
           <Button
             type="submit"
-            className="h-12 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
+            className="h-12 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-md transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-lg disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50 dark:bg-linear-to-r dark:from-blue-600 dark:to-purple-600 dark:hover:from-blue-700 dark:hover:to-purple-700"
             disabled={isSending || isUploading}
           >
             {isSending || isUploading ? (

@@ -50,9 +50,9 @@ function NotificationBell({ requests }: { requests: RoomRequest[] }) {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-full p-2 hover:bg-gray-100"
+        className="relative rounded-full p-2 hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 text-gray-600 dark:text-gray-400" />
         {requests.length > 0 && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
             {requests.length}

@@ -31,14 +31,14 @@ const MessageContent = ({ message }: { message: UserMessage }) => {
       );
     case "file":
       return (
-        <div className="flex h-[200px] max-w-screen items-center justify-center gap-2 rounded-2xl bg-gray-300">
+        <div className="flex h-[200px] max-w-screen items-center justify-center gap-2 rounded-2xl bg-gray-300 dark:bg-gray-600">
           <FileIcon size={22} />
           <Link
             href={message.content}
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-500 underline"
+            className="text-blue-500 hover:underline dark:text-blue-400"
           >
             {message.content.split("/").pop()}
           </Link>

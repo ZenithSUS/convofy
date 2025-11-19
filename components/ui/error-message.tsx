@@ -10,7 +10,7 @@ interface ErrorMessageProps {
 function ErrorMessage({ error, onClick }: ErrorMessageProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <h2 className="text-2xl font-bold text-red-600">
+      <h2 className="text-2xl font-bold text-red-600 dark:text-red-500">
         Error {error.response?.status}
       </h2>
       <p className="text-center text-lg">{axiosErrorMessage(error)}</p>

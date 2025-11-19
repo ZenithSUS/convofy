@@ -66,6 +66,7 @@ export const useGetRoomByUserId = (
   id: string,
   isAvailable: boolean,
   isSearch: boolean,
+  isNotAnonymous: boolean = true,
   searchQuery: string = "",
 ): UseQueryResult<RoomContent[], unknown> => {
   const getRoomByUserId = async (isSearch: boolean) => {
@@ -90,7 +91,7 @@ export const useGetRoomByUserId = (
   return useQuery({
     queryKey: ["rooms", id, searchQuery],
     queryFn: async () => getRoomByUserId(isSearch),
-    enabled: !!id && isAvailable,
+    enabled: !!id && isAvailable && !!isNotAnonymous,
   });
 };
 

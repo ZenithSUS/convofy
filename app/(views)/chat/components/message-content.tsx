@@ -57,14 +57,14 @@ const MessageContent = ({ message }: { message: Message }) => {
               <span className="font-normal">(Sends a file)</span>
             </strong>
           </div>
-          <div className="flex h-[125px] w-[250px] items-center justify-center bg-gray-300">
+          <div className="flex h-[125px] w-[250px] items-center justify-center bg-gray-300 dark:bg-gray-700">
             <FileIcon className="h-6 w-6" />
             <Link
               href={message.content}
               download
               target="_blank"
               rel="noopener noreferrer"
-              className="truncate text-blue-500 underline"
+              className="truncate text-blue-500 hover:text-blue-600 hover:underline dark:text-blue-400 dark:hover:text-blue-500"
             >
               {fileName}
             </Link>

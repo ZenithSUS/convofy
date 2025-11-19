@@ -61,7 +61,7 @@ function ChangeEmail({ session }: { session: Session }) {
   };
 
   return (
-    <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6">
+    <Card className="mb-4 border border-gray-200 bg-white shadow-lg sm:mb-6 dark:border-gray-700 dark:bg-gray-800">
       <CardHeader className="px-4 py-4 sm:px-6 sm:py-6">
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
           <Mail className="h-4 w-4 shrink-0 text-blue-600 sm:h-5 sm:w-5" />
@@ -129,20 +129,20 @@ function ChangeEmail({ session }: { session: Session }) {
         </div>
 
         {apiError && (
-          <Alert className="border-red-200 bg-red-50">
-            <Info className="h-4 w-4 text-red-600" />
+          <Alert className="flex items-center border-red-200 bg-red-50 dark:border-red-400 dark:bg-red-100">
+            <Info className="h-4 w-4 text-red-600 dark:text-red-900" />
             <AlertTitle className="line-clamp-2 text-sm text-red-900 sm:text-base">
               {apiError}
             </AlertTitle>
           </Alert>
         )}
 
-        <Alert className="border-blue-200 bg-blue-50">
-          <Info className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-sm text-blue-900 sm:text-base">
+        <Alert className="border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-gray-800">
+          <Info className="h-4 w-4 text-blue-600 dark:text-blue-300" />
+          <AlertTitle className="text-sm text-blue-900 sm:text-base dark:text-blue-100">
             Verification Required
           </AlertTitle>
-          <AlertDescription className="text-xs text-blue-800 sm:text-sm">
+          <AlertDescription className="text-xs text-blue-800 sm:text-sm dark:text-blue-200">
             We&apos;ll send a verification link to your new email address.
             You&apos;ll need to verify it before the change takes effect.
           </AlertDescription>
@@ -151,7 +151,7 @@ function ChangeEmail({ session }: { session: Session }) {
         <Button
           onClick={handleChangeEmail}
           disabled={isChangingEmail || !newEmail}
-          className="h-10 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-sm font-semibold hover:from-blue-700 hover:to-purple-700 sm:h-11"
+          className="h-10 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-sm font-semibold text-gray-900 hover:from-blue-700 hover:to-purple-700 sm:h-11 dark:from-blue-500 dark:to-purple-500 dark:text-white dark:hover:from-blue-600 dark:hover:to-purple-600"
         >
           {isChangingEmail ? (
             <>

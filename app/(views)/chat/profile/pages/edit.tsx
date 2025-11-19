@@ -181,7 +181,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
     );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Header Background */}
       <ProfileHeader
         userId={session.user.id}
@@ -192,7 +192,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
         <AvatarCard session={session} name="Edit Information" />
 
         {/* Edit Form */}
-        <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-10 shadow-2xl">
+        <div className="space-y-8 rounded-3xl border border-gray-100 bg-white p-10 shadow-2xl dark:border-gray-800 dark:bg-gray-800">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
@@ -206,7 +206,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                   <FormItem>
                     <FormLabel
                       htmlFor="avatar"
-                      className="text-sm font-semibold text-gray-700"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300"
                     >
                       Profile Picture
                     </FormLabel>
@@ -220,18 +220,18 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                               width={80}
                               height={80}
                               priority
-                              className="h-20 w-20 rounded-full border-4 border-blue-100 object-cover"
+                              className="h-20 w-20 rounded-full border-4 border-blue-100 object-cover dark:border-blue-900/50"
                             />
                           ) : (
-                            <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-gray-100 bg-gradient-to-br from-gray-100 to-gray-200">
-                              <User className="h-8 w-8 text-gray-400" />
+                            <div className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-gray-100 bg-linear-to-br from-gray-100 to-gray-200 dark:border-gray-700 dark:from-gray-700 dark:to-gray-800">
+                              <User className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                             </div>
                           )}
                         </div>
                         <div className="flex-1">
                           <label
                             htmlFor="avatar"
-                            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 font-medium text-blue-600 transition-colors hover:bg-blue-100"
+                            className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-blue-50 px-4 py-2 font-medium text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-950/50 dark:text-blue-400 dark:hover:bg-blue-950/70"
                           >
                             <Upload className="h-4 w-4" />
                             Choose Image
@@ -246,7 +246,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                               handleAvatarChange(e);
                             }}
                           />
-                          <p className="mt-1 text-xs text-gray-500">
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                             JPG, PNG (Max 5MB)
                           </p>
                         </div>
@@ -263,18 +263,18 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel
-                      className="text-sm font-semibold text-gray-700"
+                      className="text-sm font-semibold text-gray-700 dark:text-gray-300"
                       id="name"
                     >
                       Name
                     </FormLabel>
                     <div className="relative">
-                      <User className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <User className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                       <Input
                         placeholder="Enter your name"
                         type="text"
                         autoComplete="off"
-                        className="h-12 rounded-xl border-2 border-gray-200 pl-10 transition-colors focus:border-blue-500"
+                        className="h-12 rounded-xl border-2 border-gray-200 pl-10 transition-colors focus:border-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-600"
                         {...field}
                       />
                     </div>
@@ -286,14 +286,16 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
 
               <Button
                 type="submit"
-                className="disabled:opacity-50"
+                className="bg-linear-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 dark:from-blue-600 dark:to-purple-600 dark:hover:from-blue-500 dark:hover:to-purple-500"
                 disabled={isAnyFileUploading || !isAnyChange}
               >
                 {isAnyFileUploading ? "Saving..." : "Save"}
               </Button>
 
               {formError && (
-                <p className="text-center text-sm text-red-600">{formError}</p>
+                <p className="text-center text-sm text-red-600 dark:text-red-400">
+                  {formError}
+                </p>
               )}
             </form>
           </Form>

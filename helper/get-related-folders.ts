@@ -1,4 +1,4 @@
-import baseFolder from "@/constants/baseFolder";
+import { baseFolder } from "@/constants/base";
 
 /**
  * Returns the folder paths related to a specific user for deletion.

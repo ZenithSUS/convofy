@@ -30,12 +30,12 @@ function MediaCard({ media }: MediaCardProps) {
           />
         </ViewImageModal>
       ) : media.type === "file" ? (
-        <div className="flex h-[200px] w-screen flex-col items-center justify-center gap-2 truncate rounded-md bg-gray-400 md:flex-row">
+        <div className="flex h-[200px] w-screen flex-col items-center justify-center gap-2 truncate rounded-md bg-gray-400 md:flex-row dark:bg-gray-600">
           <FileIcon size={22} />
           <Link
             href={media.content}
             target="_blank"
-            className="text-center text-sm"
+            className="text-center text-sm text-blue-600 hover:underline dark:text-blue-400"
           >
             {filename}
           </Link>

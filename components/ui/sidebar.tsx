@@ -276,11 +276,11 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700">
+      <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-500 dark:hover:to-purple-600">
         <MessageSquare className="h-5 w-5 text-white" />
       </div>
       {!hideLabel && (
-        <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl">
+        <h1 className="truncate bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-lg font-bold text-transparent sm:text-xl dark:from-blue-400 dark:to-purple-400">
           Convofy
         </h1>
       )}

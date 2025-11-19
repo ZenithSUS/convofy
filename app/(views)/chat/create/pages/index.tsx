@@ -148,9 +148,9 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
   const descriptionLength = form.watch("description")?.length || 0;
 
   return (
-    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50">
+    <div className="flex h-screen flex-col bg-linear-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-xl">
+      <div className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 shadow-sm backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80">
         <div className="p-4">
           <ChatHeader session={session} />
         </div>
@@ -162,23 +162,25 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
           {/* Back Button */}
           <button
             onClick={() => router.push("/chat")}
-            className="group mb-6 flex items-center gap-2 text-gray-600 transition-colors hover:text-blue-600 md:hidden"
+            className="group mb-6 flex items-center gap-2 text-gray-700 transition-colors hover:text-blue-600 md:hidden dark:text-gray-300"
           >
             <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
-            <span className="font-semibold">Back to Chats</span>
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              Back to Chats
+            </span>
           </button>
 
           {/* Form Card */}
-          <div className="rounded-3xl border border-gray-200 bg-white p-8 shadow-2xl">
+          <div className="rounded-3xl border border-gray-200 bg-white bg-linear-to-br from-gray-50 via-white to-gray-50 p-8 shadow-2xl dark:border-gray-600 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
             {/* Header Section */}
             <div className="mb-8 text-center">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
                 <MessageSquarePlus className="h-8 w-8 text-white" />
               </div>
-              <h2 className="mb-2 text-3xl font-bold text-gray-900">
+              <h2 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
                 Create New Room
               </h2>
-              <p className="text-gray-600">
+              <p className="text-gray-700 dark:text-gray-300">
                 Set up a new chat room and invite your friends
               </p>
             </div>
@@ -190,13 +192,13 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                 onSubmit={form.handleSubmit(onSubmit)}
               >
                 {/* Room Image Upload */}
-                <div className="rounded-xl border border-blue-100 bg-linear-to-br from-blue-50 to-purple-50 p-6">
+                <div className="rounded-xl border border-blue-100 bg-linear-to-br from-blue-50 to-purple-50 p-6 dark:border-blue-900/50 dark:from-blue-950/50 dark:to-purple-950/50">
                   <FormField
                     control={form.control}
                     name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="mb-3 flex items-center justify-center gap-2 truncate text-sm font-semibold text-gray-700 md:justify-start">
+                        <FormLabel className="mb-3 flex items-center justify-center gap-2 truncate text-sm font-semibold text-gray-700 md:justify-start dark:text-gray-300">
                           <ImageIcon size={18} />
                           Room Image (Optional)
                         </FormLabel>
@@ -219,14 +221,14 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                               </button>
                             </div>
                           ) : (
-                            <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-linear-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28">
-                              <Users className="h-12 w-12 text-gray-400" />
+                            <div className="flex h-28 w-28 items-center justify-center rounded-2xl border-4 border-white bg-linear-to-br from-gray-100 to-gray-200 shadow-lg md:h-28 md:w-28 dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
+                              <Users className="h-12 w-12 text-gray-400 dark:text-gray-100" />
                             </div>
                           )}
                           <div className="flex-1">
                             <label
                               htmlFor="room-image"
-                              className="inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-blue-200 bg-white px-4 py-2.5 font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50"
+                              className="dark:boder-blue inline-flex cursor-pointer items-center gap-2 rounded-xl border-2 border-blue-200 bg-white px-4 py-2.5 font-semibold text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
                             >
                               <Upload size={18} />
                               Choose Image
@@ -241,7 +243,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                                 handleImageChange(e);
                               }}
                             />
-                            <p className="mt-2 text-center text-xs text-gray-600 md:text-start">
+                            <p className="mt-2 text-center text-xs text-gray-600 md:text-start dark:text-gray-300">
                               PNG, JPG up to 5MB
                             </p>
                           </div>
@@ -258,7 +260,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                      <FormLabel className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300">
                         <span className="flex items-center gap-2">
                           <Users size={18} />
                           Room Name
@@ -271,7 +273,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                       </FormLabel>
                       <Input
                         placeholder="Enter room name (e.g., Study Group, Team Chat)"
-                        className="h-12 rounded-xl border-2 border-gray-200 transition-colors focus:border-blue-500"
+                        className="h-12 rounded-xl border-2 border-gray-200 transition-colors focus:border-blue-500 dark:border-gray-700 dark:focus:border-blue-200"
                         maxLength={50}
                         {...field}
                       />
@@ -286,7 +288,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                      <FormLabel className="flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-300">
                         <span className="flex items-center gap-2">
                           <FileText size={18} />
                           Description
@@ -299,7 +301,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                       </FormLabel>
                       <Textarea
                         placeholder="Describe the purpose of this room..."
-                        className="min-h-[100px] resize-none rounded-xl border-2 border-gray-200 transition-colors focus:border-blue-500"
+                        className="min-h-[100px] resize-none rounded-xl border-2 border-gray-200 transition-colors focus:border-blue-500 dark:border-gray-700 dark:focus:border-blue-200"
                         maxLength={500}
                         {...field}
                       />
@@ -309,10 +311,10 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                 />
 
                 {/* Info Box */}
-                <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+                <div className="flex items-start gap-3 rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900/50 dark:bg-gray-800/60">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600 dark:text-blue-300" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       <span className="font-semibold">Room Settings:</span> Your
                       room will be created as public by default. You&apos;ll be
                       automatically added as the first member and can invite
@@ -325,7 +327,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
                 <div className="flex flex-col gap-3 pt-4 sm:flex-row">
                   <Button
                     variant="default"
-                    className="h-12 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+                    className="h-12 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
                     type="submit"
                     disabled={
                       isUploading || form.formState.isSubmitting || isSubmitting
@@ -346,8 +348,8 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
 
                   <Button
                     type="button"
-                    variant="outline"
-                    className="h-12 flex-1 rounded-xl border-2 border-gray-300 font-semibold transition-all duration-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    variant="destructive"
+                    className="h-12 flex-1 rounded-xl border-2 font-semibold transition-all duration-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:hover:bg-red-500"
                     disabled={
                       isUploading || form.formState.isSubmitting || isSubmitting
                     }

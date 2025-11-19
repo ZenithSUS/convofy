@@ -10,12 +10,16 @@ interface AvatarCardProps {
 function AvatarCard({ children, session, name }: AvatarCardProps) {
   return (
     <div className="relative -mt-20 mb-8">
-      <div className="rounded-3xl border border-gray-300 bg-white p-6 shadow-2xl backdrop-blur-lg">
+      <div className="rounded-3xl border border-gray-300 bg-white p-6 shadow-2xl backdrop-blur-lg dark:border-gray-700 dark:bg-gray-800">
         <div className="flex flex-col items-center gap-3">
           <UserImage userImage={session.user.image} />
           <div className="text-center">
-            <h1 className="mb-2 text-3xl font-bold text-gray-900">{name}</h1>
-            <p className="text-sm text-gray-600">{session.user.name}</p>
+            <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+              {name}
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {session.user.name}
+            </p>
           </div>
         </div>
 

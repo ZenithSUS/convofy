@@ -102,9 +102,9 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
   };
 
   return (
-    <Card className="mb-4 border-2 border-red-200 bg-white shadow-lg sm:mb-6">
-      <CardHeader className="bg-red-50 px-4 py-4 sm:px-6 sm:py-6">
-        <CardTitle className="flex items-center gap-2 text-lg text-red-700 sm:text-xl">
+    <Card className="mb-4 border-2 border-red-200 bg-white shadow-lg sm:mb-6 dark:border-red-800 dark:bg-gray-800">
+      <CardHeader className="bg-red-50 px-4 py-4 sm:px-6 sm:py-6 dark:bg-red-100">
+        <CardTitle className="flex items-center gap-2 text-lg text-red-700 sm:text-xl dark:text-red-600">
           <AlertTriangle className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
           <span className="truncate">Danger Zone</span>
         </CardTitle>
@@ -114,7 +114,7 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
       </CardHeader>
       <CardContent className="space-y-3 px-4 pt-4 sm:space-y-4 sm:px-6 sm:pt-6">
         {/* Deactivate Account */}
-        <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-3 sm:p-4">
+        <div className="rounded-xl border-2 border-orange-200 bg-orange-50 p-3 sm:p-4 dark:bg-orange-100">
           <div className="mb-3 flex items-start justify-between gap-2">
             <div className="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
               <PauseCircle className="mt-0.5 h-5 w-5 shrink-0 text-orange-600 sm:mt-1 sm:h-6 sm:w-6" />
@@ -136,7 +136,7 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
             <DialogTrigger asChild>
               <Button
                 variant="outline"
-                className="h-9 w-full rounded-lg border-2 border-orange-300 text-xs font-semibold text-orange-600 hover:bg-orange-100 sm:h-10 sm:text-sm"
+                className="dark h-9 w-full rounded-lg border-2 border-orange-600 bg-transparent text-xs font-semibold text-orange-600 hover:bg-orange-50 hover:text-orange-700 sm:h-10 sm:text-sm dark:border-orange-400 dark:text-orange-400 dark:hover:bg-orange-900/50 dark:hover:text-orange-300"
               >
                 <PauseCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                 <span className="hidden sm:inline">
@@ -151,7 +151,7 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
             <DialogContent className="max-w-[calc(100%-2rem)] rounded-2xl sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <PauseCircle className="h-5 w-5 text-orange-600" />
+                  <PauseCircle className="h-5 w-5 text-orange-600 sm:h-6 sm:w-6 dark:text-orange-400" />
                   {session.user.isAvailable ? "Deactivate" : "Reactivate"}{" "}
                   Account
                 </DialogTitle>
@@ -188,7 +188,7 @@ function DangerZone({ session, linkedAccounts }: DangerZoneProps) {
                     isChangingAvailability ||
                     (isLinkedAccountOnlyCredentials && !password)
                   }
-                  className="h-9 w-full rounded-lg bg-orange-600 text-xs font-semibold hover:bg-orange-700 sm:h-10 sm:text-sm"
+                  className="h-9 w-full rounded-lg bg-orange-600 text-xs font-semibold text-white hover:bg-orange-700 sm:h-10 sm:text-sm dark:bg-orange-400 dark:text-gray-900 dark:hover:bg-orange-500"
                 >
                   {isChangingAvailability ? (
                     <>

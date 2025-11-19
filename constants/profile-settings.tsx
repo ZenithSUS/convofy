@@ -1,4 +1,10 @@
-import { EditIcon, FileImageIcon, SearchIcon, User2Icon } from "lucide-react";
+import {
+  EditIcon,
+  FileImageIcon,
+  PaintBucketIcon,
+  SearchIcon,
+  User2Icon,
+} from "lucide-react";
 
 export const profileSettings = [
   {
@@ -15,7 +21,13 @@ export const profileSettings = [
     href: "/chat/profile/messages",
     color: "from-green-500 to-green-600",
   },
-
+  {
+    name: "Preferences",
+    description: "Customize your chat experience",
+    icon: <PaintBucketIcon size={20} />,
+    href: "/chat/profile/preferences",
+    color: "from-yellow-500 to-yellow-600",
+  },
   {
     name: "Media & Files",
     description: "View shared photos and files",

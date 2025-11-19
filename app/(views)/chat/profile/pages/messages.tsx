@@ -95,7 +95,7 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 dark:bg-linear-to-br dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Header Background */}
       <ProfileHeader
         userId={session.user.id}
@@ -108,38 +108,44 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
           {/* Message Stats */}
           <div className="mx-auto max-w-7xl pb-4">
             <div className="grid grid-cols-3 place-content-center gap-4">
-              <div className="flex flex-col items-center rounded-3xl border border-green-300 bg-gradient-to-br from-green-50 to-green-100 p-4 shadow-2xl backdrop-blur-lg">
-                <MessageSquareIcon className="h-7 w-7 text-green-900" />
-                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-green-900">
+              <div className="flex flex-col items-center rounded-3xl border border-green-300 bg-linear-to-br from-green-50 to-green-100 p-4 shadow-2xl backdrop-blur-lg dark:bg-linear-to-br dark:from-green-900 dark:to-green-800">
+                <MessageSquareIcon className="h-7 w-7 text-green-900 dark:text-green-300" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-green-900 dark:text-green-300">
                   {isUserMessageStatsProcessing ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     userMessageStats?.messages || 0
                   )}
                 </p>
-                <p className="text-center text-sm text-green-700">Total</p>
+                <p className="text-center text-sm text-green-700 dark:text-green-500">
+                  Total
+                </p>
               </div>
-              <div className="flex flex-col items-center rounded-3xl border border-blue-300 bg-gradient-to-br from-blue-50 to-blue-100 p-4 shadow-2xl backdrop-blur-lg">
-                <Sparkles className="h-7 w-7 text-blue-900" />
-                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-blue-900">
+              <div className="flex flex-col items-center rounded-3xl border border-blue-300 bg-linear-to-br from-blue-50 to-blue-100 p-4 shadow-2xl backdrop-blur-lg dark:bg-linear-to-br dark:from-blue-900 dark:to-blue-800">
+                <Sparkles className="h-7 w-7 text-blue-900 dark:text-blue-300" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-blue-900 dark:text-blue-300">
                   {isUserMessageStatsProcessing ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     userMessageStats?.editedMessages || 0
                   )}
                 </p>
-                <p className="text-center text-sm text-blue-700">Edited</p>
+                <p className="text-center text-sm text-blue-700 dark:text-blue-500">
+                  Edited
+                </p>
               </div>
-              <div className="flex flex-col items-center rounded-3xl border border-gray-300 bg-gradient-to-br from-gray-50 to-gray-100 p-4 shadow-2xl backdrop-blur-lg">
-                <ImageIcon className="h-7 w-7 text-gray-900" />
-                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900">
+              <div className="flex flex-col items-center rounded-3xl border border-gray-300 bg-linear-to-br from-gray-50 to-gray-100 p-4 shadow-2xl backdrop-blur-lg dark:bg-linear-to-br dark:from-gray-900 dark:to-gray-800">
+                <ImageIcon className="h-7 w-7 text-gray-900 dark:text-gray-300" />
+                <p className="flex items-center justify-center gap-2 text-2xl font-bold text-gray-900 dark:text-gray-300">
                   {isUserMessageStatsProcessing ? (
                     <Loader2 className="animate-spin" />
                   ) : (
                     userMessageStats?.nonTextMessages || 0
                   )}
                 </p>
-                <p className="text-center text-sm text-gray-700">Non-Text</p>
+                <p className="text-center text-sm text-gray-700 dark:text-gray-400">
+                  Non-Text
+                </p>
               </div>
             </div>
           </div>
@@ -150,11 +156,14 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
           <SearchBar
             onSearch={handleSearch}
             placeholder="Search messages"
-            className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300"
+            className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500"
           />
           {searchQuery && (
             <div className="absolute top-1/2 right-3 -translate-y-1/2">
-              <Sparkles size={16} className="animate-pulse text-blue-500" />
+              <Sparkles
+                size={16}
+                className="animate-pulse text-blue-500 dark:text-blue-400"
+              />
             </div>
           )}
         </div>
@@ -162,16 +171,19 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
         {/* Search Result */}
         {isSearchMode && (
           <div className="pb-4">
-            <div className="rounded-xl border border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50 p-4">
+            <div className="rounded-xl border border-blue-100 bg-linear-to-r from-blue-50 to-purple-50 p-4 dark:bg-linear-to-r dark:from-blue-900 dark:to-purple-900">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <TrendingUp size={16} className="text-blue-600" />
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200">
+                    <TrendingUp
+                      size={16}
+                      className="text-blue-600 dark:text-blue-400"
+                    />
                     Search Results
                   </h2>
-                  <p className="mt-1 text-xs text-gray-600">
+                  <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
                     Found{" "}
-                    <span className="font-bold text-blue-600">
+                    <span className="font-bold text-blue-600 dark:text-blue-400">
                       {userMessagesData ? userMessagesData.length : 0}
                     </span>{" "}
                     matches for {`"${debouncedSearchQuery}"`}
@@ -185,14 +197,14 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
         <div className="flex max-h-[60vh] flex-col gap-4 overflow-y-auto">
           {/* Messages Content */}
           {isMessagesProcessing && (
-            <div className="flex items-center justify-center p-4 text-gray-500">
+            <div className="flex items-center justify-center p-4 text-gray-500 dark:text-gray-400">
               <Loader2 className="mr-2 animate-spin" />
               Loading messages...
             </div>
           )}
 
           {userMessagesData?.length === 0 && !isMessagesProcessing && (
-            <div className="flex items-center justify-center p-4 text-gray-500">
+            <div className="flex items-center justify-center p-4 text-gray-500 dark:text-gray-400">
               No messages found
             </div>
           )}

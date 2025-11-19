@@ -9,11 +9,6 @@ import { Types } from "mongoose";
 import { pusherServer } from "@/lib/pusher-server";
 import User from "@/models/User";
 
-/**
- * This function creates a new message
- * @param data
- * @returns A new created message
- */
 export const createMessage = async (data: CreateMessage) => {
   try {
     await connectToDatabase();
@@ -27,7 +22,6 @@ export const createMessage = async (data: CreateMessage) => {
       createdAt: new Date(),
     });
 
-    // Get the room and update the lastMessage field
     const room = await Room.findById(data.room);
 
     if (room) {
@@ -46,13 +40,6 @@ export const createMessage = async (data: CreateMessage) => {
   }
 };
 
-/**
- * This function gets messages by room that are paginated
- * @param roomId
- * @param limit
- * @param offset
- * @returns An array of messages or an error
- */
 export const getMessages = async (
   roomId: string,
   limit: number,
@@ -73,14 +60,6 @@ export const getMessages = async (
   }
 };
 
-/**
- * Retrieves messages sent by a user, paginated and sorted by createdAt in descending order.
- * @param {string} userId - The ID of the user to fetch messages for.
- * @param {number} limit - The maximum number of messages to return.
- * @param {number} offset - The number of messages to skip before returning the results.
- * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user.
- * @throws {Error} - If there was an error while fetching the messages.
- */
 export const getMessagesByUserId = async (
   userId: string,
   limit: number,
@@ -102,15 +81,6 @@ export const getMessagesByUserId = async (
   }
 };
 
-/**
- * Retrieves messages sent by a user that match a given query, paginated and sorted by createdAt in descending order.
- * @param {string} userId - The ID of the user to fetch messages for.
- * @param {string} query - The query to filter the messages by.
- * @param {number} limit - The maximum number of messages to return.
- * @param {number} offset - The number of messages to skip before returning the results.
- * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user that match the query.
- * @throws {Error} - If there was an error while fetching the messages.
- */
 export const getMessagesByUserIdAndQuery = async (
   userId: string,
   query: string,
@@ -137,12 +107,6 @@ export const getMessagesByUserIdAndQuery = async (
   }
 };
 
-/**
- * Finds a message by its ID.
- * @param {string} messageId - The ID of the message to find.
- * @returns {Promise<Message | null>} A promise that resolves with the message if found, or null if not found.
- * @throws {Error} - If an error occurs while finding the message.
- */
 export const findMessageById = async (messageId: string) => {
   try {
     const message = await Message.findOne({
@@ -156,13 +120,7 @@ export const findMessageById = async (messageId: string) => {
 };
 
 /**
- * This function gets messages by room that are paginated
- * and sorted by createdAt
- * @param userId The ID of the user
- * @param roomId The ID of the room
- * @param limit The maximum number of messages to return
- * @param offset  The number of messages to skip before returning the results
- * @returns An array of messages or an error
+ * Retrieves messages for a room, marks them as seen by the user, and broadcasts the seen status via Pusher.
  */
 export const getMessagesByRoom = async (
   userId: string,
@@ -187,7 +145,6 @@ export const getMessagesByRoom = async (
       { $addToSet: { "status.seenBy": userId } },
     );
 
-    // Trigger a pusher event to update seenBy status
     const roomChannel = `presence-chat-${roomId}`;
     const response = await pusherServer.get({
       path: `/channels/${roomChannel}/users`,
@@ -219,16 +176,6 @@ export const getMessagesByRoom = async (
   }
 };
 
-/**
- * Retrieves messages sent by a user and of a specific type (image or file).
- * The messages are paginated and sorted by createdAt in descending order.
- * @param {string} userId - The ID of the user to fetch messages for.
- * @param {number} limit - The maximum number of messages to return.
- * @param {number} offset - The number of messages to skip before returning the results.
- * @param {string} [fileType] - The type of file to fetch messages for (image or file). If not provided, all messages of type image or file are returned.
- * @returns {Promise<Message[]>} - A promise that resolves with an array of messages sent by the given user and of the specified type.
- * @throws {Error} - If there was an error while fetching the messages.
- */
 export const getMessagesByUserAndFileType = async (
   userId: string,
   limit: number,
@@ -238,7 +185,6 @@ export const getMessagesByUserAndFileType = async (
   try {
     await connectToDatabase();
 
-    // Validate userId first
     if (!Types.ObjectId.isValid(userId)) {
       throw new Error("Invalid userId");
     }
@@ -264,12 +210,6 @@ export const getMessagesByUserAndFileType = async (
   }
 };
 
-/**
- * This function edits a message
- * @param messageId
- * @param content
- * @returns
- */
 export const editMessage = async (messageId: string, content: string) => {
   try {
     await connectToDatabase();
@@ -295,11 +235,6 @@ export const editMessage = async (messageId: string, content: string) => {
   }
 };
 
-/**
- * This function deletes a message
- * @param messageId
- * @returns deleted message
- */
 export const deleteMessage = async (messageId: string) => {
   try {
     await connectToDatabase();

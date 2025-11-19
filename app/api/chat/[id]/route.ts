@@ -206,16 +206,6 @@ export const PUT = async (
       );
     }
 
-    // Prevent editing old messages (e.g., older than 15 minutes)
-    const messageAge = Date.now() - new Date(message.createdAt).getTime();
-    const fifteenMinutes = 15 * 60 * 1000;
-    if (messageAge > fifteenMinutes) {
-      return NextResponse.json(
-        { error: "Cannot edit messages older than 15 minutes" },
-        { status: 403 },
-      );
-    }
-
     // Edit the message
     const response = await chatService.editLiveMessage(messageId, content);
 

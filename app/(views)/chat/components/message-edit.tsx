@@ -66,16 +66,16 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
         <form onSubmit={editForm.handleSubmit(onSubmit)} className="space-y-3">
           {/* Edit Header */}
           <div className="mb-2 flex items-center justify-between">
-            <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600">
+            <span className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-900 dark:text-blue-400">
               Editing Message
             </span>
             <span
               className={`text-xs font-medium ${
                 characterCount > 900
-                  ? "text-red-600"
+                  ? "text-red-600 dark:text-red-500"
                   : characterCount > 800
-                    ? "text-orange-600"
-                    : "text-gray-500"
+                    ? "text-orange-600 dark:text-orange-500"
+                    : "text-gray-500 dark:text-gray-400"
               }`}
             >
               {characterCount}/1000
@@ -89,7 +89,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
             render={({ field }) => (
               <Textarea
                 placeholder="Edit your message..."
-                className="max-h-[200px] min-h-20 w-full resize-none rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 text-sm text-black transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 dark:text-white"
+                className="max-h-[200px] min-h-20 w-full resize-none rounded-xl border-2 border-blue-200 bg-blue-50/50 px-4 py-3 text-sm text-black transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 dark:text-white dark:focus:border-blue-300 dark:focus:bg-gray-800 dark:focus:ring-blue-800"
                 maxLength={1000}
                 disabled={isSubmitting}
                 onKeyDown={onKeyDown}
@@ -103,7 +103,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
             <Button
               type="submit"
               size="sm"
-              className="flex-1 rounded-lg bg-linear-to-r from-green-500 to-green-600 font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-linear-to-r from-green-500 to-green-600 font-semibold text-white shadow-sm transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-md disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-500 disabled:opacity-50 dark:bg-linear-to-r dark:from-green-600 dark:to-green-700 dark:hover:from-green-700 dark:hover:to-green-800"
               disabled={!isMessageChanged || isSubmitting}
             >
               {isSubmitting ? (
@@ -123,7 +123,7 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
               type="button"
               variant="outline"
               size="sm"
-              className="flex-1 rounded-lg border-2 border-gray-300 font-semibold text-gray-600 transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600"
+              className="flex-1 rounded-lg border-2 border-gray-300 bg-red-50 font-semibold text-gray-600 transition-all duration-200 hover:border-red-300 hover:bg-red-50 hover:text-red-600 dark:border-gray-600 dark:bg-red-900 dark:text-white dark:hover:border-red-500 dark:hover:bg-red-50 dark:hover:text-red-500"
               onClick={onCancelEdit}
               disabled={isSubmitting}
             >
@@ -134,12 +134,12 @@ function MessageEdit({ editMessage, onEditMessage, onCancelEdit }: Props) {
 
           {/* Helper Text */}
           {!isMessageChanged && watchedContent.trim().length > 0 && (
-            <p className="text-center text-xs text-gray-300 italic">
+            <p className="text-center text-xs text-gray-300 italic dark:text-gray-500">
               No changes made
             </p>
           )}
           {watchedContent.trim().length === 0 && (
-            <p className="text-center text-xs text-red-500">
+            <p className="text-center text-xs text-red-500 dark:text-red-400">
               Message cannot be empty
             </p>
           )}

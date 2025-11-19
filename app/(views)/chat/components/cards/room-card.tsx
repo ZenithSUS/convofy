@@ -44,7 +44,7 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
 
   return (
     <div
-      className="flex cursor-pointer justify-between rounded-lg border bg-white p-4 shadow-sm transition-all hover:border-gray-300 hover:shadow-md"
+      className="flex cursor-pointer justify-between rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-all hover:border-gray-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600"
       onClick={handleOpenRoom}
     >
       <div className="flex min-w-0 flex-1 items-start gap-4">
@@ -61,19 +61,19 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
 
         {/* Chat Info */}
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <h2 className="truncate text-lg font-semibold text-gray-900">
+          <h2 className="truncate text-lg font-semibold text-gray-900 dark:text-gray-100">
             {displayName}
           </h2>
 
           {room.description && !isPrivate && (
-            <p className="line-clamp-2 text-sm wrap-break-word text-gray-600">
+            <p className="line-clamp-2 text-sm wrap-break-word text-gray-600 dark:text-gray-300">
               {room.description}
             </p>
           )}
 
           {!isSearchMode && room.lastMessage && (
             <p
-              className={`truncate text-sm ${notSeen ? "font-bold text-gray-900" : "text-gray-600"}`}
+              className={`truncate text-sm ${notSeen ? "font-bold text-gray-900 dark:text-gray-100" : "text-gray-600 dark:text-gray-400"}`}
             >
               <span className="font-medium">
                 {timeFormat(new Date(room.lastMessage.createdAt))}
@@ -92,10 +92,10 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
           {/* Member info (for groups only) */}
           {!isPrivate && (
             <div className="flex gap-1">
-              <div className="flex items-center gap-1.5 text-sm text-gray-600">
+              <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
                 <Users className="h-4 w-4" />
                 <span className="font-medium">{room.members.length || 0}</span>
-                <span className="text-gray-500">
+                <span className="text-gray-500 dark:text-gray-400">
                   {room.members.length === 1 ? "member" : "members"}
                 </span>
               </div>
@@ -116,7 +116,7 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
                   ))}
                 {room.members.length > 3 && (
                   <div className="flex shrink-0 items-center">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                       +{room.members.length - 3}
                     </span>
                   </div>

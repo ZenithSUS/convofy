@@ -89,7 +89,7 @@ function ChangePassword({ session }: { session: Session }) {
   if (!session.user) return null;
 
   return (
-    <Card className="mb-6 border border-gray-200 bg-white shadow-lg">
+    <Card className="mb-6 border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-xl">
           <Lock className="h-5 w-5 text-blue-600" />
@@ -189,7 +189,9 @@ function ChangePassword({ session }: { session: Session }) {
                   ></div>
                 ))}
               </div>
-              <div className="text-xs text-gray-500">{strengthLabel}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-200">
+                {strengthLabel}
+              </div>
             </div>
           )}
 
@@ -237,7 +239,7 @@ function ChangePassword({ session }: { session: Session }) {
             <Button
               type="submit"
               disabled={isChangingPassword}
-              className="h-11 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700"
+              className="h-11 flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold hover:from-blue-700 hover:to-purple-700 dark:text-gray-300"
             >
               {isChangingPassword ? (
                 <>
@@ -253,7 +255,7 @@ function ChangePassword({ session }: { session: Session }) {
               type="button"
               variant="destructive"
               disabled={isChangingPassword}
-              className="h-11 rounded-xl"
+              className="h-11 rounded-xl dark:bg-red-600"
               onClick={() => reset()}
             >
               Reset

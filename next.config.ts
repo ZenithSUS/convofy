@@ -35,6 +35,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   allowedDevOrigins: ["http://localhost:3000", "http://192.168.*.*"],

@@ -102,25 +102,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Define public auth routes that don't need authentication
-  const publicAuthRoutes = [
-    "/auth/login",
-    "/auth/register",
-    "/auth/error",
-    "/auth/verify-email-change",
-    "/auth/recover-password",
-  ];
-
-  // Allow public access to auth pages when already logged in (redirect to chat)
-  if (publicAuthRoutes.some((route) => pathname.startsWith(route))) {
-    if (token) {
-      const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
-      const redirectUrl = new URL(callbackUrl || "/chat", request.url);
-      return NextResponse.redirect(redirectUrl);
-    }
-    // If no token, allow access to these public auth routes
-  }
-
   const response = NextResponse.next();
   response.headers.set("x-pathname", pathname);
 

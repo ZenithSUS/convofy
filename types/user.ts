@@ -16,7 +16,6 @@ export type User = {
   lastActive: Date;
   createdAt: Date;
   isAvailable: boolean;
-  isDarkMode: boolean;
   isAnonymous?: boolean;
   preferences: {
     theme: "light" | "dark";

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { pusherServer } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 import { getUserToken } from "@/lib/utils";
 import userService from "@/services/mongodb/user.service";
 

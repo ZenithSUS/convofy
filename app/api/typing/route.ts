@@ -1,4 +1,4 @@
-import { pusherServer } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 import { getUserToken } from "@/lib/utils";
 import typingRateLimit from "@/lib/redis/redis-typing-limit";
 import roomService from "@/services/mongodb/room.service";

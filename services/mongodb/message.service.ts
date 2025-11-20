@@ -6,7 +6,7 @@ import Room from "@/models/Room";
 import { CreateMessage } from "@/types/message";
 import { ObjectId } from "mongodb";
 import { Types } from "mongoose";
-import { pusherServer } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 import User from "@/models/User";
 
 export const createMessage = async (data: CreateMessage) => {

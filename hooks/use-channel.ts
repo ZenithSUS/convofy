@@ -11,7 +11,7 @@ import { ChannelEventHandler } from "@/services/pusher/channel-event-handler";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 
 // Lib
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/pusher/pusher-client";
 
 // Store
 import useConnectionStatus from "@/store/connection-status-store";

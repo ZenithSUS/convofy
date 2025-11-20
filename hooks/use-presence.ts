@@ -1,7 +1,7 @@
 "use client";
 
 import showErrorConnectionMessage from "@/helper/pusher/error";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/pusher/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";

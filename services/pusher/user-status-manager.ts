@@ -1,4 +1,4 @@
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/pusher/pusher-client";
 import { PusherChannel, PusherEventMap } from "@/types/pusher";
 
 let currentChannel: PusherChannel | null = null;

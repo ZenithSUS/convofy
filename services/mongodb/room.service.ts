@@ -4,7 +4,7 @@ import { Room as IRoom } from "@/types/room";
 import User from "@/models/User";
 import "@/models/Message";
 import { CreateRoom } from "@/types/room";
-import { pusherServer } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 import Message from "@/models/Message";
 
 export const roomService = {
@@ -76,7 +76,7 @@ export const roomService = {
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
     const room = await Room.findById(id)
-      .populate("members", ["name", "avatar", "isAvailable"])
+      .populate("members", ["name", "avatar", "isAvailable", "status"])
       .populate({
         path: "lastMessage",
         select: "content type createdAt sender status.deliveredTo",
@@ -132,7 +132,7 @@ export const roomService = {
       }
       await connectToDatabase();
       const rooms = await Room.find(query)
-        .populate("members", ["name", "avatar", "_id", "status"])
+        .populate("members", ["name", "avatar", "_id", "status", "isAvailable"])
         .populate("lastMessage", [
           "content",
           "type",

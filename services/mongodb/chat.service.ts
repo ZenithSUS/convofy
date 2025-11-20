@@ -1,5 +1,5 @@
 import { connectToDatabase } from "@/lib/mongodb";
-import { pusherServer } from "@/lib/pusher-server";
+import { pusherServer } from "@/lib/pusher/pusher-server";
 import Message from "@/models/Message";
 import Room from "@/models/Room";
 import { Message as IMessage } from "@/types/message";

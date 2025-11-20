@@ -151,7 +151,7 @@ function ChangeEmail({ session }: { session: Session }) {
         <Button
           onClick={handleChangeEmail}
           disabled={isChangingEmail || !newEmail}
-          className="h-10 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-sm font-semibold text-gray-900 hover:from-blue-700 hover:to-purple-700 sm:h-11 dark:from-blue-500 dark:to-purple-500 dark:text-white dark:hover:from-blue-600 dark:hover:to-purple-600"
+          className="h-10 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-sm font-semibold text-white hover:from-blue-700 hover:to-purple-700 sm:h-11 dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
         >
           {isChangingEmail ? (
             <>

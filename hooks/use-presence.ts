@@ -121,20 +121,6 @@ const useUserConnectionStatus = (serverSession: Session) => {
     }
   }, [connectionStatus, userId, updateStatus]);
 
-  // Cleanup on unmount - set user offline
-  useEffect(() => {
-    return () => {
-      if (userId && lastStatusRef.current === "online") {
-        updateUserStatus({
-          userId,
-          status: "offline",
-        }).catch((err) => {
-          console.error("Error updating user status on unmount:", err);
-        });
-      }
-    };
-  }, [userId, updateUserStatus]);
-
   return { connectionStatus };
 };
 

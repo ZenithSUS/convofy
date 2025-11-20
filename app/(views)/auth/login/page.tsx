@@ -131,27 +131,23 @@ function LoginPage() {
   }, [form]);
 
   return (
-    <div className="light:border-gray-200 light:from-white light:via-gray-50 light:to-blue-50/30 light:shadow-blue-500/5 relative w-full max-w-md space-y-8 rounded-3xl border border-gray-800 bg-linear-to-br from-gray-900 via-gray-900 to-gray-950 p-10 shadow-2xl shadow-blue-500/10 dark:border-gray-800 dark:from-gray-900 dark:via-gray-900 dark:to-gray-950 dark:shadow-blue-500/10">
+    <div className="relative w-full max-w-md space-y-8 rounded-3xl border border-gray-100 bg-white p-10 shadow-2xl">
       {/* Back Button */}
       <button
         onClick={() => router.push("/")}
-        className="group light:hover:bg-gray-100 absolute top-6 left-6 rounded-full p-2 transition-colors duration-200 hover:bg-gray-800 dark:hover:bg-gray-800"
+        className="group absolute top-6 left-6 rounded-full p-2 transition-colors duration-200 hover:bg-gray-100"
       >
-        <ArrowLeft className="light:text-gray-600 light:group-hover:text-gray-900 h-5 w-5 text-gray-400 group-hover:text-gray-100 dark:text-gray-400 dark:group-hover:text-gray-100" />
+        <ArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-gray-900" />
         <span className="sr-only">Go back</span>
       </button>
 
       {/* Header */}
       <div className="text-center">
-        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/30">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
           <span className="text-2xl font-bold text-white">C</span>
         </div>
-        <h1 className="light:text-gray-900 mb-2 text-3xl font-bold text-white dark:text-white">
-          Welcome Back
-        </h1>
-        <p className="light:text-gray-600 text-gray-400 dark:text-gray-400">
-          Sign in to continue to Convofy
-        </p>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">Welcome Back</h1>
+        <p className="text-gray-600">Sign in to continue to Convofy</p>
       </div>
 
       <Form {...form}>
@@ -162,17 +158,17 @@ function LoginPage() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="light:text-gray-700 text-sm font-semibold text-gray-300 dark:text-gray-300">
+                <FormLabel className="text-sm font-semibold text-gray-700">
                   Email Address
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Mail className="light:text-gray-400 absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-500" />
+                    <Mail className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                     <Input
                       type="email"
                       autoComplete="email"
                       placeholder="Enter your email"
-                      className="light:border-gray-300 light:bg-white light:text-gray-900 light:placeholder:text-gray-400 light:focus:border-blue-500 light:focus:bg-gray-50 h-12 rounded-xl border-2 border-gray-700 bg-gray-800/50 pl-10 text-white transition-colors placeholder:text-gray-500 focus:border-blue-500 focus:bg-gray-800 dark:border-gray-700 dark:bg-gray-800/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:bg-gray-800"
+                      className="h-12 rounded-xl border-2 border-gray-200 pl-10 transition-colors focus:border-blue-500"
                       {...field}
                     />
                   </div>
@@ -188,23 +184,23 @@ function LoginPage() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="light:text-gray-700 text-sm font-semibold text-gray-300 dark:text-gray-300">
+                <FormLabel className="text-sm font-semibold text-gray-700">
                   Password
                 </FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <Lock className="light:text-gray-400 absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-500 dark:text-gray-500" />
+                    <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
                     <Input
                       type={showPassword ? "text" : "password"}
                       autoComplete="current-password"
                       placeholder="Enter your password"
-                      className="light:border-gray-300 light:bg-white light:text-gray-900 light:placeholder:text-gray-400 light:focus:border-blue-500 light:focus:bg-gray-50 h-12 rounded-xl border-2 border-gray-700 bg-gray-800/50 pr-10 pl-10 text-white transition-colors placeholder:text-gray-500 focus:border-blue-500 focus:bg-gray-800 dark:border-gray-700 dark:bg-gray-800/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:bg-gray-800"
+                      className="h-12 rounded-xl border-2 border-gray-200 pr-10 pl-10 transition-colors focus:border-blue-500"
                       {...field}
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="light:text-gray-400 light:hover:text-gray-600 absolute top-1/2 right-3 -translate-y-1/2 text-gray-500 transition-colors hover:text-gray-300 dark:text-gray-500 dark:hover:text-gray-300"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
                     >
                       {showPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -221,10 +217,8 @@ function LoginPage() {
 
           {/* Error Message */}
           {authError && (
-            <div className="light:border-red-300 light:bg-red-50 rounded-xl border border-red-500/50 bg-red-500/10 p-3 text-center dark:border-red-500/50 dark:bg-red-500/10">
-              <p className="light:text-red-600 text-sm font-medium text-red-400 dark:text-red-400">
-                {authError}
-              </p>
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-center">
+              <p className="text-sm font-medium text-red-600">{authError}</p>
             </div>
           )}
 
@@ -235,11 +229,10 @@ function LoginPage() {
                 id="remember-me"
                 checked={isRemembered}
                 onCheckedChange={(checked) => setIsRemembered(!!checked)}
-                className="light:border-gray-400 border-gray-600 data-[state=checked]:border-blue-600 data-[state=checked]:bg-blue-600 dark:border-gray-600"
               />
               <label
                 htmlFor="remember-me"
-                className="light:text-gray-700 cursor-pointer text-sm font-medium text-gray-300 dark:text-gray-300"
+                className="cursor-pointer text-sm font-medium text-gray-700"
               >
                 Remember me
               </label>
@@ -247,7 +240,7 @@ function LoginPage() {
 
             <Link
               href="/auth/forgot"
-              className="light:text-blue-600 light:hover:text-blue-700 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300"
+              className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
             >
               Forgot password?
             </Link>
@@ -257,7 +250,7 @@ function LoginPage() {
           <Button
             type="submit"
             disabled={isCredentialsLoading}
-            className="h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-500 hover:to-purple-500 hover:shadow-xl hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isCredentialsLoading ? (
               <>
@@ -274,7 +267,7 @@ function LoginPage() {
             type="button"
             onClick={handleAnonymousLogin}
             disabled={!isAnonymousLoading}
-            className="light:from-gray-600 light:via-gray-700 light:to-gray-800 h-12 w-full rounded-xl bg-linear-to-r from-gray-700 via-gray-800 to-gray-900 font-semibold text-white shadow-lg shadow-gray-900/30 transition-all duration-300 hover:from-gray-600 hover:via-gray-700 hover:to-gray-800 hover:shadow-xl hover:shadow-gray-900/40 disabled:opacity-50 dark:from-gray-700 dark:via-gray-800 dark:to-gray-900"
+            className="h-12 w-full rounded-xl bg-linear-to-r from-black via-gray-900 to-gray-700 font-semibold text-white shadow-lg transition-all duration-300 hover:from-black/30 hover:via-gray-950 hover:to-gray-800 hover:shadow-xl disabled:opacity-50"
           >
             {isAnonymousLoading ? (
               <>
@@ -289,10 +282,10 @@ function LoginPage() {
           {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
-              <div className="light:border-gray-300 w-full border-t border-gray-700 dark:border-gray-700"></div>
+              <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="light:bg-white light:text-gray-600 bg-gray-900 px-4 font-medium text-gray-500 dark:bg-gray-900 dark:text-gray-500">
+              <span className="bg-white px-4 font-medium text-gray-500">
                 Or continue with
               </span>
             </div>
@@ -305,7 +298,7 @@ function LoginPage() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={isGoogleLoading}
-              className="light:border-gray-300 light:bg-white light:text-gray-900 light:hover:border-gray-400 light:hover:bg-gray-50 h-12 flex-1 rounded-xl border-2 border-gray-700 bg-gray-800/30 font-semibold text-white transition-all duration-300 hover:border-gray-600 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/30 dark:text-white dark:hover:border-gray-600 dark:hover:bg-gray-800"
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isGoogleLoading ? (
                 <>
@@ -330,7 +323,7 @@ function LoginPage() {
               type="button"
               onClick={handleGithubLogin}
               disabled={isGithubLoading}
-              className="light:border-gray-300 light:bg-white light:text-gray-900 light:hover:border-gray-400 light:hover:bg-gray-50 h-12 flex-1 rounded-xl border-2 border-gray-700 bg-gray-800/30 font-semibold text-white transition-all duration-300 hover:border-gray-600 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/30 dark:text-white dark:hover:border-gray-600 dark:hover:bg-gray-800"
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isGithubLoading ? (
                 <>
@@ -355,7 +348,7 @@ function LoginPage() {
               type="button"
               onClick={handleDiscordLogin}
               disabled={isDiscordLoading}
-              className="light:border-gray-300 light:bg-white light:text-gray-900 light:hover:border-gray-400 light:hover:bg-gray-50 h-12 flex-1 rounded-xl border-2 border-gray-700 bg-gray-800/30 font-semibold text-white transition-all duration-300 hover:border-gray-600 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800/30 dark:text-white dark:hover:border-gray-600 dark:hover:bg-gray-800"
+              className="h-12 flex-1 rounded-xl border-2 border-gray-200 font-semibold transition-all duration-300 hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isDiscordLoading ? (
                 <>
@@ -378,13 +371,13 @@ function LoginPage() {
           {/* Sign Up Link */}
           <div className="space-y-1 pt-2 text-center">
             <div>
-              <span className="light:text-gray-600 text-sm text-gray-400 dark:text-gray-400">
+              <span className="text-sm text-gray-600">
                 Don&apos;t have an account?{" "}
               </span>
               <button
                 type="button"
                 onClick={() => router.push("/auth/register")}
-                className="light:text-blue-600 light:hover:text-blue-700 text-sm font-semibold text-blue-400 transition-colors hover:text-blue-300 dark:text-blue-400 dark:hover:text-blue-300"
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
               >
                 Sign up for free
               </button>

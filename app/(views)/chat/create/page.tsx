@@ -12,6 +12,11 @@ async function CreateRoomPage() {
     redirect("/auth/login");
   }
 
+  if (session.user.isAnonymous && session.user.role === "anonymous") {
+    // Redirect anonymous users to a different page
+    redirect("/chat");
+  }
+
   return <CreateRoomClient serverSession={session as Session} />;
 }
 

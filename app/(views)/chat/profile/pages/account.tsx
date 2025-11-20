@@ -24,9 +24,11 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
   const isMobile = useIsMobile();
   const accountCreationDate = new Date(session.user.createdAt || "2024-01-01");
   const isAnonymous = useMemo<boolean>(() => {
-    return (
-      (session.user.isAnonymous || session.user.role === "anonymous") ?? false
-    );
+    if (session.user.isAnonymous && session.user.role === "anonymous") {
+      return true;
+    }
+
+    return false;
   }, [session]);
 
   const isGoogleAuth = session.user.linkedAccounts.some(

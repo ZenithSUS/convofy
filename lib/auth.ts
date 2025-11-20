@@ -189,6 +189,8 @@ export const authOptions: NextAuthOptions = {
             image: anonymous.anonAvatar,
             status: anonymous.status,
             isAvailable: anonymous.isAvailable,
+            preferences: anonymous.preferences,
+            isAnonymous: anonymous.isAnonymous,
             lastActive: anonymous.lastActive,
             createdAt: anonymous.createdAt,
             linkedAccounts: anonymous.linkedAccounts,
@@ -555,24 +557,21 @@ export const authOptions: NextAuthOptions = {
       }
 
       // ---- Handle anonymous provider ----
-      if (
-        (user && account?.provider === "anonymous") ||
-        token.role === "anonymous"
-      ) {
+      if (user && token.role === "anonymous") {
         return {
           ...token,
+          userId: user.id,
+          email: user.email,
+          name: user.name,
           isAnonymous: true,
-          picture: user.anonAvatar,
+          picture: user.image,
           anonAlias: user.anonAlias,
-          anonAvatar: user.anonAvatar,
           status: user.status,
+          role: user.role,
           sessionId: user.sessionId,
-          preferences: {
-            theme: "light",
-            hideStatus: false,
-            hideTypingIndicator: false,
-          },
+          preferences: user.preferences,
           lastRefresh: Date.now(),
+          sessionRevoked: false,
         };
       }
 
@@ -599,6 +598,7 @@ export const authOptions: NextAuthOptions = {
         token.isAnonymous = user.isAnonymous;
         token.anonAlias = user.anonAlias;
         token.anonAvatar = user.anonAvatar;
+        token.sessionRevoked = false;
       }
 
       // ---- Handle account provider info ----

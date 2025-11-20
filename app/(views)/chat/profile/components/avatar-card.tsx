@@ -10,16 +10,24 @@ interface AvatarCardProps {
 
 function AvatarCard({ children, session, name }: AvatarCardProps) {
   const userAvatar = useMemo(() => {
-    if (session.user.isAnonymous) {
+    if (session.user.isAnonymous && session.user.role === "user") {
       return session.user.anonAvatar || "/default-avatar.png";
+    }
+
+    if (session.user.isAnonymous && session.user.role === "anonymous") {
+      return session.user.image || "/default-avatar.png";
     }
 
     return session.user.image || "/default-avatar.png";
   }, [session.user]);
 
   const userName = useMemo(() => {
-    if (session.user.isAnonymous) {
+    if (session.user.isAnonymous && session.user.role === "user") {
       return session.user.anonAlias || "Anonymous";
+    }
+
+    if (session.user.isAnonymous && session.user.role === "anonymous") {
+      return session.user.name || "Anonymous";
     }
 
     return session.user.name || "User";

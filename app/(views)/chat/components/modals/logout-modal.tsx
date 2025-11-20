@@ -45,6 +45,11 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
             signOut({ redirect: false }),
             client.post("/auth/logout", { id: userId }),
           ]);
+
+          setTimeout(async () => {
+            localStorage.clear();
+            router.push("/auth/login");
+          }, 500);
         },
         {
           loading: "Logging out...",
@@ -52,12 +57,6 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
           error: "Error logging out",
         },
       );
-
-      setTimeout(() => {
-        localStorage.clear();
-        router.refresh();
-        router.push("/auth/login");
-      }, 500);
     } catch (error) {
       console.error("Error logging out:", error);
     }

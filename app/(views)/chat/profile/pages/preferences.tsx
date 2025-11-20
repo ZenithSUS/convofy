@@ -6,11 +6,12 @@ import useHybridSession from "@/hooks/use-hybrid-session";
 import AvatarCard from "../components/avatar-card";
 import { Sun, EyeOff, MessageSquare, Activity, Moon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-import { useTheme } from "@/components/providers/theme-provider";
+
 import { Button } from "@/components/ui/button";
 import { useUpdatePreferences } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import useTheme from "@/store/theme-store";
 
 interface PreferencesPageProps {
   serverSession: Session;
@@ -19,7 +20,7 @@ interface PreferencesPageProps {
 function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
   const queryClient = useQueryClient();
   const { session, update } = useHybridSession(serverSession);
-  const { toggleDarkMode, isDarkMode } = useTheme();
+  const { theme: isDarkMode, setTheme: toggleDarkMode } = useTheme();
   const { mutateAsync: updatePreferences, isPending: isUpdating } =
     useUpdatePreferences();
 
@@ -32,7 +33,7 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
 
   const toggleSetting = (key: keyof typeof settings) => {
     if (key === "theme") {
-      toggleDarkMode();
+      toggleDarkMode(settings.theme ? "light" : "dark");
     }
 
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -191,6 +192,13 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
           {settingsList.map((setting) => {
             const Icon = setting.icon;
             const isEnabled = settings[setting.key];
+
+            if (
+              setting.key === "anonymousMode" &&
+              session.user.role === "anonymous"
+            ) {
+              return null;
+            }
 
             return (
               <div

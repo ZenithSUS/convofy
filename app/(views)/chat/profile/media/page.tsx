@@ -12,5 +12,10 @@ export default async function MediaPage() {
     redirect("/auth/login");
   }
 
+  if (session.user.isAnonymous && session.user.role === "anonymous") {
+    // Redirect anonymous users to a different page
+    redirect("/chat/profile/account");
+  }
+
   return <MediaPageClient serverSession={session as Session} />;
 }

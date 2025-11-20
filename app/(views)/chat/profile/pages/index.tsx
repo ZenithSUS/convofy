@@ -28,16 +28,24 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
   );
 
   const userAvatar = useMemo(() => {
-    if (session.user.isAnonymous) {
+    if (session.user.isAnonymous && session.user.role === "user") {
       return session.user.anonAvatar || "/default-avatar.png";
+    }
+
+    if (session.user.isAnonymous && session.user.role === "anonymous") {
+      return session.user.image || "/default-avatar.png";
     }
 
     return session.user.image || "/default-avatar.png";
   }, [session.user]);
 
   const userName = useMemo(() => {
-    if (session.user.isAnonymous) {
+    if (session.user.isAnonymous && session.user.role === "user") {
       return session.user.anonAlias || "Anonymous";
+    }
+
+    if (session.user.isAnonymous && session.user.role === "anonymous") {
+      return session.user.name || "Anonymous";
     }
 
     return session.user.name || "User";
@@ -85,7 +93,7 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
             Quick Actions
           </h2>
 
-          {profileSettings.map((setting, index) => (
+          {profileSettings(session.user.role).map((setting, index) => (
             <Link
               href={setting.href}
               key={setting.name}
@@ -120,46 +128,48 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
         </div>
 
         {/* Stats Section */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col items-center text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {isStatsProcessing ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  userStats?.messages
-                )}
+        {session.user.role === "user" && (
+          <div className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col items-center text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {isStatsProcessing ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    userStats?.messages
+                  )}
+                </div>
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Messages
+                </div>
               </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Messages
+              <div className="flex flex-col items-center border-x border-gray-200 text-center dark:border-gray-700">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {isStatsProcessing ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    userStats?.medias
+                  )}
+                </div>
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Media
+                </div>
               </div>
-            </div>
-            <div className="flex flex-col items-center border-x border-gray-200 text-center dark:border-gray-700">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {isStatsProcessing ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  userStats?.medias
-                )}
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Media
-              </div>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {isStatsProcessing ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  userStats?.contacts
-                )}
-              </div>
-              <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Contacts
+              <div className="flex flex-col items-center text-center">
+                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {isStatsProcessing ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    userStats?.contacts
+                  )}
+                </div>
+                <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Contacts
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* CSS Animation */}

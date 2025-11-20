@@ -1,15 +1,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileIcon, Loader2 } from "lucide-react";
+import { FileIcon } from "lucide-react";
 
 import { ChangeEvent, useRef } from "react";
 
 interface MediaUploadProps {
   onChange: (value: ChangeEvent<HTMLInputElement>) => void;
   isUploading: boolean;
+  disabled?: boolean;
 }
 
-export function MediaUpload({ onChange, isUploading }: MediaUploadProps) {
+export function MediaUpload({
+  onChange,
+  isUploading,
+  disabled,
+}: MediaUploadProps) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   return (
@@ -21,20 +26,17 @@ export function MediaUpload({ onChange, isUploading }: MediaUploadProps) {
         accept="image/*,.pdf,.doc,.docx,.txt,.gif,.mp4,.mp3"
         className="hidden"
         onChange={onChange}
+        disabled={disabled}
         multiple
       />
       <Button
-        disabled={isUploading}
+        disabled={isUploading || disabled}
         size="icon"
         variant="ghost"
         type="button"
         onClick={() => fileRef.current?.click()}
       >
-        {isUploading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <FileIcon />
-        )}
+        <FileIcon />
       </Button>
     </div>
   );

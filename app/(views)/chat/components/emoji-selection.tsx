@@ -17,13 +17,17 @@ const EmojiPicker = dynamic(() => import("./emoji-picker"), {
 
 interface EmojiSelectionV2Props {
   onEmojiAppend: (emoji: string) => void;
+  disabled?: boolean;
 }
 
-export function EmojiSelection({ onEmojiAppend }: EmojiSelectionV2Props) {
+export function EmojiSelection({
+  onEmojiAppend,
+  disabled,
+}: EmojiSelectionV2Props) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" type="button">
+        <Button variant="ghost" size="icon" type="button" disabled={disabled}>
           <Smile className="h-4 w-4" />
         </Button>
       </PopoverTrigger>

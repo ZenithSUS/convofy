@@ -55,8 +55,6 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
       );
 
       setTimeout(() => {
-        localStorage.clear();
-        router.refresh();
         router.push("/auth/login");
       }, 500);
     } catch (error) {

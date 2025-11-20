@@ -47,7 +47,6 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
           ]);
 
           setTimeout(async () => {
-            localStorage.clear();
             router.push("/auth/login");
           }, 500);
         },

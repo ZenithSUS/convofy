@@ -14,8 +14,7 @@ import {
 import client from "@/lib/axios";
 import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface LogoutModalProps {
@@ -25,13 +24,12 @@ interface LogoutModalProps {
 
 function LogoutModal({ userId, sessionId }: LogoutModalProps) {
   const [isClient, setIsClient] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     if (!isClient) return;
 
     try {
@@ -42,13 +40,9 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
           });
 
           await Promise.all([
-            signOut({ redirect: false }),
+            signOut({ callbackUrl: "/auth/login" }),
             client.post("/auth/logout", { id: userId }),
           ]);
-
-          setTimeout(async () => {
-            router.push("/auth/login");
-          }, 500);
         },
         {
           loading: "Logging out...",
@@ -59,7 +53,7 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
     } catch (error) {
       console.error("Error logging out:", error);
     }
-  };
+  }, [isClient, userId, sessionId]);
 
   if (!isClient) return null;
 

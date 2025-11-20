@@ -15,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import client from "@/lib/axios";
 import { LogOut, Loader2, AlertTriangle } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -27,7 +26,6 @@ interface ProfileLogoutModalProps {
 function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
   const [isClient, setIsClient] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
@@ -44,7 +42,7 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
           await Promise.all([
             client.post(`/sessions/${userId}/revoke`, { sessionId }),
             client.post("/auth/logout", { id: userId }),
-            signOut({ redirect: false }),
+            signOut({ callbackUrl: "/auth/login" }),
           ]);
         },
         {
@@ -53,16 +51,12 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
           error: "Failed to log out. Please try again.",
         },
       );
-
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 500);
     } catch (error) {
       console.error("Error logging out:", error);
       toast.error("Failed to log out. Please try again.");
       setIsLoggingOut(false);
     }
-  }, [isClient, isLoggingOut, userId, sessionId, router]);
+  }, [isClient, isLoggingOut, userId, sessionId]);
 
   if (!isClient || !userId || !sessionId) return null;
 

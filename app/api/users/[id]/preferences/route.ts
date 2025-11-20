@@ -31,7 +31,7 @@ export const PUT = async (
     }
 
     const { isAnonymous, preferences, role } = data;
-    console.log("Role: ", role);
+
     if (!preferences) {
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }

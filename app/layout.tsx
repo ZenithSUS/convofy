@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import Providers from "@/components/providers/provider-wrapper";
 import getUserTheme from "@/lib/get-user-theme";
+import ThemeHandler from "@/components/handlers/theme-handler";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -93,9 +94,10 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${theme} scroll-smooth`}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-white antialiased dark:bg-gray-950`}
       >
         <Providers>
+          <ThemeHandler />
           <main>{children}</main>
         </Providers>
       </body>

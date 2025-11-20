@@ -11,6 +11,7 @@ import {
 
 export const useGetRoomInvites = (
   userId: string,
+  isNotAnonymous: boolean = true,
 ): UseBaseQueryResult<RoomRequest[], AxiosErrorMessage> => {
   const getRoomInvites = async () => {
     const response = await client
@@ -27,7 +28,7 @@ export const useGetRoomInvites = (
   return useQuery({
     queryKey: ["roomInvites", userId],
     queryFn: async () => getRoomInvites(),
-    enabled: !!userId,
+    enabled: !!userId && isNotAnonymous,
   });
 };
 

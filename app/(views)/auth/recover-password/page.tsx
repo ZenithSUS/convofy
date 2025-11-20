@@ -19,10 +19,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import timerFormat from "@/helper/timer-format";
-import { Toast } from "@/components/providers/toast-provider";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import PasswordRecoveryError from "./components/recovery-password-error";
 import PasswordStrength from "@/helper/password-strength";
+import { toast } from "sonner";
 
 const changePasswordSchema = z
   .object({
@@ -91,12 +91,20 @@ function RecoverPasswordPage() {
   const onSubmit = useCallback(
     async (data: ChangePasswordData) => {
       try {
-        await recoverPassword({
-          token: token,
-          newPassword: data.newPassword,
-        });
+        toast.promise(
+          async () => {
+            await recoverPassword({
+              token: token,
+              newPassword: data.newPassword,
+            });
+          },
+          {
+            loading: "Changing password...",
+            success: "Password changed successfully!",
+            error: "Failed to change password",
+          },
+        );
 
-        Toast.success("Password changed successfully!");
         router.push("/auth/login");
       } catch (error: unknown) {
         console.error("Error changing password:", error);
@@ -139,39 +147,41 @@ function RecoverPasswordPage() {
   }
 
   return (
-    <div className="relative mx-auto max-w-md rounded-3xl border border-gray-100 bg-white p-8 shadow-xl transition-shadow hover:shadow-2xl">
+    <div className="relative mx-auto max-w-md rounded-3xl border border-gray-100 bg-white p-8 shadow-xl transition-shadow hover:shadow-2xl dark:border-gray-800 dark:bg-gray-900">
       {/* Go Back */}
       <Button
         variant="ghost"
         onClick={() => router.push("/")}
-        className="group absolute top-6 left-6 cursor-pointer rounded-full p-2 transition-colors duration-200 hover:bg-gray-100"
+        className="group absolute top-6 left-6 cursor-pointer rounded-full p-2 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-        <ArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-gray-900" />
+        <ArrowLeft className="h-5 w-5 text-gray-600 group-hover:text-gray-900 dark:text-gray-400 dark:group-hover:text-gray-100" />
         <span className="sr-only">Go back</span>
       </Button>
 
       <div className="text-center">
-        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
+        <div className="mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg shadow-blue-500/30">
           <span className="text-2xl font-bold text-white">C</span>
         </div>
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">
+        <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
           Recover Password
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Create and confirm your password to proceed
         </p>
       </div>
 
-      <div className="mb-4 text-center text-sm text-gray-600">
+      <div className="mb-4 text-center text-sm text-gray-600 dark:text-gray-400">
         {timeRemaining > 0 ? (
           <p>
             Recovery Token expires in{" "}
-            <span className="font-semibold text-red-600">
+            <span className="font-semibold text-red-600 dark:text-red-400">
               {timerFormat(timeRemaining)}
             </span>
           </p>
         ) : (
-          <p className="font-semibold text-red-600">Token has expired.</p>
+          <p className="font-semibold text-red-600 dark:text-red-400">
+            Token has expired.
+          </p>
         )}
       </div>
 
@@ -185,25 +195,25 @@ function RecoverPasswordPage() {
               <FormItem>
                 <Label
                   htmlFor="new-password"
-                  className="text-sm font-semibold sm:text-sm"
+                  className="text-sm font-semibold sm:text-sm dark:text-gray-300"
                 >
                   New Password
                 </Label>
                 <FormControl>
                   <div className="relative">
-                    <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <Input
                       id="new-password"
                       autoComplete="off"
                       type={showPassword.newPassword ? "text" : "password"}
                       placeholder="Enter new password"
-                      className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
+                      className="h-11 rounded-xl border-2 border-gray-200 pr-10 pl-10 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500"
                       {...field}
                     />
                     <button
                       type="button"
                       onClick={toggleShowPassword.bind(null, "newPassword")}
-                      className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                     >
                       {showPassword.newPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -224,12 +234,14 @@ function RecoverPasswordPage() {
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div
                     key={i}
-                    className={`h-1 flex-1 rounded-b-full ${i <= strengthScore ? strengthColor : "bg-gray-200"} `}
+                    className={`h-1 flex-1 rounded-b-full ${i <= strengthScore ? strengthColor : "bg-gray-200 dark:bg-gray-700"} `}
                   ></div>
                 ))}
               </div>
 
-              <div className="text-xs text-gray-500">{strengthLabel}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">
+                {strengthLabel}
+              </div>
             </div>
           )}
 
@@ -241,25 +253,25 @@ function RecoverPasswordPage() {
               <FormItem>
                 <Label
                   htmlFor="confirm-password"
-                  className="text-sm font-semibold sm:text-sm"
+                  className="text-sm font-semibold sm:text-sm dark:text-gray-300"
                 >
                   Confirm Password
                 </Label>
                 <FormControl>
                   <div className="relative">
-                    <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                     <Input
                       id="confirm-password"
                       autoComplete="off"
                       type={showPassword.confirmPassword ? "text" : "password"}
                       placeholder="Confirm your password"
-                      className="h-11 rounded-xl border-2 pr-10 pl-10 text-sm"
+                      className="h-11 rounded-xl border-2 border-gray-200 pr-10 pl-10 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500"
                       {...field}
                     />
                     <button
                       type="button"
                       onClick={toggleShowPassword.bind(null, "confirmPassword")}
-                      className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                     >
                       {showPassword.confirmPassword ? (
                         <EyeOff className="h-5 w-5" />
@@ -275,9 +287,9 @@ function RecoverPasswordPage() {
           />
 
           {isRecoverPasswordError && (
-            <Alert className="mt-2 border-red-200 bg-red-50">
-              <Info className="h-4 w-4 text-red-600" />
-              <AlertTitle className="text-sm text-red-900 sm:text-base">
+            <Alert className="mt-2 border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/30">
+              <Info className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <AlertTitle className="text-sm text-red-900 sm:text-base dark:text-red-300">
                 {recoverPasswordError.response.data.error ||
                   "Something went wrong"}
               </AlertTitle>
@@ -287,7 +299,7 @@ function RecoverPasswordPage() {
           <Button
             type="submit"
             disabled={isRecoverPasswordPending || form.formState.isSubmitting}
-            className="mt-2 h-12 w-full cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-2 h-12 w-full cursor-pointer rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl hover:shadow-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Submit
           </Button>

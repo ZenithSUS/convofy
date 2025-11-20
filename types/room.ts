@@ -37,6 +37,7 @@ export type RoomMembers = {
   name: string;
   avatar: string;
   isAvailable: boolean;
+  status?: "online" | "offline";
 };
 
 export type RoomContent = Omit<Room, "members" | "lastMessage"> & {

@@ -29,6 +29,7 @@ function ThemeProvider({ children, theme }: ThemeProviderProps) {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", isDarkMode);
+    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
   return (

@@ -160,6 +160,7 @@ export const userService = {
 
   async updateUserPreferences(
     id: string,
+    role: "user" | "anonymous" | "admin",
     isAnonymous: boolean,
     preferences: Partial<UserType["preferences"]>,
   ): Promise<UserType | null> {
@@ -175,9 +176,11 @@ export const userService = {
         {
           $set: { preferences: preferences },
           isAnonymous: isAnonymous,
-          ...(isAnonymous
+          ...(isAnonymous && role === "user"
             ? setAnonymous
-            : { anonAlias: null, anonAvatar: null }),
+            : role === "user"
+              ? { anonAlias: null, anonAvatar: null }
+              : {}),
         },
         { new: true, fields: "-password" },
       );

@@ -14,7 +14,7 @@ export default async function MediaPage() {
 
   if (session.user.isAnonymous && session.user.role === "anonymous") {
     // Redirect anonymous users to a different page
-    redirect("/chat/profile/account");
+    redirect("/chat/denied");
   }
 
   return <MediaPageClient serverSession={session as Session} />;

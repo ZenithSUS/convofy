@@ -79,4 +79,5 @@ export type UserTyping = Omit<User, "_id" | "activeSessions"> & {
 export type UserUpdatePreferences = Pick<User, "preferences"> & {
   userId: string;
   isAnonymous: boolean;
+  role: "user" | "anonymous" | "admin";
 };

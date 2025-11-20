@@ -6,12 +6,7 @@ interface ThemeStore {
 }
 
 const useTheme = create<ThemeStore>((set) => ({
-  theme:
-    typeof window !== "undefined"
-      ? localStorage.getItem("theme") === "dark"
-        ? "dark"
-        : "light"
-      : "light",
+  theme: "light",
   setTheme: (theme) => set({ theme }),
 }));
 

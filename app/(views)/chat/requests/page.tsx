@@ -12,7 +12,7 @@ export default async function RequestListPage() {
   }
 
   if (session.user.role === "anonymous" || session.user.isAnonymous) {
-    redirect("/chat");
+    redirect("/chat/denied");
   }
 
   return <RequestListClient serverSession={session as Session} />;

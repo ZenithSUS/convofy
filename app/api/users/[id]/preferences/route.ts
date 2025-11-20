@@ -21,21 +21,24 @@ export const PUT = async (
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const data: Partial<Pick<User, "preferences">> & { isAnonymous: boolean } =
-      await req.json();
+    const data: Partial<Pick<User, "preferences">> & {
+      isAnonymous: boolean;
+      role: "user" | "anonymous" | "admin";
+    } = await req.json();
 
     if (!data || typeof data !== "object") {
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }
 
-    const { isAnonymous, preferences } = data;
-
+    const { isAnonymous, preferences, role } = data;
+    console.log("Role: ", role);
     if (!preferences) {
       return NextResponse.json({ error: "Bad Request" }, { status: 400 });
     }
 
     const response = await userService.updateUserPreferences(
       userId,
+      role,
       isAnonymous,
       preferences,
     );

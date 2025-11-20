@@ -14,7 +14,7 @@ export default async function MessagesPage() {
 
   if (session.user.isAnonymous && session.user.role === "anonymous") {
     // Redirect anonymous users to a different page
-    redirect("/chat/profile/account");
+    redirect("/chat/denied");
   }
 
   return <MessagesPageClient serverSession={session as Session} />;

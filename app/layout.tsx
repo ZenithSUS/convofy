@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import Providers from "@/components/providers/provider-wrapper";
+import getUserTheme from "@/lib/get-user-theme";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,13 +84,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const theme = await getUserTheme();
   return (
-    <html lang="en">
+    <html lang="en" className={`${theme} scroll-smooth`}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

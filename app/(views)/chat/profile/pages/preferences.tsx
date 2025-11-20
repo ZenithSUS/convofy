@@ -6,12 +6,10 @@ import useHybridSession from "@/hooks/use-hybrid-session";
 import AvatarCard from "../components/avatar-card";
 import { Sun, EyeOff, MessageSquare, Activity, Moon } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import { useUpdatePreferences } from "@/hooks/use-user";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import useTheme from "@/store/theme-store";
 
 interface PreferencesPageProps {
   serverSession: Session;
@@ -19,8 +17,12 @@ interface PreferencesPageProps {
 
 function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
   const queryClient = useQueryClient();
-  const { session, update } = useHybridSession(serverSession);
-  const { theme: isDarkMode, setTheme: toggleDarkMode } = useTheme();
+  const {
+    session,
+    update,
+    isLoading: isUpdatingSession,
+  } = useHybridSession(serverSession);
+  const isDarkMode = session.user.preferences.theme === "dark";
   const { mutateAsync: updatePreferences, isPending: isUpdating } =
     useUpdatePreferences();
 
@@ -32,10 +34,6 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
   });
 
   const toggleSetting = (key: keyof typeof settings) => {
-    if (key === "theme") {
-      toggleDarkMode(settings.theme ? "light" : "dark");
-    }
-
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -62,6 +60,10 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
     settings.hideStatus,
   ]);
 
+  const isSaveDisabled = useMemo(() => {
+    return isUpdatingSession || isUpdating;
+  }, [isUpdatingSession, isUpdating]);
+
   const handleSavePreferences = useCallback(async () => {
     try {
       if (isUpdating) return;
@@ -70,6 +72,7 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
           const response = await updatePreferences({
             userId: session.user.id,
             isAnonymous: settings.anonymousMode,
+            role: session.user.role,
             preferences: {
               theme: settings.theme ? "dark" : "light",
               hideTypingIndicator: settings.hideTypingIndicator,
@@ -241,7 +244,7 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handleSavePreferences}
-              disabled={isUpdating || noChangesMade}
+              disabled={isSaveDisabled || noChangesMade}
               className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:dark:opacity-50"
             >
               Save Preferences

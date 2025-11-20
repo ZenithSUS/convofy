@@ -14,7 +14,7 @@ async function CreateRoomPage() {
 
   if (session.user.isAnonymous && session.user.role === "anonymous") {
     // Redirect anonymous users to a different page
-    redirect("/chat");
+    redirect("/chat/denied");
   }
 
   return <CreateRoomClient serverSession={session as Session} />;

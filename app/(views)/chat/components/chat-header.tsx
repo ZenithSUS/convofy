@@ -42,11 +42,16 @@ function ChatHeader({ session: serverSession }: { session: Session }) {
   const { session } = useHybridSession(serverSession);
   const isMobile = useIsMobile();
   const router = useRouter();
+
+  const isAnonymous = useMemo(() => {
+    return session.user.role === "anonymous" || session.user.isAnonymous;
+  }, [session.user]);
+
   const {
     data: messageRequests,
     isLoading: isMessageRequestsLoading,
     isFetching: isMessageRequestsFetching,
-  } = useGetRoomInvites(session.user.id);
+  } = useGetRoomInvites(session.user.id, !isAnonymous);
 
   const isRequestsLoading = useMemo(() => {
     return isMessageRequestsLoading || isMessageRequestsFetching;
@@ -82,12 +87,14 @@ function ChatHeader({ session: serverSession }: { session: Session }) {
         {session && (
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2 md:gap-3">
             {/* Message Requests Notification with Loading State */}
-            {isRequestsLoading ? (
+            {!isAnonymous && isRequestsLoading ? (
               <div className="relative flex h-8 w-8 items-center justify-center rounded-full sm:h-9 sm:w-9">
                 <Loader2 className="h-4 w-4 animate-spin text-blue-600 sm:h-5 sm:w-5 dark:text-blue-400" />
               </div>
             ) : (
-              <NotificationBell requests={messageRequests || []} />
+              !isAnonymous && (
+                <NotificationBell requests={messageRequests || []} />
+              )
             )}
 
             {/* User Profile Section */}

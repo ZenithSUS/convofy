@@ -72,6 +72,10 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const [, setIsDetailsVisible] = useState<boolean>(false);
   const [actionType, setActionType] = useState<"edit" | "view">("view");
 
+  const userPreferences = useMemo(() => {
+    return session?.user.preferences;
+  }, [session]);
+
   const {
     data: room,
     isLoading: roomLoading,
@@ -170,7 +174,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
   const isAllDataLoaded = useMemo(() => {
     if (isChatError) return true;
-    return roomData && messagesData && session;
+    return !!roomData && !!messagesData && !!session;
   }, [roomData, messagesData, session, isChatError]);
 
   const isOtherPersonUnavailable = useMemo(() => {
@@ -493,6 +497,8 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
             messageForm={messageForm}
             isSending={isSending}
             isUploading={isUploading}
+            isTypingIndicatorHidden={userPreferences.hideTypingIndicator}
+            isAllFetched={!isAllFetching}
             handleSendMessage={handleSendMessage}
             handleTypingUser={handleTypingUser}
             handleStopTypingUser={handleStopTypingUser}

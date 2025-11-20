@@ -34,6 +34,11 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
     ? otherUser?.avatar || "/default-avatar.png"
     : room.image || "/default-avatar.png";
 
+  const isAvailable = useMemo<boolean>(() => {
+    if (!isPrivate || !otherUser) return false;
+    return otherUser.isAvailable;
+  }, [isPrivate, otherUser]);
+
   const notSeen = useMemo<boolean>(() => {
     if (!room.lastMessage?.status) return false;
 
@@ -49,7 +54,7 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
     >
       <div className="flex min-w-0 flex-1 items-start gap-4">
         {/* Avatar / Room Image */}
-        <div className="shrink-0">
+        <div className="relative shrink-0">
           <Image
             src={displayImage}
             alt={displayName}
@@ -57,6 +62,11 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
             height={48}
             className="h-12 w-12 rounded-full object-cover"
           />
+          {isAvailable && isPrivate && (
+            <div
+              className={`ring-background absolute right-0 bottom-0 h-3 w-3 rounded-full ${otherUser?.status === "online" ? "bg-green-500 ring-2 dark:bg-green-400" : "bg-gray-400 ring-2 dark:bg-gray-600"}`}
+            />
+          )}
         </div>
 
         {/* Chat Info */}

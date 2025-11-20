@@ -311,7 +311,7 @@ export const authOptions: NextAuthOptions = {
             return "/auth/error?error=AccountExistsWithDifferentCredential";
           }
 
-          // Update linked account (non-blocking if possible)
+          // Update linked account
           await userService.updateLinkedAccount(currentUser._id.toString(), {
             provider: currentProvider as UserOAuthProviders,
             providerAccount: currentAccountEmail,
@@ -333,6 +333,8 @@ export const authOptions: NextAuthOptions = {
             linkedAccounts: currentUser.linkedAccounts,
             preferences: currentUser.preferences,
             role: currentUser.role,
+            anonAlias: currentUser.anonAlias,
+            anonAvatar: currentUser.anonAvatar,
           });
 
           return true;
@@ -472,6 +474,8 @@ export const authOptions: NextAuthOptions = {
           preferences: existingUser.preferences,
           linkedAccounts: existingUser.linkedAccounts,
           role: existingUser.role,
+          anonAlias: existingUser.anonAlias,
+          anonAvatar: existingUser.anonAvatar,
         });
 
         return true;
@@ -551,7 +555,10 @@ export const authOptions: NextAuthOptions = {
       }
 
       // ---- Handle anonymous provider ----
-      if (account?.provider === "anonymous" || token.role === "anonymous") {
+      if (
+        (user && account?.provider === "anonymous") ||
+        token.role === "anonymous"
+      ) {
         return {
           ...token,
           isAnonymous: true,
@@ -565,6 +572,7 @@ export const authOptions: NextAuthOptions = {
             hideStatus: false,
             hideTypingIndicator: false,
           },
+          lastRefresh: Date.now(),
         };
       }
 
@@ -602,7 +610,6 @@ export const authOptions: NextAuthOptions = {
       // ---- Refresh token with caching ----
       if (!user && token.email && token.userId && token.sessionId) {
         // Check if session is still valid
-
         const sessions = await userService.getUserActiveSessions(token.userId);
         const sessionExists = sessions.some(
           (session: UserSession) => session.sessionId === token.sessionId,

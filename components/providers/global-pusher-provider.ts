@@ -2,7 +2,7 @@
 
 import showErrorConnectionMessage from "@/helper/pusher/error";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
-import { pusherClient } from "@/lib/pusher-client";
+import { pusherClient } from "@/lib/pusher/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import useConnectionStatus from "@/store/connection-status-store";
 import { RoomContent, RoomRequest } from "@/types/room";

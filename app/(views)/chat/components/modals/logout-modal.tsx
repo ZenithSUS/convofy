@@ -16,6 +16,7 @@ import { PowerCircle } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface LogoutModalProps {
   userId: string;
@@ -34,16 +35,29 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
     if (!isClient) return;
 
     try {
-      await client.post(`/sessions/${userId}/revoke`, {
-        sessionId,
-      });
+      toast.promise(
+        async () => {
+          await client.post(`/sessions/${userId}/revoke`, {
+            sessionId,
+          });
 
-      await Promise.all([
-        signOut({ redirect: false }),
-        client.post("/auth/logout", { id: userId }),
-      ]);
+          await Promise.all([
+            signOut({ redirect: false }),
+            client.post("/auth/logout", { id: userId }),
+          ]);
+        },
+        {
+          loading: "Logging out...",
+          success: "Logged out successfully",
+          error: "Error logging out",
+        },
+      );
 
-      router.push("/auth/login");
+      setTimeout(() => {
+        localStorage.clear();
+        router.refresh();
+        router.push("/auth/login");
+      }, 500);
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -65,7 +79,10 @@ function LogoutModal({ userId, sessionId }: LogoutModalProps) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-red-600" onClick={handleLogout}>
+          <AlertDialogAction
+            className="bg-red-600 text-white"
+            onClick={handleLogout}
+          >
             Log out
           </AlertDialogAction>
         </AlertDialogFooter>

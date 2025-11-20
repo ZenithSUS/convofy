@@ -24,13 +24,13 @@ import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-
 import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
 import Loading from "@/components/ui/loading";
 import ErrorMessage from "@/components/ui/error-message";
-import { Toast } from "@/components/providers/toast-provider";
 
 // Hooks
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
 import useConnectionStatus from "@/store/connection-status-store";
 import useHybridSession from "@/hooks/use-hybrid-session";
+import { toast } from "sonner";
 
 interface ChatListClientProps {
   serverSession: Session;
@@ -103,10 +103,18 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
 
     setIsRefreshing(true);
     try {
-      await refetch();
-      Toast.success("Chats refreshed successfully");
+      toast.promise(
+        async () => {
+          await refetch();
+        },
+        {
+          success: "Chats refreshed successfully",
+          loading: "Refreshing chats...",
+          error: "Failed to refresh chats",
+        },
+      );
     } catch (error) {
-      Toast.error("Failed to refresh chats");
+      toast.error("Failed to refresh chats");
       console.error("Refresh error:", error);
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);

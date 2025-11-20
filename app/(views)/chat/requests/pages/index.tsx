@@ -12,9 +12,9 @@ import {
 import { useCallback, useMemo } from "react";
 import Loading from "@/components/ui/loading";
 import RequestCard from "@/app/(views)/chat/components/cards/request-card";
-import { Toast } from "@/components/providers/toast-provider";
 import { RoomRequest } from "@/types/room";
 import ErrorMessage from "@/components/ui/error-message";
+import { toast } from "sonner";
 
 interface RequestListClientProps {
   serverSession: Session;
@@ -55,11 +55,19 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
   const handleAccept = useCallback(
     async (roomId: string, userId: string) => {
       try {
-        await acceptInvite({ roomId, userId });
-        Toast.success("Request accepted successfully");
+        toast.promise(
+          async () => {
+            await acceptInvite({ roomId, userId });
+          },
+          {
+            success: "Request accepted successfully",
+            loading: "Accepting request...",
+            error: "Error accepting room invite",
+          },
+        );
       } catch (error) {
         console.error("Error accepting room invite:", error);
-        Toast.error("Error accepting room invite");
+        toast.error("Error accepting room invite");
       }
     },
     [acceptInvite],
@@ -68,11 +76,19 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
   const handleDecline = useCallback(
     async (roomId: string, userId: string) => {
       try {
-        await declineInvite({ userId, roomId });
-        Toast.success("Request declined successfully");
+        toast.promise(
+          async () => {
+            await declineInvite({ userId, roomId });
+          },
+          {
+            success: "Request declined successfully",
+            loading: "Declining request...",
+            error: "Error declining room invite",
+          },
+        );
       } catch (error) {
         console.error("Error declining room invite:", error);
-        Toast.error("Error declining room invite");
+        toast.error("Error declining room invite");
       }
     },
     [declineInvite],

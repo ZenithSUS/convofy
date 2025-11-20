@@ -9,8 +9,8 @@ import { useCallback, useMemo, useState } from "react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { useUpdatePreferences } from "@/hooks/use-user";
-import { Toast } from "@/components/providers/toast-provider";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface PreferencesPageProps {
   serverSession: Session;
@@ -42,49 +42,75 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
     return session.user.isAnonymous !== settings.anonymousMode;
   }, [session.user.isAnonymous, settings.anonymousMode]);
 
+  const noChangesMade = useMemo(() => {
+    return (
+      session.user.isAnonymous === settings.anonymousMode &&
+      session.user.preferences.theme === (settings.theme ? "dark" : "light") &&
+      session.user.preferences.hideTypingIndicator ===
+        settings.hideTypingIndicator &&
+      session.user.preferences.hideStatus === settings.hideStatus
+    );
+  }, [
+    session.user.isAnonymous,
+    settings.anonymousMode,
+    session.user.preferences.theme,
+    settings.theme,
+    session.user.preferences.hideTypingIndicator,
+    settings.hideTypingIndicator,
+    session.user.preferences.hideStatus,
+    settings.hideStatus,
+  ]);
+
   const handleSavePreferences = useCallback(async () => {
     try {
       if (isUpdating) return;
+      toast.promise(
+        async () => {
+          const response = await updatePreferences({
+            userId: session.user.id,
+            isAnonymous: settings.anonymousMode,
+            preferences: {
+              theme: settings.theme ? "dark" : "light",
+              hideTypingIndicator: settings.hideTypingIndicator,
+              hideStatus: settings.hideStatus,
+            },
+          });
 
-      const response = await updatePreferences({
-        userId: session.user.id,
-        isAnonymous: settings.anonymousMode,
-        preferences: {
-          theme: settings.theme ? "dark" : "light",
-          hideTypingIndicator: settings.hideTypingIndicator,
-          hideStatus: settings.hideStatus,
+          if (!response) {
+            toast.error("Failed to update preferences. Please try again.");
+            return;
+          }
+
+          await update({
+            user: {
+              ...session.user,
+              avatar: response.avatar,
+              isAnonymous: response.isAnonymous,
+              preferences: {
+                ...response.preferences,
+              },
+              anonAlias: response.anonAlias,
+              anonAvatar: response.anonAvatar,
+            },
+          });
+
+          if (isChangeAnonymity) {
+            queryClient.removeQueries({ queryKey: ["rooms"] });
+            queryClient.removeQueries({ queryKey: ["room"] });
+            queryClient.removeQueries({ queryKey: ["messages"] });
+          }
+
+          document.documentElement.classList.toggle("dark", settings.theme);
         },
-      });
-
-      if (!response) {
-        Toast.error("Failed to update preferences. Please try again.");
-        return;
-      }
-
-      await update({
-        user: {
-          ...session.user,
-          avatar: response.avatar,
-          isAnonymous: response.isAnonymous,
-          preferences: {
-            ...response.preferences,
-          },
-          anonAlias: response.anonAlias,
-          anonAvatar: response.anonAvatar,
+        {
+          loading: "Updating preferences...",
+          success: "Preferences updated successfully.",
+          error: "Failed to update preferences. Please try again.",
         },
-      });
-
-      if (isChangeAnonymity) {
-        queryClient.removeQueries({ queryKey: ["rooms"] });
-        queryClient.removeQueries({ queryKey: ["room"] });
-        queryClient.removeQueries({ queryKey: ["messages"] });
-      }
-
-      document.documentElement.classList.toggle("dark", settings.theme);
-      Toast.success("Preferences updated successfully.");
+      );
     } catch (error) {
       console.error("Failed to update preferences:", error);
-      Toast.error("Failed to update preferences. Please try again.");
+      toast.error("Failed to update preferences. Please try again.");
       return;
     }
   }, [
@@ -133,7 +159,7 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
     {
       key: "hideStatus" as const,
       icon: Activity,
-      title: "Show Status",
+      title: "Hide Status",
       description: "Display your online/offline status to others",
       iconBg:
         "bg-gradient-to-br from-green-100 to-green-200 dark:from-green-500 dark:to-green-600",
@@ -207,8 +233,8 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
           <div className="mt-6 flex justify-end">
             <Button
               onClick={handleSavePreferences}
-              disabled={isUpdating}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600"
+              disabled={isUpdating || noChangesMade}
+              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-500 dark:hover:bg-blue-600 disabled:dark:opacity-50"
             >
               Save Preferences
             </Button>

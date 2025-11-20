@@ -9,7 +9,7 @@ import {
   useAcceptRoomInvite,
   useDeclineRoomInvite,
 } from "@/hooks/use-room-invite";
-import { Toast } from "@/components/providers/toast-provider";
+import { toast } from "sonner";
 
 function NotificationBell({ requests }: { requests: RoomRequest[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,11 +23,19 @@ function NotificationBell({ requests }: { requests: RoomRequest[] }) {
   const handleAccept = useCallback(
     async (roomId: string, userId: string) => {
       try {
-        await acceptInvite({ roomId, userId });
-        Toast.success("Request accepted successfully");
+        toast.promise(
+          async () => {
+            await acceptInvite({ roomId, userId });
+          },
+          {
+            success: "Request accepted successfully",
+            loading: "Accepting request...",
+            error: "Error accepting room invite",
+          },
+        );
       } catch (error) {
         console.error("Error accepting room invite:", error);
-        Toast.error("Error accepting room invite");
+        toast.error("Error accepting room invite");
       }
     },
     [acceptInvite],
@@ -36,11 +44,19 @@ function NotificationBell({ requests }: { requests: RoomRequest[] }) {
   const handleDecline = useCallback(
     async (roomId: string, userId: string) => {
       try {
-        await declineInvite({ userId, roomId });
-        Toast.success("Request declined successfully");
+        toast.promise(
+          async () => {
+            await declineInvite({ userId, roomId });
+          },
+          {
+            success: "Request declined successfully",
+            loading: "Declining request...",
+            error: "Error declining room invite",
+          },
+        );
       } catch (error) {
         console.error("Error declining room invite:", error);
-        Toast.error("Error declining room invite");
+        toast.error("Error declining room invite");
       }
     },
     [declineInvite],

@@ -1,6 +1,5 @@
 "use client";
 
-import { Toast } from "@/components/providers/toast-provider";
 import { Button } from "@/components/ui/button";
 import {
   useAcceptRoomInvite,
@@ -10,6 +9,7 @@ import { RoomContent } from "@/types/room";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
+import { toast } from "sonner";
 
 interface RoomRequestProps {
   userId: string;
@@ -30,31 +30,51 @@ function RoomRequest({ userId, roomId }: RoomRequestProps) {
 
   const handleAccept = useCallback(async () => {
     try {
-      await acceptInvite({ roomId, userId });
-      Toast.success("Request accepted successfully");
-      queryClient.setQueryData(["room", roomId], (prevRoom: RoomContent) => {
-        return {
-          ...prevRoom,
-          isPending: false,
-          isAccepted: true,
-        };
-      });
+      toast.promise(
+        async () => {
+          await acceptInvite({ roomId, userId });
+
+          queryClient.setQueryData(
+            ["room", roomId],
+            (prevRoom: RoomContent) => {
+              return {
+                ...prevRoom,
+                isPending: false,
+                isAccepted: true,
+              };
+            },
+          );
+        },
+        {
+          success: "You have joined the room!",
+          loading: "Accepting room invite...",
+          error: "Error accepting room invite",
+        },
+      );
+      router.push(`/chat/${roomId}`);
     } catch (error) {
       console.error("Error accepting room invite:", error);
-      Toast.error("Error accepting room invite");
+      toast.error("Error accepting room invite");
     }
-  }, [acceptInvite, userId, roomId, queryClient]);
+  }, [acceptInvite, userId, roomId, queryClient, router]);
 
   const handleDecline = useCallback(async () => {
     try {
-      await declineInvite({ userId, roomId });
-      Toast.success("Request declined successfully");
-      router.push("/chat");
+      toast.promise(
+        async () => {
+          await declineInvite({ userId, roomId });
+        },
+        {
+          success: "You have declined the room invite.",
+          loading: "Declining room invite...",
+          error: "Error declining room invite",
+        },
+      );
     } catch (error) {
       console.error("Error declining room invite:", error);
-      Toast.error("Error declining room invite");
+      toast.error("Error declining room invite");
     }
-  }, [declineInvite, userId, roomId, router]);
+  }, [declineInvite, userId, roomId]);
 
   return (
     <div className="flex flex-col items-center gap-2 border-t border-gray-300 p-5">

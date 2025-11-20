@@ -1,6 +1,5 @@
 "use client";
 
-import { Toast } from "@/components/providers/toast-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,7 +15,9 @@ import { Button } from "@/components/ui/button";
 import client from "@/lib/axios";
 import { LogOut, Loader2, AlertTriangle } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ProfileLogoutModalProps {
   userId: string;
@@ -26,36 +27,44 @@ interface ProfileLogoutModalProps {
 function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
   const [isClient, setIsClient] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     if (!isClient || isLoggingOut) return;
 
     setIsLoggingOut(true);
 
     try {
-      // Revoke session and logout in parallel
-      await Promise.all([
-        client.post(`/sessions/${userId}/revoke`, { sessionId }),
-        client.post("/auth/logout", { id: userId }),
-        signOut({ redirect: false }),
-      ]);
+      toast.promise(
+        async () => {
+          await Promise.all([
+            client.post(`/sessions/${userId}/revoke`, { sessionId }),
+            client.post("/auth/logout", { id: userId }),
+            signOut({ redirect: false }),
+          ]);
+        },
+        {
+          success: "Logged out successfully",
+          loading: "Logging out...",
+          error: "Failed to log out. Please try again.",
+        },
+      );
 
-      Toast.success("Logged out successfully");
-
-      // Small delay for toast to show
       setTimeout(() => {
-        window.location.href = "/auth/login";
+        localStorage.clear();
+        router.refresh();
+        router.push("/auth/login");
       }, 500);
     } catch (error) {
       console.error("Error logging out:", error);
-      Toast.error("Failed to log out. Please try again.");
+      toast.error("Failed to log out. Please try again.");
       setIsLoggingOut(false);
     }
-  };
+  }, [isClient, isLoggingOut, userId, sessionId, router]);
 
   if (!isClient || !userId || !sessionId) return null;
 

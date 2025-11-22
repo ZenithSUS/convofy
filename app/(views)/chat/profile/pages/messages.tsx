@@ -1,6 +1,6 @@
 "use client";
 
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import { useGetMessagesByUserId } from "@/hooks/use-message";
 import {

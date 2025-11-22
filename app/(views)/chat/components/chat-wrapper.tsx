@@ -1,6 +1,6 @@
 "use client";
 
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/ui/app-sidebar";
 import useUserConnectionStatus from "@/hooks/use-presence";

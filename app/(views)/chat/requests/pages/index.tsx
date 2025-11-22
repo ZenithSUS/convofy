@@ -1,9 +1,11 @@
 "use client";
 
-import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
+import ChatHeader, {
+  Session,
+} from "@/app/(views)/chat/components/chatpage/chat-header";
 import useHybridSession from "@/hooks/use-hybrid-session";
 import useConnectionStatus from "@/store/connection-status-store";
-import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
+import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/room/connection-status";
 import {
   useAcceptRoomInvite,
   useDeclineRoomInvite,
@@ -46,6 +48,10 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
       return bLastMessage.getTime() - aLastMessage.getTime();
     });
   }, [messageRequests]);
+
+  const userTheme = useMemo<string>(() => {
+    return session.user.preferences.theme;
+  }, [session.user.preferences.theme]);
 
   const { mutateAsync: acceptInvite, isPending: isAccepting } =
     useAcceptRoomInvite();
@@ -115,7 +121,7 @@ function RequestListClient({ serverSession }: RequestListClientProps) {
           {isProcessing ? (
             <div className="flex flex-col items-center justify-center py-32">
               <div className="animate-pulse">
-                <Loading text="Loading requests" />
+                <Loading text="Loading requests" theme={userTheme} />
               </div>
             </div>
           ) : messageRequestsData.length > 0 ? (

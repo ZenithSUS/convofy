@@ -4,7 +4,7 @@ import {
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog";
 import {
   Form,

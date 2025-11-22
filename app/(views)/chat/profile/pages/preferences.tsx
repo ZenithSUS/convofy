@@ -1,6 +1,6 @@
 "use client";
 
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import ProfileHeader from "../components/profile-header";
 import useHybridSession from "@/hooks/use-hybrid-session";
 import AvatarCard from "../components/avatar-card";

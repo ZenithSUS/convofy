@@ -15,6 +15,7 @@ export interface IRoom {
   lastMessage: Types.ObjectId;
   owner: Types.ObjectId;
   createdAt: Date;
+  isAnonymous: boolean;
 }
 
 const RoomSchema = new Schema<IRoom>(
@@ -31,6 +32,7 @@ const RoomSchema = new Schema<IRoom>(
     lastMessage: { type: Schema.Types.ObjectId, ref: "Message" },
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true },
     createdAt: { type: Date, default: Date.now },
+    isAnonymous: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

@@ -1,6 +1,8 @@
 "use client";
 
-import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
+import ChatHeader, {
+  Session,
+} from "@/app/(views)/chat/components/chatpage/chat-header";
 import { Button } from "@/components/ui/button";
 import {
   Form,

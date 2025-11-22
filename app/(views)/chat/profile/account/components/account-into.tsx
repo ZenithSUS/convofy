@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Calendar, Hash, Info } from "lucide-react";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 
 interface AccountInfoProps {
   session: Session;

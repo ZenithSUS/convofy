@@ -14,7 +14,7 @@ import { useChangePassword } from "@/hooks/use-user";
 import { Eye, EyeOff, Loader2, Lock } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { UserChangePassword } from "@/types/user";
 import PasswordStrength from "@/helper/password-strength";
 import { useForm } from "react-hook-form";

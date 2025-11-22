@@ -2,11 +2,11 @@
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import Image from "next/image";
-import LogoutModal from "./modals/logout-modal";
+import LogoutModal from "../modals/logout-modal";
 import { useRouter } from "next/navigation";
 import { UserLinkedAccount } from "@/types/user";
 import { Loader2 } from "lucide-react";
-import NotificationBell from "./notification-request";
+import NotificationBell from "../notification-request";
 import { useGetRoomInvites } from "@/hooks/use-room-invite";
 import { useMemo } from "react";
 import { SidebarTrigger } from "@/components/ui/sidebar";

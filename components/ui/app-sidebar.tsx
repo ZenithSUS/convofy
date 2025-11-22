@@ -31,7 +31,7 @@ import { useMemo } from "react";
 import { RoomContent } from "@/types/room";
 import Image from "next/image";
 import useHybridSession from "@/hooks/use-hybrid-session";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Menu items normal items
@@ -219,138 +219,140 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
         {/* Recent Chats Section */}
 
-        <SidebarSeparator className="my-2 dark:bg-gray-800" />
+        {!isAnonymous && <SidebarSeparator className="my-2 dark:bg-gray-800" />}
 
-        <SidebarGroup className="relative space-y-4 overflow-y-auto">
-          <SidebarGroupLabel className="flex items-center justify-between px-2">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Recent Chats
-              </span>
-            </div>
-            {roomsList.length > 0 && (
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
-                {roomsList.length}
-              </span>
-            )}
-          </SidebarGroupLabel>
+        {!isAnonymous && (
+          <SidebarGroup className="relative space-y-4 overflow-y-auto">
+            <SidebarGroupLabel className="flex items-center justify-between px-2">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Recent Chats
+                </span>
+              </div>
+              {roomsList.length > 0 && (
+                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-600 dark:bg-blue-900/50 dark:text-blue-300">
+                  {roomsList.length}
+                </span>
+              )}
+            </SidebarGroupLabel>
 
-          <SidebarGroupContent className="overflow-y-auto">
-            <SidebarMenu className="space-y-5">
-              {isLoading ? (
-                <div className="px-3 py-8 text-center">
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400" />
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    Loading chats...
-                  </p>
-                </div>
-              ) : roomsList.length === 0 ? (
-                <div className="px-3 py-8 text-center">
-                  <MessageCircleCode className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-700" />
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    No chats yet
-                  </p>
-                </div>
-              ) : (
-                roomsList.slice(0, 10).map((room) => {
-                  const isCurrentRoom = pathname?.includes(room._id);
-                  const isGroupChat = !room.isPrivate;
+            <SidebarGroupContent className="overflow-y-auto">
+              <SidebarMenu className="space-y-5">
+                {isLoading ? (
+                  <div className="px-3 py-8 text-center">
+                    <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent dark:border-blue-400" />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      Loading chats...
+                    </p>
+                  </div>
+                ) : roomsList.length === 0 ? (
+                  <div className="px-3 py-8 text-center">
+                    <MessageCircleCode className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-700" />
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      No chats yet
+                    </p>
+                  </div>
+                ) : (
+                  roomsList.slice(0, 10).map((room) => {
+                    const isCurrentRoom = pathname?.includes(room._id);
+                    const isGroupChat = !room.isPrivate;
 
-                  return (
-                    <SidebarMenuItem key={room._id}>
-                      <SidebarMenuButton
-                        asChild
-                        className={`transition-all duration-200 ${
-                          isCurrentRoom
-                            ? "border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50"
-                            : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                        } px-3 py-5`}
-                      >
-                        <Link
-                          href={`/chat/${room._id}`}
-                          className="flex items-center gap-3 rounded-lg px-3 py-2"
-                          title={room.name}
+                    return (
+                      <SidebarMenuItem key={room._id}>
+                        <SidebarMenuButton
+                          asChild
+                          className={`transition-all duration-200 ${
+                            isCurrentRoom
+                              ? "border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/50"
+                              : "hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                          } px-3 py-5`}
                         >
-                          {/* Avatar */}
-                          <div className="relative shrink-0">
-                            {isGroupChat ? (
-                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-pink-400 dark:from-purple-500 dark:to-pink-500">
+                          <Link
+                            href={`/chat/${room._id}`}
+                            className="flex items-center gap-3 rounded-lg px-3 py-2"
+                            title={room.name}
+                          >
+                            {/* Avatar */}
+                            <div className="relative shrink-0">
+                              {isGroupChat ? (
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-400 to-pink-400 dark:from-purple-500 dark:to-pink-500">
+                                  <Image
+                                    src={room.image || "/default-avatar.png"}
+                                    alt={room.name || "Avatar"}
+                                    width={40}
+                                    height={40}
+                                    className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-gray-800"
+                                  />
+                                </div>
+                              ) : (
                                 <Image
-                                  src={room.image || "/default-avatar.png"}
+                                  src={privateRoomChatImage(room)}
                                   alt={room.name || "Avatar"}
                                   width={40}
                                   height={40}
                                   className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-gray-800"
                                 />
-                              </div>
-                            ) : (
-                              <Image
-                                src={privateRoomChatImage(room)}
-                                alt={room.name || "Avatar"}
-                                width={40}
-                                height={40}
-                                className="h-10 w-10 rounded-full border-2 border-white object-cover shadow-sm dark:border-gray-800"
-                              />
-                            )}
-                          </div>
-
-                          {/* Chat Info */}
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <p
-                                className={`truncate text-sm font-medium ${
-                                  isCurrentRoom
-                                    ? "text-blue-700 dark:text-blue-400"
-                                    : "text-gray-800 dark:text-gray-200"
-                                }`}
-                              >
-                                {room.name || privateRoomChatName(room)}
-                              </p>
-                              {room.lastMessage?.createdAt && (
-                                <span
-                                  className={`flex shrink-0 items-center gap-1 text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} `}
-                                >
-                                  <Clock className="h-3 w-3" />
-                                  {formatTimeAgo(room.lastMessage.createdAt)}
-                                </span>
                               )}
                             </div>
-                            {room.lastMessage?.content && (
-                              <p
-                                className={`mt-0.5 truncate text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`}
-                              >
-                                {room.lastMessage.type === "text"
-                                  ? room.lastMessage.content
-                                  : room.lastMessage.type === "file"
-                                    ? "Sent a file"
-                                    : room.lastMessage.type === "image"
-                                      ? "Sent an image"
-                                      : "N/A"}
-                              </p>
-                            )}
-                          </div>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-          {roomsList.length > 10 && (
-            <div className="mt-3 px-3">
-              <Link
-                href="/chat"
-                title="View all chats"
-                onClick={handleLinkClick}
-                className="absolute bottom-0 left-0 w-full rounded-lg border-t border-gray-200 bg-gray-100 px-3 py-4 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
-              >
-                View all chats
-              </Link>
-            </div>
-          )}
-        </SidebarGroup>
+
+                            {/* Chat Info */}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <p
+                                  className={`truncate text-sm font-medium ${
+                                    isCurrentRoom
+                                      ? "text-blue-700 dark:text-blue-400"
+                                      : "text-gray-800 dark:text-gray-200"
+                                  }`}
+                                >
+                                  {room.name || privateRoomChatName(room)}
+                                </p>
+                                {room.lastMessage?.createdAt && (
+                                  <span
+                                    className={`flex shrink-0 items-center gap-1 text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"} `}
+                                  >
+                                    <Clock className="h-3 w-3" />
+                                    {formatTimeAgo(room.lastMessage.createdAt)}
+                                  </span>
+                                )}
+                              </div>
+                              {room.lastMessage?.content && (
+                                <p
+                                  className={`mt-0.5 truncate text-xs ${isNotSeen(room) ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`}
+                                >
+                                  {room.lastMessage.type === "text"
+                                    ? room.lastMessage.content
+                                    : room.lastMessage.type === "file"
+                                      ? "Sent a file"
+                                      : room.lastMessage.type === "image"
+                                        ? "Sent an image"
+                                        : "N/A"}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+            {roomsList.length > 10 && (
+              <div className="mt-3 px-3">
+                <Link
+                  href="/chat"
+                  title="View all chats"
+                  onClick={handleLinkClick}
+                  className="absolute bottom-0 left-0 w-full rounded-lg border-t border-gray-200 bg-gray-100 px-3 py-4 text-center text-xs font-medium text-gray-600 transition-colors hover:bg-gray-200 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+                >
+                  View all chats
+                </Link>
+              </div>
+            )}
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );

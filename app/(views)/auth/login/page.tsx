@@ -266,7 +266,7 @@ function LoginPage() {
           <Button
             type="button"
             onClick={handleAnonymousLogin}
-            disabled={!isAnonymousLoading}
+            disabled={isAnonymousLoading}
             className="h-12 w-full rounded-xl bg-linear-to-r from-black via-gray-900 to-gray-700 font-semibold text-white shadow-lg transition-all duration-300 hover:from-black/30 hover:via-gray-950 hover:to-gray-800 hover:shadow-xl disabled:opacity-50"
           >
             {isAnonymousLoading ? (

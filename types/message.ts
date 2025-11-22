@@ -6,6 +6,9 @@ export type Sender = {
   _id: Types.ObjectId | string;
   name: string;
   avatar: string;
+  isAnonymous: boolean;
+  anonAvatar?: string;
+  anonAlias?: string;
 };
 
 export type Message = {

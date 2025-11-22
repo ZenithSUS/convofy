@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import MessagesPageClient from "@/app/(views)/chat/profile/pages/messages";
 import { redirect } from "next/navigation";
 

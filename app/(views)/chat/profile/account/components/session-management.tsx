@@ -10,7 +10,7 @@ import { useGetUserSessions, useRemoveAllUserSessions } from "@/hooks/use-user";
 import { Chrome, Loader2, LogOut, Monitor } from "lucide-react";
 
 import { toast } from "react-toastify";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { signOut, useSession } from "next-auth/react";
 import SessionRemoveWarning from "./session-remove-warning";
 

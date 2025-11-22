@@ -14,20 +14,25 @@ if (!pusherKey || !pusherCluster) {
 let pusherInstance: Pusher | null = null;
 
 export const getPusherClient = () => {
-  if (typeof window === "undefined") {
+  try {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    if (!pusherInstance) {
+      pusherInstance = new Pusher(pusherKey!, {
+        cluster: pusherCluster!,
+        authEndpoint: "/api/pusher/auth",
+        enabledTransports: ["ws", "wss"],
+        forceTLS: true,
+      });
+    }
+
+    return pusherInstance;
+  } catch (error) {
+    console.error("Error creating Pusher instance:", error);
     return null;
   }
-
-  if (!pusherInstance) {
-    pusherInstance = new Pusher(pusherKey!, {
-      cluster: pusherCluster!,
-      authEndpoint: "/api/pusher/auth",
-      enabledTransports: ["ws", "wss"],
-      forceTLS: true,
-    });
-  }
-
-  return pusherInstance;
 };
 
 export const pusherClient = getPusherClient()!;

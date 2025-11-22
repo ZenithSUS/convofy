@@ -26,7 +26,7 @@ import { toast } from "react-toastify";
 import { UserLinkedAccount } from "@/types/user";
 import client from "@/lib/axios";
 import useHybridSession from "@/hooks/use-hybrid-session";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { useUpdateUser } from "@/hooks/use-user";
 
 interface DangerZoneProps {

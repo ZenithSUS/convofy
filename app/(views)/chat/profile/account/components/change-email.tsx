@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Info, Loader2, Lock, Mail } from "lucide-react";
 import { useState } from "react";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { toast } from "react-toastify";
 import { useChangeUserEmail } from "@/hooks/use-user";
 import { AxiosError } from "axios/";

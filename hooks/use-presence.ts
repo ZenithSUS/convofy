@@ -5,7 +5,7 @@ import { pusherClient } from "@/lib/pusher/pusher-client";
 import ConnectionStatusHandler from "@/services/pusher/connection-status-handler";
 import { useEffect, useMemo, useRef, useCallback } from "react";
 import { useUpdateUserStatus } from "@/hooks/use-user";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import getHomePusherConnectionState from "@/helper/pusher/home-connection-state";
 import useConnectionStatus from "@/store/connection-status-store";
 import useHybridSession from "./use-hybrid-session";

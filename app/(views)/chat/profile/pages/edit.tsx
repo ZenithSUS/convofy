@@ -1,6 +1,6 @@
 "use client";
 
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";
 import AvatarCard from "@/app/(views)/chat/profile/components/avatar-card";
 import {
@@ -65,6 +65,10 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
     () => isUploading || isDeleting || isUpdating,
     [isUploading, isDeleting, isUpdating],
   );
+
+  const userTheme = useMemo<string>(() => {
+    return session.user.preferences.theme;
+  }, [session.user.preferences.theme]);
 
   const isAnyChange = useMemo(() => {
     const hasNameChange = name !== session.user.name;
@@ -176,7 +180,7 @@ function EditPageClient({ serverSession }: { serverSession: Session }) {
   if (isLoading)
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loading text="Please wait" />
+        <Loading text="Please wait" theme={userTheme} />
       </div>
     );
 

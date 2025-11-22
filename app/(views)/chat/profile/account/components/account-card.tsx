@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import CreateCredentials from "./create-credentials";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { UserLinkedAccount, UserOAuthProviders } from "@/types/user";
 import Image from "next/image";
 import { CheckCircle2, Lock, X } from "lucide-react";

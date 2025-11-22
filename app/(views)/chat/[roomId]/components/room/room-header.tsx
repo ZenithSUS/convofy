@@ -35,7 +35,7 @@ function RoomHeader({ room, userId }: RoomHeaderProps) {
   const displayImage = useMemo(
     () =>
       isPrivate
-        ? otherUser?.avatar || "/default-avatar.png"
+        ? otherUser?.avatar || otherUser?.anonAvatar || "/default-avatar.png"
         : room.image || "/default-avatar.png",
     [room, otherUser, isPrivate],
   );

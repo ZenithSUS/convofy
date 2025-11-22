@@ -20,7 +20,7 @@ import useConnectionStatus from "@/store/connection-status-store";
 import { MessageOutputTyping } from "@/types/message";
 import { PusherChannel } from "@/types/pusher";
 import { RoomContent } from "@/types/room";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 
 interface useChannelProps {
   session: Session;

@@ -5,7 +5,7 @@ import useHybridSession from "@/hooks/use-hybrid-session";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Types
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 
 // Components
 import ProfileHeader from "@/app/(views)/chat/profile/components/profile-header";

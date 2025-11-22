@@ -1,4 +1,5 @@
 import client from "@/lib/axios";
+import { AxiosErrorMessage } from "@/types/error";
 import { CreateRoom, Room, RoomContent } from "@/types/room";
 import {
   useMutation,
@@ -68,7 +69,7 @@ export const useGetRoomByUserId = (
   isSearch: boolean,
   isNotAnonymous: boolean = true,
   searchQuery: string = "",
-): UseQueryResult<RoomContent[], unknown> => {
+): UseQueryResult<RoomContent[], AxiosErrorMessage> => {
   const getRoomByUserId = async (isSearch: boolean) => {
     const route = isSearch ? `/rooms/search` : `/rooms`;
 

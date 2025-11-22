@@ -1,10 +1,8 @@
 "use client";
 
 import { ThreeDot } from "react-loading-indicators";
-import useTheme from "@/store/theme-store";
 
-function Loading({ text }: { text?: string }) {
-  const { theme } = useTheme();
+function Loading({ text, theme }: { text?: string; theme?: string }) {
   return (
     <ThreeDot
       variant="bounce"

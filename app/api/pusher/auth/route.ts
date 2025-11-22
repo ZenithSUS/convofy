@@ -20,24 +20,40 @@ export async function POST(req: NextRequest) {
 
     const token = await getUserToken(req);
 
-    if (!token?.sub) {
+    if (!token || !token.sub) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isUserExists = await userService.getUserById(token.sub.toString());
+    const authUser = token.sub;
 
     if (!isUserExists) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    if (channel_name.startsWith("private-")) {
+      const allowedId = channel_name.replace("private-user-", "");
+
+      if (allowedId !== authUser) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+    }
+
+    if (channel_name.startsWith("presence-")) {
+      const auth = pusherServer.authorizeChannel(socket_id, channel_name, {
+        user_id: token.sub,
+        user_info: {
+          name: token.name,
+          avatar: token.picture,
+        },
+      });
+
+      return NextResponse.json(auth);
+    }
+
     const auth = pusherServer.authorizeChannel(socket_id, channel_name, {
       user_id: token.sub,
-      user_info: {
-        name: token.name,
-        avatar: token.picture,
-      },
     });
-
     return NextResponse.json(auth);
   } catch (err) {
     console.error("[PUSHER AUTH ERROR]", err);

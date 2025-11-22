@@ -37,6 +37,9 @@ export type RoomMembers = {
   name: string;
   avatar: string;
   isAvailable: boolean;
+  isAnonymous: boolean;
+  anonAvatar?: string;
+  anonAlias?: string;
   status?: "online" | "offline";
 };
 

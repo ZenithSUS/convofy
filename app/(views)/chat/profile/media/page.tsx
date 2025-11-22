@@ -1,7 +1,7 @@
 import MediaPageClient from "@/app/(views)/chat/profile/pages/media";
 import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { redirect } from "next/navigation";
 
 export default async function MediaPage() {

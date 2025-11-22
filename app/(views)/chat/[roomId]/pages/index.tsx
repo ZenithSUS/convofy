@@ -36,18 +36,18 @@ import { Button } from "@/components/ui/button";
 import NotJoinedModal from "@/app/(views)/chat/components/modals/not-joined-modal";
 import MessageCard from "@/app/(views)/chat/components/cards/message-card";
 import ErrorMessage from "@/components/ui/error-message";
-import RoomHeader from "@/app/(views)/chat/components/room-header";
-import TypingIndicator from "@/app/(views)/chat/[roomId]/components/typing-indicator";
-import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
-import MediaPreview from "@/app/(views)/chat/[roomId]/components/media-preview";
-import MessageForm from "@/app/(views)/chat/[roomId]/components/message-form";
-import LoadingConvo from "@/app/(views)/chat/[roomId]/components/loading-convo";
-import StartMessage from "@/app/(views)/chat/[roomId]/components/start-message";
-import { Session } from "@/app/(views)/chat/components/chat-header";
-import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/person-unavailable";
-import RoomError from "@/app/(views)/chat/[roomId]/components/room-error";
+import RoomHeader from "@/app/(views)/chat/[roomId]/components/room/room-header";
+import TypingIndicator from "@/app/(views)/chat/[roomId]/components/message/typing-indicator";
+import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/room/connection-status";
+import MediaPreview from "@/app/(views)/chat/[roomId]/components/message/media-preview";
+import MessageForm from "@/app/(views)/chat/[roomId]/components/message/message-form";
+import LoadingConvo from "@/app/(views)/chat/[roomId]/components/room/loading-convo";
+import StartMessage from "@/app/(views)/chat/[roomId]/components/message/start-message";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
+import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/room/person-unavailable";
+import RoomError from "@/app/(views)/chat/[roomId]/components/room/room-error";
 import getFileDirectory from "@/helper/file-directories";
-import RoomRequest from "@/app/(views)/chat/[roomId]/components/room-request";
+import RoomRequest from "@/app/(views)/chat/[roomId]/components/room/room-request";
 
 const schemaMessage = z.object({
   message: z.string(),

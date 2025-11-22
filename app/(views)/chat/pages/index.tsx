@@ -2,34 +2,29 @@
 
 // React
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Plus,
-  MessageSquare,
-  Sparkles,
-  TrendingUp,
-  LockIcon,
-  RefreshCw,
-} from "lucide-react";
-import { AxiosError } from "axios/";
+import { Plus, Search } from "lucide-react";
 
 // Next
 import { useRouter } from "next/navigation";
 
 // Components
 import { Button } from "@/components/ui/button";
-import SearchBar from "@/components/ui/searchbar";
-import UserCard from "@/app/(views)/chat/components/cards/user-card";
-import RoomCard from "@/app/(views)/chat/components/cards/room-card";
-import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/connection-status";
-import ChatHeader, { Session } from "@/app/(views)/chat/components/chat-header";
-import Loading from "@/components/ui/loading";
-import ErrorMessage from "@/components/ui/error-message";
+import ConnectionStatus from "@/app/(views)/chat/[roomId]/components/room/connection-status";
+import ChatHeader, {
+  Session,
+} from "@/app/(views)/chat/components/chatpage/chat-header";
+import NormalContent from "@/app/(views)/chat/components/chatpage/normal-content";
+import AnonymousContent from "@/app/(views)/chat/components/chatpage/anonymous-content";
+import SearchRoomBar from "@/app/(views)/chat/components/chatpage/search-bar";
+import SearchRoomResults from "@/app/(views)/chat/components/chatpage/search-results";
+import MatchFound from "@/app/(views)/chat/components/chatpage/match-found";
 
 // Hooks
-import { useGetRoomByUserId } from "@/hooks/use-rooms";
-import { RoomContent } from "@/types/room";
 import useConnectionStatus from "@/store/connection-status-store";
 import useHybridSession from "@/hooks/use-hybrid-session";
+import useAnonymousMatching from "@/hooks/use-anonymous-channel";
+import { useGetRoomByUserId } from "@/hooks/use-rooms";
+import { RoomContent } from "@/types/room";
 import { toast } from "sonner";
 
 interface ChatListClientProps {
@@ -44,17 +39,24 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showPreferences, setShowPreferences] = useState(false);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [currentInterest, setCurrentInterest] = useState("");
+  const [language, setLanguage] = useState("en");
   const { status: connectionStatus } = useConnectionStatus();
-
-  const isSearchMode = useMemo<boolean>(() => {
-    return debouncedSearchQuery.trim().length > 0;
-  }, [debouncedSearchQuery]);
 
   const isAnonymous = useMemo<boolean>(() => {
     return (
       (session.user.isAnonymous || session.user.role === "anonymous") ?? false
     );
   }, [session]);
+
+  const { isSearching, startSearching, cancelSearch, isMatched } =
+    useAnonymousMatching(session.user.id, isAnonymous);
+
+  const isSearchMode = useMemo<boolean>(() => {
+    return debouncedSearchQuery.trim().length > 0;
+  }, [debouncedSearchQuery]);
 
   const id = useMemo<string>(() => {
     return session.user.id;
@@ -63,6 +65,10 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
   const isAvailable = useMemo<boolean>(() => {
     return session.user.isAvailable;
   }, [session]);
+
+  const userTheme = useMemo<"light" | "dark">(() => {
+    return session.user.preferences.theme;
+  }, [session.user.preferences.theme]);
 
   const {
     data: rooms,
@@ -121,6 +127,44 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
     }
   }, [isRefreshing, isFetching, refetch]);
 
+  const handleStartAnonymousChat = useCallback(() => {
+    setShowPreferences(true);
+  }, []);
+
+  const handleStartSearching = useCallback(async () => {
+    if (!language) {
+      toast.error("Please select a language");
+      return;
+    }
+
+    const preferences = {
+      interests: interests.map((interest) => interest.trim()),
+      language: language,
+    };
+
+    setShowPreferences(false);
+    await startSearching(preferences);
+  }, [interests, language, startSearching]);
+
+  const handleStopSearching = useCallback(async () => {
+    setShowPreferences(false);
+    await cancelSearch();
+  }, [cancelSearch]);
+
+  const handleAddInterest = useCallback(() => {
+    if (currentInterest.trim() && !interests.includes(currentInterest.trim())) {
+      setInterests([...interests, currentInterest.trim()]);
+      setCurrentInterest("");
+    }
+  }, [currentInterest, interests]);
+
+  const handleRemoveInterest = useCallback(
+    (interest: string) => {
+      setInterests(interests.filter((i) => i !== interest));
+    },
+    [interests],
+  );
+
   useEffect(() => {
     const delay = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -143,193 +187,81 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             <ChatHeader session={session} />
           </div>
 
-          {/* Search Bar with Refresh Button */}
+          {/* Search Bar with Refresh Button - For Authenticated Users */}
           {!isAnonymous && isAvailable && (
-            <div className="px-4 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <SearchBar
-                    className="rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 focus-within:border-blue-500 hover:border-blue-300 dark:border-gray-700 dark:bg-gray-800 dark:focus-within:border-blue-400 dark:hover:border-blue-500"
-                    onSearch={handleSearch}
-                  />
-                  {searchQuery && (
-                    <div className="absolute top-1/2 right-3 -translate-y-1/2">
-                      <Sparkles
-                        size={16}
-                        className="animate-pulse text-blue-500 dark:text-blue-400"
-                      />
-                    </div>
-                  )}
-                </div>
+            <SearchRoomBar
+              searchQuery={searchQuery}
+              isRefreshing={isRefreshing}
+              isFetching={isFetching}
+              handleSearch={handleSearch}
+              handleRefresh={handleRefresh}
+            />
+          )}
 
-                {/* Refresh Button */}
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleRefresh}
-                  disabled={isRefreshing || isFetching}
-                  className="h-10 w-10 shrink-0 rounded-xl border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
-                  aria-label="Refresh chats"
-                >
-                  <RefreshCw
-                    size={18}
-                    className={`text-gray-600 transition-all duration-500 dark:text-gray-400 ${
-                      isRefreshing || isFetching
-                        ? "animate-spin text-blue-600 dark:text-blue-400"
-                        : ""
-                    }`}
-                  />
-                </Button>
-              </div>
+          {/* Anonymous User Search Button */}
+          {isAnonymous && !isSearching && !showPreferences && (
+            <div className="hidden px-4 pb-4 md:block">
+              <Button
+                className="group h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
+                onClick={handleStartAnonymousChat}
+              >
+                <Search
+                  size={20}
+                  className="mr-2 transition-transform duration-300 group-hover:scale-110"
+                />
+                Start Random Chat
+              </Button>
             </div>
           )}
 
           {/* Search Results Header */}
           {!isAnonymous && isSearchMode && (
-            <div className="px-4 pb-4">
-              <div className="rounded-xl border border-blue-100 bg-linear-to-r from-blue-50 to-purple-50 p-4 dark:border-blue-900/50 dark:from-blue-950/50 dark:to-purple-950/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <TrendingUp
-                        size={16}
-                        className="text-blue-600 dark:text-blue-400"
-                      />
-                      Search Results
-                    </h2>
-                    <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
-                      Found{" "}
-                      <span className="font-bold text-blue-600 dark:text-blue-400">
-                        {rooms && rooms.length > 0 ? rooms.length : 0}
-                      </span>{" "}
-                      matches for {`"${debouncedSearchQuery}"`}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SearchRoomResults
+              rooms={roomsList}
+              debouncedSearchQuery={debouncedSearchQuery}
+            />
           )}
         </div>
 
-        {/* List of chat rooms */}
+        {/* List of chat rooms - Authenticated Users */}
         {!isAnonymous && (
-          <div className="space-y-3 p-4 pb-24 md:pb-4">
-            {!isAnonymous && isAvailable && roomsList.length > 0 ? (
-              <>
-                {!isSearchMode && (
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      <MessageSquare
-                        size={16}
-                        className="text-gray-600 dark:text-gray-400"
-                      />
-                      Recent Conversations
-                    </h3>
-                    <span className="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-                      {roomsList.length} active
-                    </span>
-                  </div>
-                )}
-                <div className="space-y-2">
-                  {roomsList.map((item: RoomContent, index: number) => (
-                    <div
-                      key={item._id}
-                      style={{
-                        animation: `slideInRight 0.4s ease-out ${index * 0.05}s both`,
-                      }}
-                    >
-                      {item.type === "user" ? (
-                        <UserCard
-                          key={item._id}
-                          user={item}
-                          userId={session.user.id}
-                        />
-                      ) : (
-                        <RoomCard
-                          key={item._id}
-                          room={item}
-                          currentUserId={session.user.id}
-                          isSearchMode={isSearchMode}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : roomError ? (
-              <div className="mt-8">
-                <ErrorMessage
-                  error={roomErrorData as AxiosError}
-                  onClick={refetch}
-                />
-              </div>
-            ) : isFetching ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loading text="Getting your conversations" />
-              </div>
-            ) : !isAvailable ? (
-              <div className="flex flex-col items-center justify-center py-30">
-                <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
-                  <LockIcon
-                    size={40}
-                    className="text-blue-500 dark:text-blue-400"
-                  />
-                </div>
-
-                <h3 className="dark:text-gray-200">
-                  Chat is currently unavailable
-                </h3>
-                <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  You deactivated your account. Please reactivate to able to
-                  chat.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
-                  <MessageSquare
-                    size={40}
-                    className="text-blue-500 dark:text-blue-400"
-                  />
-                </div>
-                <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
-                  {isSearchMode ? "No results found" : "No conversations yet"}
-                </h3>
-                <p className="mb-6 max-w-xs text-center text-sm text-gray-500 dark:text-gray-400">
-                  {isSearchMode
-                    ? `No chats match "${debouncedSearchQuery}". Try a different search term.`
-                    : "Start a new conversation to connect with others"}
-                </p>
-                {!isSearchMode && (
-                  <Button
-                    className="bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
-                    onClick={() => router.replace("/chat/create")}
-                  >
-                    <Plus size={18} className="mr-2" />
-                    Create Your First Chat
-                  </Button>
-                )}
-              </div>
-            )}
-          </div>
+          <NormalContent
+            session={session}
+            userTheme={userTheme}
+            isAnonymous={isAnonymous}
+            roomsList={roomsList}
+            isFetching={isFetching}
+            isAvailable={isAvailable}
+            isSearchMode={isSearchMode}
+            roomError={roomError}
+            roomErrorData={roomErrorData}
+            refetch={refetch}
+            debouncedSearchQuery={debouncedSearchQuery}
+          />
         )}
 
-        {isAnonymous && (
-          <div className="flex flex-col items-center justify-center px-4 py-30 text-center">
-            <div className="mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
-              <MessageSquare
-                size={40}
-                className="text-blue-500 dark:text-blue-400"
-              />{" "}
-            </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
-              Anonymous Users Feature Comming Soon
-            </h3>
-          </div>
+        {/* Anonymous User Content */}
+        {isAnonymous && !isMatched ? (
+          <AnonymousContent
+            isSearching={isSearching}
+            language={language}
+            setLanguage={setLanguage}
+            currentInterest={currentInterest}
+            interests={interests}
+            showPreferences={showPreferences}
+            setCurrentInterest={setCurrentInterest}
+            setShowPreferences={setShowPreferences}
+            handleRemoveInterest={handleRemoveInterest}
+            handleAddInterest={handleAddInterest}
+            handleStartSearching={handleStartSearching}
+            handleStopSearching={handleStopSearching}
+          />
+        ) : (
+          <MatchFound />
         )}
       </div>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Authenticated Users */}
       {!isAnonymous && isAvailable ? (
         <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4 md:hidden dark:border-gray-800 dark:from-gray-900 dark:via-gray-900">
           <Button
@@ -344,6 +276,32 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
           </Button>
         </div>
       ) : null}
+
+      {/* Floating Action Button - Anonymous Users */}
+      {isAnonymous && !showPreferences && (
+        <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4 md:hidden dark:border-gray-800 dark:from-gray-900 dark:via-gray-900">
+          {isSearching ? (
+            <Button
+              variant="outline"
+              className="group h-12 w-full rounded-xl border-2 border-red-500 font-semibold text-red-500 shadow-lg transition-all duration-300 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/20"
+              onClick={handleStopSearching}
+            >
+              Cancel Search
+            </Button>
+          ) : (
+            <Button
+              className="group h-12 w-full rounded-xl bg-linear-to-r from-blue-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl dark:from-blue-500 dark:to-purple-500 dark:hover:from-blue-600 dark:hover:to-purple-600"
+              onClick={handleStartAnonymousChat}
+            >
+              <Search
+                size={20}
+                className="mr-2 transition-transform duration-300 group-hover:scale-110"
+              />
+              Start Random Chat
+            </Button>
+          )}
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes slideInRight {

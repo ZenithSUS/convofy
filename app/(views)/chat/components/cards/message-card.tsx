@@ -11,10 +11,10 @@ import { toast } from "react-toastify";
 import timeFormat from "@/helper/time-format";
 import { useDeleteFile } from "@/hooks/use-delete-file";
 import { extractPublicId } from "cloudinary-build-url";
-import MessageContent from "../message-content";
+import MessageContent from "@/app/(views)/chat/[roomId]/components/message/message-content";
 import { Edit } from "lucide-react";
-import MessageEdit from "@/app/(views)/chat/components/message-edit";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import MessageEdit from "@/app/(views)/chat/[roomId]/components/message/message-edit";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import Image from "next/image";
 
 interface MessageCardProps {
@@ -126,6 +126,13 @@ function MessageCard({
       (user) => user._id !== message.sender._id,
     );
   }, [message]);
+
+  const isUserAnonymous = useMemo(() => {
+    if (!message) return false;
+    return message.sender.isAnonymous;
+  }, [message]);
+
+  console.log("seenByOthers", seenByOthers);
 
   const handleDeleteClick = async () => {
     if (!message) return;
@@ -241,7 +248,7 @@ function MessageCard({
         }`}
       >
         {/* Enhanced Options Menu */}
-        {isUserMessage && shouldShowDetails && (
+        {isUserMessage && !isUserAnonymous && shouldShowDetails && (
           <div className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200">
             <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md dark:border-gray-700 dark:bg-gray-800">
               <DeleteMessageModal onDelete={handleDeleteClick} />

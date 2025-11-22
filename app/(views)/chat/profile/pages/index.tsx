@@ -1,6 +1,6 @@
 "use client";
 
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { ChevronRightIcon, Loader2 } from "lucide-react";
 import { useGetUserDataStats } from "@/hooks/use-user";
 import { useMemo } from "react";

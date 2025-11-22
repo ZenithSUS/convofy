@@ -1,4 +1,4 @@
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import UserImage from "@/app/(views)/chat/profile/components/user-image";
 import { useMemo } from "react";
 

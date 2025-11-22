@@ -2,7 +2,7 @@ import { authOptions } from "@/lib/auth";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import PreferencesPageClient from "../pages/preferences";
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 
 export default async function PreferencesPage() {
   const session = await getServerSession(authOptions);

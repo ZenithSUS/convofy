@@ -1,21 +1,29 @@
 import { Message } from "@/types/message";
 import Image from "next/image";
-import { memo } from "react";
-import MessageAvatar from "./message-avatar";
-import ViewImageModal from "./modals/view-image-modal";
+import { memo, useMemo } from "react";
 import { FileIcon } from "lucide-react";
 import Link from "next/link";
+import ViewImageModal from "@/app/(views)/chat/components/modals/view-image-modal";
+import MessageAvatar from "@/app/(views)/chat/[roomId]/components/message/message-avatar";
 
 const MessageContent = ({ message }: { message: Message }) => {
   const str = message.content;
   const fileName = decodeURIComponent(str.substring(str.indexOf("_") + 1));
+
+  const avatar = useMemo(() => {
+    if (message.sender.isAnonymous) {
+      return message.sender.anonAvatar || "/default-avatar.png";
+    }
+
+    return message.sender.avatar || "/default-avatar.png";
+  }, [message.sender]);
 
   switch (message.type) {
     case "text":
       return (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
-            <MessageAvatar avatar={message.sender.avatar} />
+            <MessageAvatar avatar={avatar} />
             <strong>{message.sender.name.split(" ")[0]}</strong>{" "}
           </div>
           <p className="wrap-break-word whitespace-pre-wrap">
@@ -28,7 +36,7 @@ const MessageContent = ({ message }: { message: Message }) => {
       return (
         <div className="flex flex-col gap-1">
           <div className="flex gap-2">
-            <MessageAvatar avatar={message.sender.avatar} />
+            <MessageAvatar avatar={avatar} />
             <strong>
               {message.sender.name.split(" ")[0]}{" "}
               <span className="font-normal">(Sends an image)</span>
@@ -51,7 +59,7 @@ const MessageContent = ({ message }: { message: Message }) => {
       return (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-1">
-            <MessageAvatar avatar={message.sender.avatar} />
+            <MessageAvatar avatar={avatar} />
             <strong>
               {message.sender.name.split(" ")[0]}{" "}
               <span className="font-normal">(Sends a file)</span>

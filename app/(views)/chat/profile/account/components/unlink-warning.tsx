@@ -1,4 +1,4 @@
-import { Session } from "@/app/(views)/chat/components/chat-header";
+import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import {
   AlertDialog,
   AlertDialogCancel,

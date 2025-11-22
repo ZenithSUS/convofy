@@ -134,7 +134,7 @@ export const getMessagesByRoom = async (
     const messages = await Message.find({ room: roomId })
       .limit(limit)
       .skip(offset)
-      .populate("sender", ["name", "avatar"])
+      .populate("sender", ["name", "avatar", "anonAvatar", "isAnonymous"])
       .populate("status.seenBy", ["name", "avatar", "_id"])
       .sort({ createdAt: -1 });
 

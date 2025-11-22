@@ -76,7 +76,14 @@ export const roomService = {
   async getRoomAndUsersById(id: string) {
     await connectToDatabase();
     const room = await Room.findById(id)
-      .populate("members", ["name", "avatar", "isAvailable", "status"])
+      .populate("members", [
+        "name",
+        "avatar",
+        "isAvailable",
+        "status",
+        "anonAvatar",
+        "isAnonymous",
+      ])
       .populate({
         path: "lastMessage",
         select: "content type createdAt sender status.deliveredTo",
@@ -101,6 +108,7 @@ export const roomService = {
       interface RoomQuery {
         members: string;
         name?: { $regex: string; $options: string };
+        isAnonymous: boolean;
         $or: Array<
           | { isPrivate: boolean }
           | { isPrivate: boolean; isAccepted: boolean; isPending: boolean }
@@ -115,6 +123,7 @@ export const roomService = {
 
       const query: RoomQuery = {
         members: userId,
+        isAnonymous: false,
         $or: [
           { isPrivate: false },
           { isPrivate: true, isAccepted: true, isPending: false },
@@ -190,6 +199,7 @@ export const roomService = {
 
       User.find({
         _id: { $ne: userId },
+        isAnonymous: false,
         name: { $regex: query, $options: "i" },
       })
         .select(["name", "avatar", "status _id"])

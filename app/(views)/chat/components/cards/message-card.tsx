@@ -1,7 +1,7 @@
 "use client";
 
 import { Message } from "@/types/message";
-import { memo, useMemo, useState, useEffect, useRef } from "react";
+import { memo, useMemo, useState, useEffect, useRef, useCallback } from "react";
 import {
   useDeleteLiveMessage,
   useUpdateLiveMessage,
@@ -25,7 +25,7 @@ interface MessageCardProps {
   isAnyEditing: boolean;
   isDetailsVisible: boolean;
   isPrivate: boolean;
-  isLatestSeenMessage?: boolean; // New prop to identify latest seen message
+  isLatestSeenMessage?: boolean;
   setIsDetailsVisible: (value: boolean) => void;
   onEditComplete: () => void;
   onCancelEdit: () => void;
@@ -49,93 +49,119 @@ function MessageCard({
   setActionType,
 }: MessageCardProps) {
   const timeOutRef = useRef<NodeJS.Timeout | null>(null);
-
   const [isHovering, setIsHovering] = useState(false);
-
-  const isUserMessage = useMemo(() => {
-    if (!message) return false;
-    return message.sender._id === session?.user?.id;
-  }, [message, session]);
 
   const { deleteFile } = useDeleteFile();
   const { mutateAsync: updateMessage } = useUpdateLiveMessage();
   const { mutateAsync: deleteMessage } = useDeleteLiveMessage();
 
-  const handleEditMessage = (action: "edit" | "view", messageId: string) => {
-    if (!isUserMessage) return;
+  // Derived state for message ownership and user info
+  const messageOwnership = useMemo(() => {
+    if (!message || !session?.user)
+      return { isOwner: false, isAnonymous: false };
 
-    setActionType(action);
-    setCurrentEditId(messageId);
-    setIsDetailsVisible(true);
-  };
+    return {
+      isOwner: message.sender._id === session.user.id,
+      isAnonymous: message.sender.isAnonymous,
+    };
+  }, [message, session?.user]);
 
-  const handleViewDetails = (action: "edit" | "view", id: string) => {
-    if (isThisEditing && actionType === "edit") {
-      return;
+  const seenStatus = useMemo(() => {
+    if (!message) {
+      return {
+        seenByOthers: [],
+        currentUserHasSeen: false,
+        hasAnyoneSeenBesidesSender: false,
+        seenCount: 0,
+      };
     }
 
-    setActionType(action);
-    setCurrentEditId(id);
-    setIsDetailsVisible(!isDetailsVisible);
-  };
+    const seenByOthers = message.status.seenBy.filter(
+      (user) => user._id !== message.sender._id,
+    );
+
+    const currentUserHasSeen = message.status.seenBy.some(
+      (user) => user._id === session?.user?.id,
+    );
+
+    return {
+      seenByOthers,
+      currentUserHasSeen,
+      hasAnyoneSeenBesidesSender: seenByOthers.length > 0,
+      seenCount: seenByOthers.length,
+    };
+  }, [message, session?.user?.id]);
+
+  // Format seen users text for display
+  const seenUsersText = useMemo(() => {
+    const { seenByOthers, seenCount } = seenStatus;
+
+    if (seenCount === 0) return "";
+    if (seenCount <= 2) {
+      return seenByOthers
+        .map((user) => (user.name === session?.user?.name ? "You" : user.name))
+        .join(" & ");
+    }
+
+    // More than 2 users
+    return `${seenByOthers
+      .slice(0, 2)
+      .map((u) => u.name.split(" ")[0])
+      .join(", ")} + ${seenCount - 2}`;
+  }, [seenStatus, session?.user?.name]);
+
+  // Determine delivery status text
+  const deliveryStatusText = useMemo(() => {
+    if (!seenStatus.currentUserHasSeen) return "";
+
+    if (isPrivate) {
+      return seenStatus.hasAnyoneSeenBesidesSender ? "Seen" : "Delivered";
+    }
+
+    return seenStatus.hasAnyoneSeenBesidesSender
+      ? `Seen By ${seenUsersText}`
+      : "Delivered";
+  }, [isPrivate, seenStatus, seenUsersText]);
 
   const isEditingMessage = useMemo(
     () => message?.type === "text" && isThisEditing && actionType === "edit",
     [message?.type, isThisEditing, actionType],
   );
 
-  const isUserSeenMessage = useMemo(() => {
-    if (!message) return false;
-    return message.status.seenBy.some((user) => user._id === session?.user?.id);
-  }, [message, session?.user?.id]);
+  const shouldShowDetails = isDetailsVisible || isEditingMessage;
 
-  const seenUsers = useMemo<string>(() => {
-    if (!message) return "";
+  // Event handlers
+  const handleEditMessage = useCallback(
+    (action: "edit" | "view", messageId: string) => {
+      if (!messageOwnership.isOwner || messageOwnership.isAnonymous) return;
 
-    const totalSeenUsers = message.status.seenBy.length;
+      setActionType(action);
+      setCurrentEditId(messageId);
+      setIsDetailsVisible(true);
+    },
+    [messageOwnership, setActionType, setCurrentEditId, setIsDetailsVisible],
+  );
 
-    if (totalSeenUsers <= 2) {
-      return message.status.seenBy
-        .map((user) => (user.name === session?.user?.name ? "You" : user.name))
-        .join(" & ");
-    }
+  const handleViewDetails = useCallback(
+    (action: "edit" | "view", id: string) => {
+      if (isEditingMessage) return;
 
-    return totalSeenUsers > 2
-      ? `${message.status.seenBy
-          .slice(0, 2)
-          .map((u) => u.name.split(" ")[0])
-          .join(", ")} + ${totalSeenUsers - 2}`
-      : "";
-  }, [message, session?.user?.name]);
+      setActionType(action);
+      setCurrentEditId(id);
+      setIsDetailsVisible(!isDetailsVisible);
+    },
+    [
+      isEditingMessage,
+      setActionType,
+      setCurrentEditId,
+      setIsDetailsVisible,
+      isDetailsVisible,
+    ],
+  );
 
-  const isSeenByUser = useMemo(() => {
-    if (!message || !isPrivate) return false;
-
-    // Check if any user other than the sender has seen the message
-    const hasOtherUserSeen = message.status.seenBy.some(
-      (user) => user._id !== message.sender._id,
-    );
-
-    return hasOtherUserSeen;
-  }, [message, isPrivate]);
-
-  // Get seen by users
-  const seenByOthers = useMemo(() => {
-    if (!message) return [];
-    return message.status.seenBy.filter(
-      (user) => user._id !== message.sender._id,
-    );
-  }, [message]);
-
-  const isUserAnonymous = useMemo(() => {
-    if (!message) return false;
-    return message.sender.isAnonymous;
-  }, [message]);
-
-  console.log("seenByOthers", seenByOthers);
-
-  const handleDeleteClick = async () => {
+  const handleDeleteClick = useCallback(async () => {
     if (!message) return;
+
     try {
       if (message.type === "file" || message.type === "image") {
         let publicId = extractPublicId(message.content);
@@ -143,11 +169,10 @@ function MessageCard({
         publicId = publicId.replace(/\.[^/.]+$/, "");
 
         await Promise.all([deleteFile(publicId), deleteMessage(message._id)]);
-        toast.success("Message deleted successfully");
-        return;
+      } else {
+        await deleteMessage(message._id);
       }
 
-      await deleteMessage(message._id);
       toast.success("Message deleted successfully");
     } catch (error) {
       console.error("Error deleting message:", error);
@@ -156,22 +181,30 @@ function MessageCard({
       setIsDetailsVisible(false);
       setCurrentEditId(null);
     }
-  };
+  }, [
+    message,
+    deleteFile,
+    deleteMessage,
+    setIsDetailsVisible,
+    setCurrentEditId,
+  ]);
 
-  const onEditMessage = async (id: string, content: string) => {
-    try {
-      if (!message) return;
-      await updateMessage({ id, content });
-      onEditComplete();
-      toast.success("Message updated successfully");
-    } catch (error) {
-      console.error("Error updating message:", error);
-      toast.error("Failed to update message");
-    } finally {
-      setIsDetailsVisible(false);
-      setCurrentEditId(null);
-    }
-  };
+  const onEditMessage = useCallback(
+    async (id: string, content: string) => {
+      try {
+        await updateMessage({ id, content });
+        onEditComplete();
+        toast.success("Message updated successfully");
+      } catch (error) {
+        console.error("Error updating message:", error);
+        toast.error("Failed to update message");
+      } finally {
+        setIsDetailsVisible(false);
+        setCurrentEditId(null);
+      }
+    },
+    [updateMessage, onEditComplete, setIsDetailsVisible, setCurrentEditId],
+  );
 
   const editMessageValues = useMemo(() => {
     if (!message) return null;
@@ -181,12 +214,8 @@ function MessageCard({
     };
   }, [message]);
 
-  // Show details if visible OR if this message is being edited
-  const shouldShowDetails =
-    isDetailsVisible || (isThisEditing && actionType === "edit");
-
+  // Auto-hide details timeout effect
   useEffect(() => {
-    // Hide details when another message is being edited
     if (isAnyEditing && !isThisEditing) {
       if (timeOutRef.current) {
         clearTimeout(timeOutRef.current);
@@ -195,13 +224,10 @@ function MessageCard({
       return;
     }
 
-    // Clear any existing timeout
     if (timeOutRef.current) {
       clearTimeout(timeOutRef.current);
       timeOutRef.current = null;
     }
-
-    // Set timeout to auto-hide details only for view action
 
     if (isDetailsVisible) {
       timeOutRef.current = setTimeout(() => {
@@ -209,7 +235,6 @@ function MessageCard({
       }, 5000);
     }
 
-    // Cleanup timeout on unmount or when dependencies change
     return () => {
       if (timeOutRef.current) {
         clearTimeout(timeOutRef.current);
@@ -220,13 +245,15 @@ function MessageCard({
 
   if (!message) return null;
 
+  const isOwnerMessage = messageOwnership.isOwner;
+
   return (
     <div className="group flex flex-col gap-2">
-      {/* Timestamp with enhanced styling */}
+      {/* Timestamp */}
       {shouldShowDetails && (
         <div
           className={`flex items-center gap-2 transition-opacity duration-200 ${
-            message.sender._id === session.user.id ? "self-end" : "self-start"
+            isOwnerMessage ? "self-end" : "self-start"
           }`}
         >
           <span className="rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400">
@@ -242,28 +269,28 @@ function MessageCard({
 
       <div
         className={`flex items-end gap-2 ${
-          message.sender._id === session?.user?.id
-            ? "ml-auto flex-row-reverse"
-            : "mr-auto flex-row"
+          isOwnerMessage ? "ml-auto flex-row-reverse" : "mr-auto flex-row"
         }`}
       >
-        {/* Enhanced Options Menu */}
-        {isUserMessage && !isUserAnonymous && shouldShowDetails && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200">
-            <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md dark:border-gray-700 dark:bg-gray-800">
-              <DeleteMessageModal onDelete={handleDeleteClick} />
-              {message.type === "text" && !isEditingMessage && (
-                <button
-                  onClick={() => handleEditMessage("edit", message._id)}
-                  className="group rounded-md p-2 transition-colors duration-200 hover:bg-blue-50 dark:hover:bg-blue-900"
-                  title="Edit message"
-                >
-                  <Edit className="h-4 w-4 text-gray-600 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400" />
-                </button>
-              )}
+        {/* Options Menu */}
+        {isOwnerMessage &&
+          !messageOwnership.isAnonymous &&
+          shouldShowDetails && (
+            <div className="animate-in fade-in slide-in-from-bottom-2 mb-1 flex items-center gap-1 duration-200">
+              <div className="flex items-center gap-1 rounded-lg border border-gray-200 bg-white p-1 shadow-md dark:border-gray-700 dark:bg-gray-800">
+                <DeleteMessageModal onDelete={handleDeleteClick} />
+                {message.type === "text" && !isEditingMessage && (
+                  <button
+                    onClick={() => handleEditMessage("edit", message._id)}
+                    className="group rounded-md p-2 transition-colors duration-200 hover:bg-blue-50 dark:hover:bg-blue-900"
+                    title="Edit message"
+                  >
+                    <Edit className="h-4 w-4 text-gray-600 group-hover:text-blue-600 dark:text-gray-400 dark:group-hover:text-blue-400" />
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Message Bubble */}
         <div className="flex flex-col gap-2">
@@ -272,19 +299,19 @@ function MessageCard({
             onMouseEnter={() => setIsHovering(true)}
             onMouseLeave={() => setIsHovering(false)}
             className={`relative max-w-sm rounded-2xl px-4 py-2.5 shadow-sm transition-all duration-200 ${
-              message.sender._id === session?.user?.id
+              isOwnerMessage
                 ? "rounded-br-sm bg-linear-to-br from-blue-400 to-blue-500 text-white dark:bg-linear-to-br dark:from-blue-700 dark:to-blue-600"
                 : "rounded-bl-sm border border-gray-200 bg-white text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
             } ${
               isHovering && !isEditingMessage
-                ? message.sender._id === session?.user?.id
+                ? isOwnerMessage
                   ? "scale-[1.02] shadow-md"
                   : "scale-[1.02] border-gray-300 shadow-md dark:border-gray-600"
                 : ""
             } ${isEditingMessage ? "ring-2 ring-blue-400 dark:ring-blue-500" : ""}`}
           >
             {/* Sender name for non-user messages */}
-            {message.sender._id !== session?.user?.id && !isPrivate && (
+            {!isOwnerMessage && !isPrivate && (
               <div className="mb-1 text-xs font-semibold text-gray-600">
                 {message.sender.name}
               </div>
@@ -304,70 +331,96 @@ function MessageCard({
             {/* Message tail */}
             <div
               className={`absolute -bottom-2 h-0 w-0 ${
-                message.sender._id === session?.user?.id
+                isOwnerMessage
                   ? "right-0 border-t-12 border-l-12 border-t-blue-500 border-l-transparent dark:border-t-blue-600 dark:border-l-transparent"
                   : "left-0 border-t-12 border-r-12 border-t-white border-r-transparent dark:border-t-gray-800 dark:border-r-transparent"
               }`}
             />
           </div>
 
-          {/* Avatar bubbles for latest seen message - Shows for all messages */}
-          {isLatestSeenMessage && isUserMessage && seenByOthers.length > 0 && (
-            <div
-              className={`animate-in fade-in slide-in-from-bottom-1 flex items-center gap-1 duration-200 ${
-                message.sender._id === session?.user?.id
-                  ? "self-end"
-                  : "self-start"
-              }`}
-            >
-              <div className="flex -space-x-2">
-                {seenByOthers.slice(0, 5).map((user, index) => (
-                  <div
-                    key={user._id}
-                    className="relative"
-                    style={{ zIndex: seenByOthers.length - index }}
-                    title={user.name}
-                  >
-                    {user.avatar ? (
-                      <Image
-                        src={user.avatar}
-                        alt={user.name}
-                        width={20}
-                        height={20}
-                        className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
-                      />
-                    ) : (
-                      <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-linear-to-br from-blue-400 to-blue-600 text-[10px] font-medium text-white shadow-sm">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {seenByOthers.length > 5 && (
-                  <div
-                    className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-gray-400 text-[9px] font-semibold text-white shadow-sm"
-                    title={`+${seenByOthers.length - 5} more`}
-                  >
-                    +{seenByOthers.length - 5}
-                  </div>
-                )}
+          {/* Avatar bubbles for latest seen message */}
+          {isLatestSeenMessage &&
+            isOwnerMessage &&
+            seenStatus.seenByOthers.length > 0 && (
+              <div
+                className={`animate-in fade-in slide-in-from-bottom-1 flex items-center gap-1 duration-200 ${
+                  isOwnerMessage ? "self-end" : "self-start"
+                }`}
+              >
+                <div className="flex -space-x-2">
+                  {seenStatus.seenByOthers.slice(0, 5).map((user, index) => (
+                    <div
+                      key={user._id}
+                      className="relative"
+                      style={{ zIndex: seenStatus.seenByOthers.length - index }}
+                      title={user.name}
+                    >
+                      {!user.isAnonymous &&
+                      user.avatar &&
+                      !message.room.isAnonymous ? (
+                        <Image
+                          src={user.avatar}
+                          alt={user.name}
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
+                        />
+                      ) : user.isAnonymous &&
+                        user.role === "user" &&
+                        message.room.isAnonymous ? (
+                        <Image
+                          src={user.anonAvatar || "/default-avatar.png"}
+                          alt={user.name}
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
+                        />
+                      ) : user.isAnonymous && user.role === "anonymous" ? (
+                        <Image
+                          src={user.anonAvatar || "/default-avatar.png"}
+                          alt={user.name}
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
+                        />
+                      ) : user.isAnonymous &&
+                        !message.room.isAnonymous &&
+                        user.avatar &&
+                        user.role === "user" ? (
+                        <Image
+                          src={user.avatar}
+                          alt={user.name}
+                          width={20}
+                          height={20}
+                          className="h-5 w-5 rounded-full border-2 border-white object-cover shadow-sm"
+                        />
+                      ) : (
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-linear-to-br from-blue-400 to-blue-600 text-[10px] font-medium text-white shadow-sm">
+                          {user.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {seenStatus.seenByOthers.length > 5 && (
+                    <div
+                      className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-gray-400 text-[9px] font-semibold text-white shadow-sm"
+                      title={`+${seenStatus.seenByOthers.length - 5} more`}
+                    >
+                      +{seenStatus.seenByOthers.length - 5}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
 
-      {shouldShowDetails && isUserSeenMessage && (
+      {/* Delivery status */}
+      {shouldShowDetails && deliveryStatusText && (
         <h1
-          className={`text-xs text-gray-400 ${message.sender._id === session?.user?.id ? "self-end" : "self-start"}`}
+          className={`text-xs text-gray-400 ${isOwnerMessage ? "self-end" : "self-start"}`}
         >
-          {isPrivate
-            ? isSeenByUser
-              ? "Seen"
-              : "Delivered"
-            : seenByOthers.length > 0
-              ? `Seen By ${seenUsers}`
-              : "Delivered"}
+          {deliveryStatusText}
         </h1>
       )}
     </div>

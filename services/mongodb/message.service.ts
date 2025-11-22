@@ -134,8 +134,23 @@ export const getMessagesByRoom = async (
     const messages = await Message.find({ room: roomId })
       .limit(limit)
       .skip(offset)
-      .populate("sender", ["name", "avatar", "anonAvatar", "isAnonymous"])
-      .populate("status.seenBy", ["name", "avatar", "_id"])
+      .populate("sender", [
+        "name",
+        "avatar",
+        "anonAvatar",
+        "anonAlias",
+        "isAnonymous",
+      ])
+      .populate("status.seenBy", [
+        "_id",
+        "name",
+        "avatar",
+        "isAnonymous",
+        "anonAvatar",
+        "anonAlias",
+        "role",
+      ])
+      .populate("room", "isAnonymous")
       .sort({ createdAt: -1 });
 
     if (!messages) return new Error("No messages found");
@@ -155,7 +170,15 @@ export const getMessagesByRoom = async (
 
     const onlineUsers = await User.find(
       { _id: { $in: onlineUserIds } },
-      { name: 1, avatar: 1 },
+      {
+        _id: 1,
+        name: 1,
+        avatar: 1,
+        isAnonymous: 1,
+        anonAvatar: 1,
+        anonAlias: 1,
+        role: 1,
+      },
     );
 
     if (messages.length > 0) {

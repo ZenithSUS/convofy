@@ -52,7 +52,10 @@ export const chatService = {
           "avatar",
           "isAnonymous",
           "anonAvatar",
+          "anonAlias",
+          "role",
         ])
+        .populate("room", ["isAnonymous"])
         .lean();
 
       if (!populatedMessage) {
@@ -107,7 +110,15 @@ export const chatService = {
 
       const onlineUsers = await User.find(
         { _id: { $in: onlineUserIds } },
-        { avatar: 1, name: 1 },
+        {
+          _id: 1,
+          avatar: 1,
+          name: 1,
+          isAnonymous: 1,
+          anonAvatar: 1,
+          anonAlias: 1,
+          role: 1,
+        },
       ).lean();
 
       if (onlineUserIds.length > 0) {

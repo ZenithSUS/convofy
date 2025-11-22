@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Restrict to anonymous users
-    if (token.role !== "anonymous") {
+    if (token.role !== "anonymous" && token.isAnonymous !== true) {
       return NextResponse.json(
         { error: "Only anonymous users can use matchmaking" },
         { status: 403 },

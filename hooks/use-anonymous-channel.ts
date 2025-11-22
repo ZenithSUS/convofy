@@ -57,7 +57,7 @@ function useAnonymousMatching(
       const response: { data: { status: string; roomId?: string } } =
         await axios.get("/api/match/status");
       const data = response.data;
-      console.log("Match status:", data);
+
       if (data.status === "matched" && data.roomId) {
         setIsMatched(true);
         setMatchedRoomId(data.roomId);
@@ -241,6 +241,18 @@ function useAnonymousMatching(
       }
     };
   }, [userId, isAnonymous, router]);
+
+  useEffect(() => {
+    if (!isAnonymous) return;
+
+    const interval = setInterval(() => {
+      axios.post("/api/match/heartbeat");
+    }, 15000);
+
+    if (!isSearching) clearInterval(interval);
+
+    return () => clearInterval(interval);
+  }, [isSearching, isAnonymous]);
 
   return {
     isSearching,

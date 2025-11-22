@@ -1,13 +1,16 @@
 export type IMatchQueue = {
   userId: string;
-  status: "searching" | "matched" | "cancelled";
+  status: "searching" | "matched" | "cancelled" | "matching";
   matchedWith: string;
   roomId: string;
   preferences: {
     interests: string[];
     language: string;
   };
+  lockedAt: Date;
+  createdAt: Date;
   expiresAt: Date;
+  lastHeartbeat: Date;
 };
 
 export type MatchQueue = IMatchQueue & { _id: string };

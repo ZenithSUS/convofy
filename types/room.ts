@@ -30,6 +30,7 @@ export type Room = {
   invitedUser?: string;
   owner: string;
   createdAt: Date;
+  isAnonymous: boolean;
 };
 
 export type RoomMembers = {
@@ -41,6 +42,7 @@ export type RoomMembers = {
   anonAvatar?: string;
   anonAlias?: string;
   status?: "online" | "offline";
+  role: "user" | "anonymous" | "admin";
 };
 
 export type RoomContent = Omit<Room, "members" | "lastMessage"> & {

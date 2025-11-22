@@ -82,7 +82,9 @@ export const roomService = {
         "isAvailable",
         "status",
         "anonAvatar",
+        "anonAlias",
         "isAnonymous",
+        "role",
       ])
       .populate({
         path: "lastMessage",

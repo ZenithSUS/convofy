@@ -42,6 +42,14 @@ const matchQueueService = {
     });
   },
 
+  async updateLastHeartbeat(userId: string) {
+    return await MatchQueue.findOneAndUpdate(
+      { userId },
+      { lastHeartbeat: new Date() },
+      { new: true },
+    );
+  },
+
   /**
    * Concurrency-safe matching system (replica-safe + local-safe)
    */
@@ -210,8 +218,18 @@ const matchQueueService = {
 
   startCleanupLoop() {
     console.log("[QUEUE CLEANUP] Worker started");
+
     this.cleanStaleQueue();
-    setInterval(() => this.cleanStaleQueue(), 60 * 1000);
+    this.cleanHeartbeatStaleUsers();
+
+    // schedule loops
+    setInterval(() => {
+      this.cleanHeartbeatStaleUsers();
+    }, 10 * 1000); // every 10s
+
+    setInterval(() => {
+      this.cleanStaleQueue();
+    }, 60 * 1000); // every 60s
   },
 
   async getQueueStats() {
@@ -231,11 +249,21 @@ const matchQueueService = {
 
   async checkMatchStatus(userId: string) {
     const entry = await MatchQueue.findOne({ userId })
-      .select("status matchedWith roomId")
+      .select("status matchedWith roomId lockedAt lastHeartbeat")
       .lean<MatchQueueEntry>();
+    if (!entry) return { status: "not_found", matched: false };
 
-    if (!entry) {
-      return { status: "not_found", matched: false };
+    // auto-unlock stale matching
+    if (
+      entry.status === "matching" &&
+      entry.lockedAt &&
+      entry.lockedAt < new Date(Date.now() - 5000)
+    ) {
+      await MatchQueue.updateOne(
+        { userId },
+        { $set: { status: "searching", lockedAt: null } },
+      );
+      return { status: "searching", matched: false };
     }
 
     if (entry.status === "matched" && entry.roomId) {
@@ -252,6 +280,21 @@ const matchQueueService = {
     }
 
     return { status: "searching", matched: false };
+  },
+  async cleanHeartbeatStaleUsers() {
+    const cutoff = new Date(Date.now() - 30000); // 30s
+    const removed = await MatchQueue.deleteMany({
+      lastHeartbeat: { $lt: cutoff },
+      status: { $in: ["searching", "matching"] },
+    });
+
+    if (removed.deletedCount > 0) {
+      console.log(
+        `[HEARTBEAT CLEANUP] Removed ${removed.deletedCount} stale users`,
+      );
+    }
+
+    return removed.deletedCount;
   },
 };
 

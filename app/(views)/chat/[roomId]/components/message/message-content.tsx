@@ -12,11 +12,13 @@ const MessageContent = ({ message }: { message: Message }) => {
 
   const avatar = useMemo(() => {
     if (message.sender.isAnonymous) {
-      return message.sender.anonAvatar || "/default-avatar.png";
+      return message.room.isAnonymous
+        ? message.sender.anonAvatar || "/default-avatar.png"
+        : message.sender.avatar || "/default-avatar.png";
     }
 
     return message.sender.avatar || "/default-avatar.png";
-  }, [message.sender]);
+  }, [message.sender, message.room.isAnonymous]);
 
   switch (message.type) {
     case "text":

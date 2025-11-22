@@ -369,7 +369,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
   // Loading state
   if (!isAllDataLoaded || isAllLoading) {
-    return <LoadingConvo />;
+    return <LoadingConvo theme={session.user.preferences.theme} />;
   }
 
   if (roomError) {

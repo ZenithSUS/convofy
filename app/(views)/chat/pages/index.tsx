@@ -257,7 +257,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             handleStopSearching={handleStopSearching}
           />
         ) : (
-          <MatchFound />
+          isMatched && <MatchFound />
         )}
       </div>
 

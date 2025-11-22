@@ -13,7 +13,10 @@ export type Sender = {
 
 export type Message = {
   _id: string;
-  room: string;
+  room: {
+    _id: string;
+    isAnonymous: boolean;
+  };
   sender: Sender;
   isEdited?: boolean;
   content: string;
@@ -24,6 +27,10 @@ export type Message = {
       _id: string;
       name: string;
       avatar: string | null;
+      isAnonymous: boolean;
+      anonAvatar?: string;
+      anonAlias?: string;
+      role: "user" | "anonymous" | "admin";
     }[];
   };
   createdAt: Date;
@@ -69,6 +76,10 @@ export type NewSeenMessage = {
     _id: string;
     name: string;
     avatar: string | null;
+    isAnonymous: boolean;
+    anonAvatar?: string;
+    anonAlias?: string;
+    role: "user" | "anonymous" | "admin";
   }[];
   deliveredTo: string[];
 };

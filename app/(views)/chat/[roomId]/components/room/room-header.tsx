@@ -25,20 +25,36 @@ function RoomHeader({ room, userId }: RoomHeaderProps) {
   );
 
   const displayName = useMemo(() => {
-    return isPrivate ? otherUser?.name || "Unknown User" : room.name;
+    if (isPrivate && otherUser?.isAnonymous && otherUser.role === "user") {
+      return room.isAnonymous
+        ? otherUser.anonAlias || "Anonymous User"
+        : otherUser?.name || "Anonymous User";
+    }
+
+    if (isPrivate && otherUser?.isAnonymous && otherUser.role === "anonymous") {
+      return otherUser?.name || "Anonymous User";
+    }
+
+    return room.name;
   }, [room, otherUser, isPrivate]);
 
   const isAvailable = useMemo(() => {
     return isPrivate ? otherUser?.isAvailable || false : false;
   }, [otherUser, isPrivate]);
 
-  const displayImage = useMemo(
-    () =>
-      isPrivate
-        ? otherUser?.avatar || otherUser?.anonAvatar || "/default-avatar.png"
-        : room.image || "/default-avatar.png",
-    [room, otherUser, isPrivate],
-  );
+  const displayImage = useMemo(() => {
+    if (isPrivate && otherUser?.isAnonymous) {
+      return room.isAnonymous
+        ? otherUser.anonAvatar || "/default-avatar.png"
+        : otherUser?.avatar || "/default-avatar.png";
+    }
+
+    if (isPrivate && !otherUser?.isAnonymous) {
+      return otherUser?.avatar || "/default-avatar.png";
+    }
+
+    return room.image || "/default-avatar.png";
+  }, [room, otherUser, isPrivate]);
 
   const isOnline = useMemo(() => {
     return isPrivate ? otherUser?.status === "online" : false;

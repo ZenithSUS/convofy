@@ -51,8 +51,9 @@ export type MediaMessage = Omit<Message, "type"> & {
 
 export type CreateMessage = Omit<
   Message,
-  "_id" | "createdAt" | "sender" | "status"
+  "_id" | "createdAt" | "sender" | "status" | "room"
 > & {
+  room: string;
   sender: string;
 };
 

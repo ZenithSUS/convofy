@@ -115,6 +115,7 @@ function CreateRoomClient({ serverSession }: ChatHeaderProps) {
           isPrivate: false,
           owner: session.user.id,
           createdAt: new Date(),
+          isAnonymous: false,
         };
 
         startTransition(async () => {

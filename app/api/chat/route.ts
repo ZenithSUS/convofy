@@ -38,7 +38,7 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const data: Message = await req.json();
+    const data: Omit<Message, "room"> & { room: string } = await req.json();
 
     // Validate required fields
     if (!data.room || !data.content || !data.sender) {

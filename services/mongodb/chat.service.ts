@@ -12,7 +12,7 @@ export const chatService = {
    * Sends a message and broadcasts it to all room members via Pusher.
    * Updates delivery status, seen status, and room's last message across all related channels.
    */
-  async sendLiveMessage(data: IMessage) {
+  async sendLiveMessage(data: Omit<IMessage, "room"> & { room: string }) {
     try {
       await connectToDatabase();
       const room = await Room.findById(data.room).populate("members", [

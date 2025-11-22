@@ -266,6 +266,7 @@ export async function POST(req: NextRequest) {
       isPrivate,
       owner: userId, // Creator is the owner
       createdAt: new Date(),
+      isAnonymous: false,
     };
 
     // Create room

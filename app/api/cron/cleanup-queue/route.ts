@@ -28,3 +28,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Cleanup failed" }, { status: 500 });
   }
 }
+
+export const GET = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};
+
+export const PATCH = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};
+
+export const DELETE = async () => {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405 });
+};

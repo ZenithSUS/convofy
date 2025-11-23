@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface RoomHeaderProps {
   room: RoomContent;
@@ -50,7 +50,7 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
               await client.post("/match/leave", { roomId: room._id });
             },
             {
-              pending: "Leaving room...",
+              loading: "Leaving room...",
               success: "Room left successfully",
               error: "Failed to leave room",
             },

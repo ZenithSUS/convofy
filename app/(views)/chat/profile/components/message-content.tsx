@@ -1,5 +1,5 @@
 import { UserMessage } from "@/types/message";
-import ViewImageModal from "@/app/(views)/chat/components/modals/view-image-modal";
+import ViewImageModal from "@/app/(views)/chat/[roomId]/components/modals/view-image-modal";
 import Image from "next/image";
 import { FileIcon } from "lucide-react";
 import { memo } from "react";

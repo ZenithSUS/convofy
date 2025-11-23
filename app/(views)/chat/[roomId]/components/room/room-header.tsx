@@ -1,18 +1,21 @@
 "use client";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import client from "@/lib/axios";
 import { RoomContent } from "@/types/room";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { toast } from "react-toastify";
 
 interface RoomHeaderProps {
   room: RoomContent;
   userId: string;
+  isAnonymous: boolean;
 }
 
-function RoomHeader({ room, userId }: RoomHeaderProps) {
+function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
   const router = useRouter();
 
   const isPrivate = useMemo<boolean>(() => {
@@ -35,8 +38,33 @@ function RoomHeader({ room, userId }: RoomHeaderProps) {
       return otherUser?.name || "Anonymous User";
     }
 
-    return room.name;
+    return room.name || "Unknown Room";
   }, [room, otherUser, isPrivate]);
+
+  const handleLeave = useCallback(
+    async (isAnonymous: boolean) => {
+      try {
+        if (isAnonymous) {
+          toast.promise(
+            async () => {
+              await client.post("/match/leave", { roomId: room._id });
+            },
+            {
+              pending: "Leaving room...",
+              success: "Room left successfully",
+              error: "Failed to leave room",
+            },
+          );
+        }
+
+        return router.push("/chat");
+      } catch (error) {
+        console.error("[LEAVE ROOM ERROR]", error);
+        toast.error("Failed to leave room");
+      }
+    },
+    [router, room._id],
+  );
 
   const isAvailable = useMemo(() => {
     return isPrivate ? otherUser?.isAvailable || false : false;
@@ -68,7 +96,7 @@ function RoomHeader({ room, userId }: RoomHeaderProps) {
         {/* Left section - Back button and Room info */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <button
-            onClick={() => router.push("/chat")}
+            onClick={() => handleLeave(isAnonymous)}
             className="hover:bg-accent shrink-0 rounded-lg p-2 transition-colors duration-200"
             aria-label="Go back to chat list"
           >

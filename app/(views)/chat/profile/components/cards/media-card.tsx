@@ -3,7 +3,7 @@
 import { MediaMessage } from "@/types/message";
 import { FileIcon } from "lucide-react";
 import Image from "next/image";
-import ViewImageModal from "@/app/(views)/chat/components/modals/view-image-modal";
+import ViewImageModal from "@/app/(views)/chat/[roomId]/components/modals/view-image-modal";
 import Link from "next/link";
 
 interface MediaCardProps {

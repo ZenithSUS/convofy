@@ -11,7 +11,7 @@ import { useForm } from "react-hook-form";
 
 // Next
 import { useParams } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, UnplugIcon } from "lucide-react";
 
 // Hooks
 import { useUploadImage } from "@/hooks/use-upload";
@@ -33,7 +33,7 @@ import { RoomContent } from "@/types/room";
 
 // Components
 import { Button } from "@/components/ui/button";
-import NotJoinedModal from "@/app/(views)/chat/components/modals/not-joined-modal";
+import NotJoinedModal from "@/app/(views)/chat/[roomId]/components/modals/not-joined-modal";
 import MessageCard from "@/app/(views)/chat/components/cards/message-card";
 import ErrorMessage from "@/components/ui/error-message";
 import RoomHeader from "@/app/(views)/chat/[roomId]/components/room/room-header";
@@ -48,6 +48,8 @@ import PersonUnavailable from "@/app/(views)/chat/[roomId]/components/room/perso
 import RoomError from "@/app/(views)/chat/[roomId]/components/room/room-error";
 import getFileDirectory from "@/helper/file-directories";
 import RoomRequest from "@/app/(views)/chat/[roomId]/components/room/room-request";
+import useAnonymousMatching from "@/hooks/use-anonymous-channel";
+import AnonyMouseLeavedModal from "../components/modals/anonymous-leaved.modal";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -87,6 +89,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
   const roomData = useMemo(() => room, [room]);
 
+  // Room Channel
   const {
     isMountedRef,
     connectionStatus,
@@ -101,6 +104,17 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     roomId,
     room: roomData,
   });
+
+  const isAnonymous = useMemo(() => {
+    return session.user.role === "anonymous" || session.user.isAnonymous;
+  }, [session.user]);
+
+  // Anonymous User Channel
+  const { isOtherUserLeft } = useAnonymousMatching(
+    session.user.id,
+    isAnonymous,
+    true,
+  );
 
   const {
     data: messages,
@@ -202,6 +216,12 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       roomData.invitedUser === session.user.id
     );
   }, [roomData, session.user.id]);
+
+  const isOnlyMemberInAnonymousRoom = useMemo(() => {
+    if (!roomData) return false;
+
+    return roomData.isAnonymous && roomData.members.length === 1;
+  }, [roomData]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -383,6 +403,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       <RoomHeader
         room={roomData as RoomContent}
         userId={session?.user.id as string}
+        isAnonymous={isAnonymous}
       />
 
       {/* Enhanced Connection Status Banner */}
@@ -476,6 +497,18 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         )}
       </div>
 
+      {/* Anonymouse Mode if other person is unavailable or left */}
+      {isAnonymous && (isOtherUserLeft || isOnlyMemberInAnonymousRoom) && (
+        <div className="mb-6 flex items-center justify-center">
+          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
+            <UnplugIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <h1 className="text-base font-medium text-blue-900 dark:text-blue-300">
+              Your partner is left the conversation.
+            </h1>
+          </div>
+        </div>
+      )}
+
       {/* Input Area */}
       {isMember &&
       !isOtherPersonUnavailable &&
@@ -510,11 +543,13 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         <PersonUnavailable isYouUnavailable={isUnavailable} />
       ) : isPendingPrivateRoom ? (
         <RoomRequest userId={session?.user?.id as string} roomId={roomId} />
-      ) : (
+      ) : !isAnonymous ? (
         <NotJoinedModal
           roomId={roomId as string}
           userId={session?.user?.id as string}
         />
+      ) : (
+        isAnonymous && !isMember && <AnonyMouseLeavedModal />
       )}
 
       {/* Animations */}

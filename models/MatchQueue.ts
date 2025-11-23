@@ -16,7 +16,6 @@ export interface IMatchQueue extends Document {
   expiresAt: Date;
   lastHeartbeat: Date;
 }
-
 const MatchQueueSchema = new Schema<IMatchQueue>(
   {
     userId: {
@@ -35,7 +34,7 @@ const MatchQueueSchema = new Schema<IMatchQueue>(
     matchedWith: { type: Schema.Types.ObjectId, ref: "User", default: null },
     roomId: { type: Schema.Types.ObjectId, ref: "Room", default: null },
 
-    lockedAt: { type: Date, default: null }, // used to prevent double matches
+    lockedAt: { type: Date, default: null },
 
     preferences: {
       interests: [{ type: String }],
@@ -44,8 +43,9 @@ const MatchQueueSchema = new Schema<IMatchQueue>(
 
     expiresAt: {
       type: Date,
-      default: () => new Date(Date.now() + 10 * 60 * 1000), // 10 minutes TTL
+      default: () => new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
     },
+
     lastHeartbeat: {
       type: Date,
       default: () => new Date(),
@@ -54,11 +54,10 @@ const MatchQueueSchema = new Schema<IMatchQueue>(
   { timestamps: true },
 );
 
-// Search efficiently
+// Indexes
 MatchQueueSchema.index({ status: 1, createdAt: 1 });
-
-// TTL cleanup
-MatchQueueSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+MatchQueueSchema.index({ lastHeartbeat: 1 });
+MatchQueueSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // Keep TTL
 
 export default mongoose.models.MatchQueue ||
   mongoose.model<IMatchQueue>("MatchQueue", MatchQueueSchema);

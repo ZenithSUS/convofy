@@ -1,12 +1,8 @@
 import MatchQueue from "@/models/MatchQueue";
-import Room from "@/models/Room";
+import Room, { IRoom } from "@/models/Room";
 import { CreateQueue, IMatchQueue } from "@/types/match-queue";
 import mongoose from "mongoose";
 import { pusherServer } from "@/lib/pusher/pusher-server";
-
-interface MatchQueueEntry extends IMatchQueue {
-  _id: string;
-}
 
 const matchQueueService = {
   async createMatchQueue(userId: string, data: CreateQueue) {
@@ -205,6 +201,20 @@ const matchQueueService = {
     }
   },
 
+  async leaveRoom(room: IRoom, userId: string) {
+    if (room && room.isPrivate && room.isAnonymous) {
+      const partner = room.members.find((id) => id !== room.owner)?._id;
+
+      if (partner) {
+        this.notifyUser(partner.toString(), "partner-left", {
+          reason: "user_left",
+        });
+      }
+    }
+
+    await Room.updateOne({ _id: room._id }, { $pull: { members: userId } });
+  },
+
   /**
    * Removes expired or stale entries
    */
@@ -214,7 +224,6 @@ const matchQueueService = {
 
       const removed = await MatchQueue.deleteMany({
         $or: [
-          { expiresAt: { $lt: new Date() } },
           { status: "searching", createdAt: { $lt: cutoff } },
           { status: "cancelled" },
           {
@@ -266,7 +275,7 @@ const matchQueueService = {
   async checkMatchStatus(userId: string) {
     const entry = await MatchQueue.findOne({ userId })
       .select("status matchedWith roomId lockedAt lastHeartbeat")
-      .lean<MatchQueueEntry>();
+      .lean<IMatchQueue>();
     if (!entry) return { status: "not_found", matched: false };
 
     // auto-unlock stale matching
@@ -297,6 +306,7 @@ const matchQueueService = {
 
     return { status: "searching", matched: false };
   },
+
   /**
    * Clean heartbeat stale users and handle per-doc behavior.
    *
@@ -304,73 +314,118 @@ const matchQueueService = {
    * - matching stale -> reset to searching & notify match-timeout
    * - matched stale -> remove disconnected entry & restore partner to searching (notify partner)
    */
-  async cleanHeartbeatStaleUsers(cutoffMs: number = 30_000) {
+  async cleanHeartbeatStaleUsers(cutoffMs: number = 30_000): Promise<number> {
     try {
       const cutoff = new Date(Date.now() - cutoffMs);
+
+      interface StaleEntry {
+        _id: mongoose.Types.ObjectId;
+        userId: mongoose.Types.ObjectId;
+        status: "searching" | "matching" | "matched";
+        matchedWith?: mongoose.Types.ObjectId | null;
+        roomId?: mongoose.Types.ObjectId | null;
+      }
 
       const staleEntries = await MatchQueue.find({
         lastHeartbeat: { $lte: cutoff },
         status: { $in: ["searching", "matching", "matched"] },
-      }).lean();
+      })
+        .select("_id userId status matchedWith roomId")
+        .lean<StaleEntry[]>();
 
       if (!staleEntries || staleEntries.length === 0) return 0;
 
+      // Group by status
+      const byStatus = {
+        searching: staleEntries.filter((e) => e.status === "searching"),
+        matching: staleEntries.filter((e) => e.status === "matching"),
+        matched: staleEntries.filter((e) => e.status === "matched"),
+      };
+
       let removedCount = 0;
 
-      for (const entry of staleEntries) {
-        const uid = String(entry.userId);
-        try {
-          if (entry.status === "searching") {
-            await MatchQueue.deleteOne({ _id: entry._id });
-            removedCount++;
-            await this.notifyUser(uid, "search-timeout", {
-              reason: "heartbeat_lost",
-            });
-          } else if (entry.status === "matching") {
-            await MatchQueue.updateOne(
-              { _id: entry._id },
-              { $set: { status: "searching", lockedAt: null } },
-            );
-            await this.notifyUser(uid, "match-timeout", {
-              reason: "heartbeat_lost",
-            });
-          } else if (entry.status === "matched") {
-            const partnerId = entry.matchedWith
-              ? String(entry.matchedWith)
-              : null;
-            await MatchQueue.deleteOne({ _id: entry._id });
-            removedCount++;
+      // Handle searching (bulk delete + notify)
+      if (byStatus.searching.length > 0) {
+        const ids = byStatus.searching.map((e) => e._id);
+        const result = await MatchQueue.deleteMany({ _id: { $in: ids } });
+        removedCount += result.deletedCount ?? 0;
 
-            if (partnerId) {
-              const partnerEntry = await MatchQueue.findOne({
-                userId: partnerId,
-              });
-              if (partnerEntry) {
-                await MatchQueue.updateOne(
-                  { _id: partnerEntry._id },
-                  {
-                    $set: {
-                      status: "searching",
-                      matchedWith: null,
-                      roomId: null,
-                      lockedAt: null,
-                    },
-                  },
-                );
-              }
-              await this.notifyUser(partnerId, "partner-disconnected", {
-                reason: "peer_heartbeat_lost",
-              });
-            }
+        // Notify in parallel (fire and forget)
+        void Promise.allSettled(
+          byStatus.searching.map((e) =>
+            this.notifyUser(String(e.userId), "search-timeout", {
+              reason: "heartbeat_lost",
+            }),
+          ),
+        ).catch((err: unknown) => {
+          console.error("[NOTIFY ERROR - searching]", err);
+        });
+      }
+
+      // Handle matching (bulk update + notify)
+      if (byStatus.matching.length > 0) {
+        const ids = byStatus.matching.map((e) => e._id);
+        await MatchQueue.updateMany(
+          { _id: { $in: ids } },
+          { $set: { status: "searching", lockedAt: null } },
+        );
+
+        void Promise.allSettled(
+          byStatus.matching.map((e) =>
+            this.notifyUser(String(e.userId), "match-timeout", {
+              reason: "heartbeat_lost",
+            }),
+          ),
+        ).catch((err: unknown) => {
+          console.error("[NOTIFY ERROR - matching]", err);
+        });
+      }
+
+      // Handle matched (delete disconnected + restore partners)
+      if (byStatus.matched.length > 0) {
+        const ids = byStatus.matched.map((e) => e._id);
+        const result = await MatchQueue.deleteMany({ _id: { $in: ids } });
+        removedCount += result.deletedCount ?? 0;
+
+        // Get unique partner IDs
+        const partnerIdsSet = new Set<string>();
+        byStatus.matched.forEach((e) => {
+          if (e.matchedWith) {
+            partnerIdsSet.add(String(e.matchedWith));
           }
-        } catch (innerErr) {
-          console.error("[CLEAN HEARTBEAT ENTRY ERROR]", entry._id, innerErr);
+        });
+        const partnerIds = Array.from(partnerIdsSet);
+
+        if (partnerIds.length > 0) {
+          // Restore partners to searching
+          await MatchQueue.updateMany(
+            { userId: { $in: partnerIds } },
+            {
+              $set: {
+                status: "searching",
+                matchedWith: null,
+                roomId: null,
+                lockedAt: null,
+              },
+            },
+          );
+
+          // Notify partners
+          void Promise.allSettled(
+            partnerIds.map((partnerId) =>
+              this.notifyUser(partnerId, "partner-left", {
+                reason: "peer_heartbeat_lost",
+              }),
+            ),
+          ).catch((err: unknown) => {
+            console.error("[NOTIFY ERROR - partners]", err);
+          });
         }
       }
 
       if (removedCount > 0) {
         console.log(
-          `[HEARTBEAT CLEANUP] Processed ${removedCount} stale entries`,
+          `[HEARTBEAT CLEANUP] Removed ${removedCount} stale entries (${byStatus.searching.length} searching, ${byStatus.matching.length} matching, ${byStatus.matched.length} matched)`,
         );
       }
 

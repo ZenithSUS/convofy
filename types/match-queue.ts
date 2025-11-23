@@ -1,4 +1,5 @@
 export type IMatchQueue = {
+  _id: string;
   userId: string;
   status: "searching" | "matched" | "cancelled" | "matching";
   matchedWith: string;

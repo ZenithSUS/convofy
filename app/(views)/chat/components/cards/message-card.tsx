@@ -6,7 +6,7 @@ import {
   useDeleteLiveMessage,
   useUpdateLiveMessage,
 } from "@/hooks/use-message";
-import DeleteMessageModal from "@/app/(views)/chat/components/modals/delete-message-modal";
+import DeleteMessageModal from "@/app/(views)/chat/[roomId]/components/modals/delete-message-modal";
 import { toast } from "react-toastify";
 import timeFormat from "@/helper/time-format";
 import { useDeleteFile } from "@/hooks/use-delete-file";

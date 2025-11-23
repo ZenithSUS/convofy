@@ -23,6 +23,7 @@ interface UseAnonymousMatchingReturn {
   isMatched: boolean;
   matchedRoomId: string | null;
   isCancelling: boolean;
+  isOtherUserLeft: boolean;
   startSearching: (preferences: MatchPreferences) => Promise<void>;
   cancelSearch: () => Promise<void>;
   error: string | null;
@@ -48,6 +49,7 @@ interface CheckMatchStatusResponse {
 function useAnonymousMatching(
   userId: string,
   isAnonymous: boolean,
+  isUserInRoom: boolean = false,
 ): UseAnonymousMatchingReturn {
   const router = useRouter();
   const isMountedRef = useRef(false);
@@ -56,6 +58,7 @@ function useAnonymousMatching(
 
   const [isSearching, setIsSearching] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isOtherUserLeft, setIsOtherUserLeft] = useState(false);
   const [isMatched, setIsMatched] = useState(false);
   const [matchedRoomId, setMatchedRoomId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -240,6 +243,12 @@ function useAnonymousMatching(
           statusCheckInterval.current = null;
         }
       });
+
+      // Listen for partner left event
+      channel.bind("partner-left", () => {
+        if (!isMountedRef.current) return;
+        setIsOtherUserLeft(true);
+      });
     }
 
     return () => {
@@ -255,20 +264,21 @@ function useAnonymousMatching(
   }, [userId, isAnonymous, router]);
 
   useEffect(() => {
-    if (!isAnonymous) return;
+    if (!isAnonymous || !userId) return;
 
     const interval = setInterval(() => {
       axios.post("/api/match/heartbeat");
     }, 15000);
 
-    if (!isSearching) clearInterval(interval);
+    if (!isSearching && !isUserInRoom) clearInterval(interval);
 
     return () => clearInterval(interval);
-  }, [isSearching, isAnonymous]);
+  }, [isSearching, isAnonymous, userId, isUserInRoom]);
 
   return {
     isSearching,
     isMatched,
+    isOtherUserLeft,
     matchedRoomId,
     startSearching,
     isCancelling,

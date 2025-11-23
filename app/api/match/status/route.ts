@@ -1,7 +1,6 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { getUserToken } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
-import MatchQueue from "@/models/MatchQueue";
 import matchQueueService from "@/services/mongodb/match-queue.service";
 
 export async function GET(req: NextRequest) {
@@ -17,58 +16,9 @@ export async function GET(req: NextRequest) {
     const userId = token.sub;
 
     // Get current queue entry
-    const entry = await matchQueueService.getMatchQueue(userId);
+    const entry = await matchQueueService.checkMatchStatus(userId);
 
-    // If nothing exists → TTL removed entry or user never queued
-    if (!entry) {
-      return NextResponse.json({
-        status: "not_found",
-        matched: false,
-      });
-    }
-
-    // Auto-fix stale matching lock (client crashed, browser closed, etc.)
-    if (
-      entry.status === "matching" &&
-      entry.lockedAt &&
-      entry.lockedAt < new Date(Date.now() - 5000)
-    ) {
-      // Unlock user safely
-      await MatchQueue.updateOne(
-        { userId },
-        { $set: { status: "searching", lockedAt: null } },
-      );
-
-      return NextResponse.json({
-        status: "searching",
-        matched: false,
-        reset: true,
-      });
-    }
-
-    // Check for successful match
-    if (entry.status === "matched" && entry.roomId) {
-      return NextResponse.json({
-        status: "matched",
-        matched: true,
-        roomId: entry.roomId,
-        partnerId: entry.matchedWith,
-      });
-    }
-
-    // Cancelled
-    if (entry.status === "cancelled") {
-      return NextResponse.json({
-        status: "cancelled",
-        matched: false,
-      });
-    }
-
-    // Still searching
-    return NextResponse.json({
-      status: "searching",
-      matched: false,
-    });
+    return NextResponse.json(entry, { status: 200 });
   } catch (error) {
     console.error("[MATCH STATUS ERROR]", error);
     return NextResponse.json(

@@ -422,6 +422,7 @@ export const userService = {
    * Should be run as a cron job.
    */
   async cleanExpiredSessions() {
+    await connectToDatabase();
     return await User.updateMany(
       {},
       {

@@ -3,6 +3,7 @@ import mongoose, { Types, Schema } from "mongoose";
 import Message from "./Message";
 
 export interface IRoom {
+  _id: Types.ObjectId;
   name?: string;
   description?: string;
   isPrivate: boolean;

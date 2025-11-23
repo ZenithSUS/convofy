@@ -3,7 +3,7 @@ import Image from "next/image";
 import { memo, useMemo } from "react";
 import { FileIcon } from "lucide-react";
 import Link from "next/link";
-import ViewImageModal from "@/app/(views)/chat/components/modals/view-image-modal";
+import ViewImageModal from "@/app/(views)/chat/[roomId]/components/modals/view-image-modal";
 import MessageAvatar from "@/app/(views)/chat/[roomId]/components/message/message-avatar";
 
 const MessageContent = ({ message }: { message: Message }) => {

@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "worker": "ts-node worker.ts",
+    "worker:build": "tsc worker.ts --outDir dist --esModuleInterop --resolveJsonModule --skipLibCheck"
   },
   "dependencies": {
     "@emoji-mart/data": "^1.2.1",
@@ -64,6 +66,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "ts-node": "^10.9.1",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@tanstack/eslint-plugin-query": "^5.91.0",

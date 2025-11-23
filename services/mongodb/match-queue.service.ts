@@ -50,6 +50,22 @@ const matchQueueService = {
     );
   },
 
+  async notifyUser(
+    userId: string,
+    event: string,
+    payload: { reason?: string } = {},
+  ) {
+    try {
+      await pusherServer.trigger(
+        `private-user-${String(userId)}`,
+        event,
+        payload,
+      );
+    } catch (err) {
+      console.error(`[PUSHER NOTIFY ERROR] user=${userId} event=${event}`, err);
+    }
+  },
+
   /**
    * Concurrency-safe matching system (replica-safe + local-safe)
    */
@@ -281,20 +297,88 @@ const matchQueueService = {
 
     return { status: "searching", matched: false };
   },
-  async cleanHeartbeatStaleUsers() {
-    const cutoff = new Date(Date.now() - 30000); // 30s
-    const removed = await MatchQueue.deleteMany({
-      lastHeartbeat: { $lt: cutoff },
-      status: { $in: ["searching", "matching"] },
-    });
+  /**
+   * Clean heartbeat stale users and handle per-doc behavior.
+   *
+   * - searching stale -> delete & notify search-timeout
+   * - matching stale -> reset to searching & notify match-timeout
+   * - matched stale -> remove disconnected entry & restore partner to searching (notify partner)
+   */
+  async cleanHeartbeatStaleUsers(cutoffMs: number = 30_000) {
+    try {
+      const cutoff = new Date(Date.now() - cutoffMs);
 
-    if (removed.deletedCount > 0) {
-      console.log(
-        `[HEARTBEAT CLEANUP] Removed ${removed.deletedCount} stale users`,
-      );
+      const staleEntries = await MatchQueue.find({
+        lastHeartbeat: { $lte: cutoff },
+        status: { $in: ["searching", "matching", "matched"] },
+      }).lean();
+
+      if (!staleEntries || staleEntries.length === 0) return 0;
+
+      let removedCount = 0;
+
+      for (const entry of staleEntries) {
+        const uid = String(entry.userId);
+        try {
+          if (entry.status === "searching") {
+            await MatchQueue.deleteOne({ _id: entry._id });
+            removedCount++;
+            await this.notifyUser(uid, "search-timeout", {
+              reason: "heartbeat_lost",
+            });
+          } else if (entry.status === "matching") {
+            await MatchQueue.updateOne(
+              { _id: entry._id },
+              { $set: { status: "searching", lockedAt: null } },
+            );
+            await this.notifyUser(uid, "match-timeout", {
+              reason: "heartbeat_lost",
+            });
+          } else if (entry.status === "matched") {
+            const partnerId = entry.matchedWith
+              ? String(entry.matchedWith)
+              : null;
+            await MatchQueue.deleteOne({ _id: entry._id });
+            removedCount++;
+
+            if (partnerId) {
+              const partnerEntry = await MatchQueue.findOne({
+                userId: partnerId,
+              });
+              if (partnerEntry) {
+                await MatchQueue.updateOne(
+                  { _id: partnerEntry._id },
+                  {
+                    $set: {
+                      status: "searching",
+                      matchedWith: null,
+                      roomId: null,
+                      lockedAt: null,
+                    },
+                  },
+                );
+              }
+              await this.notifyUser(partnerId, "partner-disconnected", {
+                reason: "peer_heartbeat_lost",
+              });
+            }
+          }
+        } catch (innerErr) {
+          console.error("[CLEAN HEARTBEAT ENTRY ERROR]", entry._id, innerErr);
+        }
+      }
+
+      if (removedCount > 0) {
+        console.log(
+          `[HEARTBEAT CLEANUP] Processed ${removedCount} stale entries`,
+        );
+      }
+
+      return removedCount;
+    } catch (err) {
+      console.error("[HEARTBEAT CLEANUP FAILED]", err);
+      return 0;
     }
-
-    return removed.deletedCount;
   },
 };
 

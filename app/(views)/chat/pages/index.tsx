@@ -51,7 +51,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
     );
   }, [session]);
 
-  const { isSearching, startSearching, cancelSearch, isMatched } =
+  const { isSearching, startSearching, cancelSearch, isMatched, isCancelling } =
     useAnonymousMatching(session.user.id, isAnonymous);
 
   const isSearchMode = useMemo<boolean>(() => {
@@ -244,6 +244,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
         {isAnonymous && !isMatched ? (
           <AnonymousContent
             isSearching={isSearching}
+            isCancelling={isCancelling}
             language={language}
             setLanguage={setLanguage}
             currentInterest={currentInterest}
@@ -257,7 +258,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
             handleStopSearching={handleStopSearching}
           />
         ) : (
-          isMatched && <MatchFound />
+          isMatched && <MatchFound theme={userTheme} />
         )}
       </div>
 
@@ -283,10 +284,11 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
           {isSearching ? (
             <Button
               variant="outline"
-              className="group h-12 w-full rounded-xl border-2 border-red-500 font-semibold text-red-500 shadow-lg transition-all duration-300 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/20"
+              className="group h-12 w-full rounded-xl border-2 border-red-500 font-semibold text-red-500 shadow-lg transition-all duration-300 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/20"
+              disabled={isCancelling}
               onClick={handleStopSearching}
             >
-              Cancel Search
+              {isCancelling ? "Cancelling..." : " Cancel Search"}
             </Button>
           ) : (
             <Button

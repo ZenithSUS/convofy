@@ -1,6 +1,7 @@
 import { Check } from "lucide-react";
+import MatchLoading from "./match-loading";
 
-function MatchFound() {
+function MatchFound({ theme }: { theme?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 px-4 py-20">
       <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
@@ -12,6 +13,7 @@ function MatchFound() {
       <p className="text-sm text-gray-600 dark:text-gray-400">
         You have a match!
       </p>
+      <MatchLoading theme={theme} />
     </div>
   );
 }

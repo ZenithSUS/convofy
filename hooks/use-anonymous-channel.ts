@@ -22,6 +22,7 @@ interface UseAnonymousMatchingReturn {
   isSearching: boolean;
   isMatched: boolean;
   matchedRoomId: string | null;
+  isCancelling: boolean;
   startSearching: (preferences: MatchPreferences) => Promise<void>;
   cancelSearch: () => Promise<void>;
   error: string | null;
@@ -35,6 +36,15 @@ interface JoinRoomResponse {
   };
 }
 
+interface CheckMatchStatusResponse {
+  data: {
+    status: string;
+    matched: boolean;
+    roomId?: string;
+    partnerId?: string;
+  };
+}
+
 function useAnonymousMatching(
   userId: string,
   isAnonymous: boolean,
@@ -45,6 +55,7 @@ function useAnonymousMatching(
   const statusCheckInterval = useRef<NodeJS.Timeout | null>(null);
 
   const [isSearching, setIsSearching] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
   const [isMatched, setIsMatched] = useState(false);
   const [matchedRoomId, setMatchedRoomId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +65,7 @@ function useAnonymousMatching(
     if (!isAnonymous || !userId) return;
 
     try {
-      const response: { data: { status: string; roomId?: string } } =
+      const response: CheckMatchStatusResponse =
         await axios.get("/api/match/status");
       const data = response.data;
 
@@ -114,13 +125,11 @@ function useAnonymousMatching(
           setMatchedRoomId(data.roomId);
           setIsSearching(false);
 
-          toast.success("Match found! Redirecting...");
           setTimeout(() => {
             router.push(`/chat/${data.roomId}`);
           }, 1000);
         } else if (data.searching) {
           // Still searching, start polling
-          console.log("Still searching...");
           statusCheckInterval.current = setInterval(checkMatchStatus, 3000);
         }
       } catch (err: unknown) {
@@ -139,6 +148,7 @@ function useAnonymousMatching(
     if (!userId) return;
 
     try {
+      setIsCancelling(true);
       await axios.post("/api/match/cancel", { userId });
 
       setIsSearching(false);
@@ -156,6 +166,8 @@ function useAnonymousMatching(
     } catch (err) {
       console.error("Error cancelling search:", err);
       toast.error("Failed to cancel search");
+    } finally {
+      setIsCancelling(false);
     }
   }, [userId]);
 
@@ -259,6 +271,7 @@ function useAnonymousMatching(
     isMatched,
     matchedRoomId,
     startSearching,
+    isCancelling,
     cancelSearch,
     error,
   };

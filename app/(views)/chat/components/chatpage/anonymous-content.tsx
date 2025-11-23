@@ -4,6 +4,7 @@ import { useCallback } from "react";
 
 interface AnonymousContentProps {
   isSearching: boolean;
+  isCancelling: boolean;
   language: string;
   setLanguage: (language: string) => void;
   currentInterest: string;
@@ -19,6 +20,7 @@ interface AnonymousContentProps {
 
 function AnonymousContent({
   isSearching,
+  isCancelling,
   language,
   setLanguage,
   currentInterest,
@@ -207,10 +209,11 @@ function AnonymousContent({
 
           <Button
             variant="outline"
-            className="border-2 border-red-500 text-red-500 hover:bg-red-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/20"
+            disabled={isCancelling}
+            className="border-2 border-red-500 text-red-500 hover:bg-red-50 disabled:opacity-50 dark:border-red-400 dark:text-red-400 dark:hover:bg-red-950/20"
             onClick={handleStopSearching}
           >
-            Cancel Search
+            {isCancelling ? "Cancelling..." : " Cancel Search"}
           </Button>
         </>
       ) : (

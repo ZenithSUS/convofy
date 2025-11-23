@@ -381,7 +381,7 @@ const matchQueueService = {
         });
       }
 
-      // Handle matched (delete disconnected + restore partners)
+      // Handle matched (delete disconnected + delete partner from queue)
       if (byStatus.matched.length > 0) {
         const ids = byStatus.matched.map((e) => e._id);
         const result = await MatchQueue.deleteMany({ _id: { $in: ids } });
@@ -397,17 +397,10 @@ const matchQueueService = {
         const partnerIds = Array.from(partnerIdsSet);
 
         if (partnerIds.length > 0) {
-          // Restore partners to searching
-          await MatchQueue.updateMany(
+          // Delete partners from queue
+          await MatchQueue.deleteMany(
             { userId: { $in: partnerIds } },
-            {
-              $set: {
-                status: "searching",
-                matchedWith: null,
-                roomId: null,
-                lockedAt: null,
-              },
-            },
+            { status: { $in: ["searching", "matching"] } },
           );
 
           // Notify partners

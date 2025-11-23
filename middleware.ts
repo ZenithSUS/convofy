@@ -14,6 +14,11 @@ export async function middleware(request: NextRequest) {
     return forwarded?.split(",")[0].trim() || realIp || "127.0.0.1";
   };
 
+  // Skip token if cron job request
+  if (pathname.includes("/api/cron")) {
+    return NextResponse.next();
+  }
+
   // Get token once and reuse
   const token = await getUserToken(request);
   const ip = token?.sub || getClientIp(request);

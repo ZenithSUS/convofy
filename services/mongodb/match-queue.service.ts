@@ -400,7 +400,7 @@ const matchQueueService = {
           // Delete partners from queue
           await MatchQueue.deleteMany(
             { userId: { $in: partnerIds } },
-            { status: { $in: ["searching", "matching"] } },
+            { status: { $in: ["searching", "matched"] } },
           );
 
           // Notify partners

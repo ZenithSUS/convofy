@@ -113,7 +113,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const { isOtherUserLeft } = useAnonymousMatching(
     session.user.id,
     isAnonymous,
-    true,
+    isAnonymous && isMember,
   );
 
   const {

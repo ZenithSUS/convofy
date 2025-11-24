@@ -20,13 +20,21 @@ const MessageContent = ({ message }: { message: Message }) => {
     return message.sender.avatar || "/default-avatar.png";
   }, [message.sender, message.room.isAnonymous]);
 
+  const senderName = useMemo(() => {
+    if (message.sender.isAnonymous && message.room.isAnonymous) {
+      return message.sender.anonAlias || message.sender.name;
+    }
+
+    return message.sender.name;
+  }, [message.sender, message.room.isAnonymous]).split(" ")[0];
+
   switch (message.type) {
     case "text":
       return (
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <MessageAvatar avatar={avatar} />
-            <strong>{message.sender.name.split(" ")[0]}</strong>{" "}
+            <strong>{senderName}</strong>{" "}
           </div>
           <p className="wrap-break-word whitespace-pre-wrap">
             {message.content}
@@ -40,8 +48,7 @@ const MessageContent = ({ message }: { message: Message }) => {
           <div className="flex gap-2">
             <MessageAvatar avatar={avatar} />
             <strong>
-              {message.sender.name.split(" ")[0]}{" "}
-              <span className="font-normal">(Sends an image)</span>
+              {senderName} <span className="font-normal">(Sends an image)</span>
             </strong>
           </div>
           <ViewImageModal content={message.content} user={message.sender.name}>
@@ -63,8 +70,7 @@ const MessageContent = ({ message }: { message: Message }) => {
           <div className="flex items-center gap-1">
             <MessageAvatar avatar={avatar} />
             <strong>
-              {message.sender.name.split(" ")[0]}{" "}
-              <span className="font-normal">(Sends a file)</span>
+              {senderName} <span className="font-normal">(Sends a file)</span>
             </strong>
           </div>
           <div className="flex h-[125px] w-[250px] items-center justify-center bg-gray-300 dark:bg-gray-700">

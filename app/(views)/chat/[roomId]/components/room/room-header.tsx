@@ -194,7 +194,7 @@ function RoomHeader({
               disabled={isSearching || isLeaving}
               onClick={handleSearchNewUser}
             >
-              <SearchIcon className="cursor-pointer" />
+              <SearchIcon className="cursor-pointer text-white" />
             </Button>
           )}
 

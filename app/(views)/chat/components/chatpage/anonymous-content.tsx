@@ -154,6 +154,7 @@ function AnonymousContent({
               )}
               <Button
                 onClick={handleStartSearching}
+                disabled={isSearching}
                 className="flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500"
               >
                 Start Searching

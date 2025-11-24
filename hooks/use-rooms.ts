@@ -196,3 +196,39 @@ export const useJoinRoom = (): UseMutationResult<
     },
   });
 };
+
+export const useLeaveAnonymousRoom = (): UseMutationResult<
+  Room,
+  AxiosErrorMessage,
+  string,
+  Room
+> => {
+  const queryClient = useQueryClient();
+  const leaveRoom = async (roomId: string) => {
+    const response = await client
+      .post(`/match/leave`, { roomId })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        console.error("Failed to leave room:", err);
+        throw err;
+      });
+
+    return response;
+  };
+
+  return useMutation<Room, AxiosErrorMessage, string, Room>({
+    mutationFn: async (roomId: string) => leaveRoom(roomId),
+    mutationKey: ["leaveRoom"],
+    onSuccess: () => {
+      // Invalidate rooms query to refetch
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["room"] });
+    },
+    onError: (err) => {
+      console.error("Error leaving room:", err);
+      throw err;
+    },
+  });
+};

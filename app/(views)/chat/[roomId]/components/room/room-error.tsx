@@ -43,7 +43,7 @@ function RoomError({ roomErrorData, handleRefresh }: RoomErrorProps) {
           </Button>
 
           <Button
-            onClick={() => router.back()}
+            onClick={() => router.push("/chat")}
             variant="outline"
             className="w-full border-2 border-gray-200 transition-all duration-300 hover:border-gray-300 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600"
           >

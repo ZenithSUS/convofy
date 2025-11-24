@@ -1,9 +1,10 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import client from "@/lib/axios";
+import { useLeaveAnonymousRoom } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, SearchIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
@@ -13,10 +14,20 @@ interface RoomHeaderProps {
   room: RoomContent;
   userId: string;
   isAnonymous: boolean;
+  startSearching: () => Promise<void>;
+  isSearching: boolean;
 }
 
-function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
+function RoomHeader({
+  room,
+  userId,
+  isAnonymous,
+  startSearching,
+  isSearching,
+}: RoomHeaderProps) {
   const router = useRouter();
+  const { mutateAsync: leaveRoom, isPending: isLeaving } =
+    useLeaveAnonymousRoom();
 
   const isPrivate = useMemo<boolean>(() => {
     return room.isPrivate || (room.members.length === 2 && !room.name);
@@ -53,6 +64,10 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
     return isPrivate ? otherUser?.isAvailable || false : false;
   }, [otherUser, isPrivate]);
 
+  const isMember = useMemo(() => {
+    return room.members.some((m) => m._id === userId);
+  }, [room, userId]);
+
   const displayImage = useMemo(() => {
     if (isPrivate && otherUser?.isAnonymous) {
       return room.isAnonymous
@@ -77,7 +92,7 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
         if (isAnonymous) {
           toast.promise(
             async () => {
-              await client.post("/match/leave", { roomId: room._id });
+              await leaveRoom(room._id);
             },
             {
               loading: "Leaving room...",
@@ -93,8 +108,31 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
         toast.error("Failed to leave room");
       }
     },
-    [router, room._id],
+    [router, room._id, leaveRoom],
   );
+
+  const handleSearchNewUser = useCallback(async () => {
+    try {
+      if (isSearching) return;
+
+      if (isMember) {
+        toast.promise(
+          async () => {
+            await leaveRoom(room._id);
+          },
+          {
+            loading: "Leaving room...",
+            success: "Room left successfully",
+            error: "Failed to leave room",
+          },
+        );
+      }
+      await startSearching();
+    } catch (error) {
+      console.error("[LEAVE ROOM ERROR]", error);
+      toast.error("Failed to search new user");
+    }
+  }, [startSearching, room._id, leaveRoom, isMember, isSearching]);
 
   if (!room) return null;
 
@@ -103,13 +141,15 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
       <div className="flex items-center justify-between gap-3 border-b px-4 py-3">
         {/* Left section - Back button and Room info */}
         <div className="flex min-w-0 flex-1 items-center gap-3">
-          <button
+          <Button
+            variant="ghost"
+            disabled={isLeaving || isSearching}
             onClick={() => handleLeave(isAnonymous)}
-            className="hover:bg-accent shrink-0 rounded-lg p-2 transition-colors duration-200"
+            className="hover:bg-accent dark:hover:bg-accent/50 shrink-0 rounded-lg p-2 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Go back to chat list"
           >
             <ArrowLeft className="h-5 w-5" />
-          </button>
+          </Button>
 
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {displayImage && (
@@ -145,9 +185,26 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
           </div>
         </div>
 
-        {/* Right section - Sidebar trigger */}
-        <div className="shrink-0 pr-2">
-          <SidebarTrigger hideLabel={true} />
+        <div className="flex items-center gap-5">
+          {isAnonymous && (
+            <Button
+              variant="ghost"
+              className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-500 dark:hover:to-purple-600"
+              aria-label="Search new user"
+              disabled={isSearching || isLeaving}
+              onClick={handleSearchNewUser}
+            >
+              <SearchIcon className="cursor-pointer" />
+            </Button>
+          )}
+
+          {/* Right section - Sidebar trigger */}
+          <div className="shrink-0 pr-2">
+            <SidebarTrigger
+              hideLabel={true}
+              disabled={isLeaving || isSearching}
+            />
+          </div>
         </div>
       </div>
     </div>

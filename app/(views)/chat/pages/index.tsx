@@ -26,6 +26,7 @@ import useAnonymousMatching from "@/hooks/use-anonymous-channel";
 import { useGetRoomByUserId } from "@/hooks/use-rooms";
 import { RoomContent } from "@/types/room";
 import { toast } from "sonner";
+import useAnonymousPreferenceStore from "@/store/anonymous-preferences-store";
 
 interface ChatListClientProps {
   serverSession: Session;
@@ -40,10 +41,15 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
-  const [interests, setInterests] = useState<string[]>([]);
-  const [currentInterest, setCurrentInterest] = useState("");
-  const [language, setLanguage] = useState("en");
   const { status: connectionStatus } = useConnectionStatus();
+  const {
+    interests,
+    language,
+    currentInterest,
+    setInterests,
+    setLanguage,
+    setCurrentInterest,
+  } = useAnonymousPreferenceStore();
 
   const isAnonymous = useMemo<boolean>(() => {
     return (
@@ -156,13 +162,13 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
       setInterests([...interests, currentInterest.trim()]);
       setCurrentInterest("");
     }
-  }, [currentInterest, interests]);
+  }, [currentInterest, interests, setCurrentInterest, setInterests]);
 
   const handleRemoveInterest = useCallback(
     (interest: string) => {
       setInterests(interests.filter((i) => i !== interest));
     },
-    [interests],
+    [interests, setInterests],
   );
 
   useEffect(() => {

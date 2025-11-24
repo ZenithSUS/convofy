@@ -255,6 +255,7 @@ function Sidebar({
 
 function SidebarTrigger({
   hideLabel = false,
+  disabled = false,
   className,
   onClick,
   ...props
@@ -269,6 +270,7 @@ function SidebarTrigger({
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon"
+      disabled={disabled}
       className={cn("size-7", className)}
       onClick={(event) => {
         onClick?.(event);
@@ -276,7 +278,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-500 dark:hover:to-purple-600">
+      <div className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-500 dark:hover:to-purple-600">
         <MessageSquare className="h-5 w-5 text-white" />
       </div>
       {!hideLabel && (

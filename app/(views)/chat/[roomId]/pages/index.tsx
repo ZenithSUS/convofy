@@ -1,7 +1,7 @@
 "use client";
 // React
 import { ChangeEvent, useCallback, useMemo, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import DOMPurify from "dompurify";
 
 // Zod, Tanstack and React Hook Form
@@ -49,9 +49,9 @@ import RoomError from "@/app/(views)/chat/[roomId]/components/room/room-error";
 import getFileDirectory from "@/helper/file-directories";
 import RoomRequest from "@/app/(views)/chat/[roomId]/components/room/room-request";
 import useAnonymousMatching from "@/hooks/use-anonymous-channel";
-import AnonyMouseLeavedModal from "../components/modals/anonymous-leaved.modal";
-import AnonymousContent from "../../components/chatpage/anonymous-content";
-import MatchFound from "../../components/chatpage/match-found";
+import AnonymousContent from "@/app/(views)/chat/components/chatpage/anonymous-content";
+import MatchFound from "@/app/(views)/chat/components/chatpage/match-found";
+import useAnonymousPreferenceStore from "@/store/anonymous-preferences-store";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -75,12 +75,17 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const [isSending, setIsSending] = useState<boolean>(false);
   const [, setIsDetailsVisible] = useState<boolean>(false);
   const [actionType, setActionType] = useState<"edit" | "view">("view");
+  const [showPreferences, setShowPreferences] = useState<boolean>(true);
 
-  // Anonymous States
-  const [showPreferences, setShowPreferences] = useState(true);
-  const [interests, setInterests] = useState<string[]>([]);
-  const [currentInterest, setCurrentInterest] = useState("");
-  const [language, setLanguage] = useState("en");
+  // Anonymous Store
+  const {
+    interests,
+    language,
+    currentInterest,
+    setLanguage,
+    setCurrentInterest,
+    setInterests,
+  } = useAnonymousPreferenceStore();
 
   const userPreferences = useMemo(() => {
     return session?.user.preferences;
@@ -131,17 +136,15 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     isAnonymous && isMember,
   );
 
-  // IMPORTANT: Define these BEFORE useGetMessagesByRoom
   const isOnlyMemberInAnonymousRoom = useMemo(() => {
     if (!roomData) return false;
-    return roomData.isAnonymous && roomData.members.length === 1;
+    return roomData.isAnonymous && roomData.members.length <= 1;
   }, [roomData]);
 
   const isAnonymousChatInactive = useMemo(() => {
     return isAnonymous && (isOtherUserLeft || isOnlyMemberInAnonymousRoom);
   }, [isAnonymous, isOtherUserLeft, isOnlyMemberInAnonymousRoom]);
 
-  // Messages query - NOW with isAnonymousChatInactive check
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -424,7 +427,13 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   }, [interests, language, startSearching]);
 
   const handleStopSearching = useCallback(async () => {
-    await cancelSearch();
+    try {
+      await cancelSearch();
+    } catch (error) {
+      console.error("Failed to cancel search:", error);
+    } finally {
+      setShowPreferences(true);
+    }
   }, [cancelSearch]);
 
   const handleAddInterest = useCallback(() => {
@@ -432,13 +441,13 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       setInterests([...interests, currentInterest.trim()]);
       setCurrentInterest("");
     }
-  }, [currentInterest, interests]);
+  }, [currentInterest, interests, setCurrentInterest, setInterests]);
 
   const handleRemoveInterest = useCallback(
     (interest: string) => {
       setInterests(interests.filter((i) => i !== interest));
     },
-    [interests],
+    [interests, setInterests],
   );
 
   // Loading state
@@ -458,6 +467,8 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         room={roomData as RoomContent}
         userId={session?.user.id as string}
         isAnonymous={isAnonymous}
+        startSearching={handleStartSearching}
+        isSearching={isSearching}
       />
 
       {/* Enhanced Connection Status Banner */}
@@ -498,7 +509,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
             </div>
           )}
 
-          {isAllFetching && !isAnonymousChatInactive && (
+          {isAllFetching && !isAnonymousChatInactive && !isSearching && (
             <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
               <Loader2
                 className="animate-spin text-blue-600 dark:text-blue-400"
@@ -544,9 +555,6 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
                 </div>
               )}
 
-          {/* Match Found Modal */}
-          {isMatched && <MatchFound theme={session.user.preferences.theme} />}
-
           {/* Enhanced Typing Indicator - Only show if chat is active */}
           {!messagesError &&
             !isAnonymousChatInactive &&
@@ -578,14 +586,20 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
             handleStartSearching={handleStartSearching}
             handleStopSearching={handleStopSearching}
           />
-          <div className="mb-6 flex items-center justify-center">
-            <div className="flex items-center justify-center gap-3 rounded-xl border border-orange-100 bg-orange-50 px-6 py-4 dark:border-orange-800 dark:bg-orange-900">
-              <UnplugIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              <h1 className="text-base font-medium text-orange-900 dark:text-orange-300">
-                Your partner has left the conversation.
-              </h1>
+
+          {/* Match Found Modal */}
+          {isMatched && <MatchFound theme={session.user.preferences.theme} />}
+
+          {!isSearching && !isMatched && (
+            <div className="mb-6 flex items-center justify-center">
+              <div className="flex items-center justify-center gap-3 rounded-xl border border-orange-100 bg-orange-50 px-6 py-4 dark:border-orange-800 dark:bg-orange-900">
+                <UnplugIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                <h1 className="text-base font-medium text-orange-900 dark:text-orange-300">
+                  Your partner has left the conversation.
+                </h1>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
@@ -624,13 +638,13 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         <PersonUnavailable isYouUnavailable={isUnavailable} />
       ) : isPendingPrivateRoom ? (
         <RoomRequest userId={session?.user?.id as string} roomId={roomId} />
-      ) : !isAnonymous ? (
-        <NotJoinedModal
-          roomId={roomId as string}
-          userId={session?.user?.id as string}
-        />
       ) : (
-        isAnonymous && !isMember && <AnonyMouseLeavedModal />
+        !isAnonymous && (
+          <NotJoinedModal
+            roomId={roomId as string}
+            userId={session?.user?.id as string}
+          />
+        )
       )}
 
       {/* Animations */}

@@ -91,7 +91,7 @@ function MessageForm({
                     isSending ? "Sending..." : "Type your message..."
                   }
                   className="max-h-32 min-h-12 resize-none rounded-xl border-2 border-gray-200 bg-gray-50 px-4 py-3 text-sm shadow-sm transition-all focus:border-blue-400 focus:bg-white focus-visible:ring-2 focus-visible:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-50 md:text-base dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:bg-gray-800 dark:focus:ring-blue-400"
-                  disabled={isSending}
+                  disabled={isSending || isUploading || !isAllFetched}
                   onChange={(e) => handleChange(e)}
                   onBlur={() => handleStopTypingUser()}
                   onKeyDown={onKeyDown}

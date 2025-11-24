@@ -27,7 +27,7 @@ function AnonymousContent({
   currentInterest,
   interests,
   showPreferences,
-  hideWelcome,
+  hideWelcome = false,
   setCurrentInterest,
   setShowPreferences,
   handleRemoveInterest,
@@ -143,13 +143,15 @@ function AnonymousContent({
 
             {/* Action Buttons */}
             <div className="flex gap-3 pt-4">
-              <Button
-                variant="outline"
-                onClick={() => setShowPreferences(false)}
-                className="flex-1 rounded-xl border-2 border-gray-200 dark:border-gray-700"
-              >
-                Cancel
-              </Button>
+              {!hideWelcome && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPreferences(false)}
+                  className="flex-1 rounded-xl border-2 border-gray-200 dark:border-gray-700"
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 onClick={handleStartSearching}
                 className="flex-1 rounded-xl bg-linear-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 dark:from-blue-500 dark:to-purple-500"

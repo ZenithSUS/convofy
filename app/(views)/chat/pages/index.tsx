@@ -279,7 +279,7 @@ function ChatListClient({ serverSession }: ChatListClientProps) {
       ) : null}
 
       {/* Floating Action Button - Anonymous Users */}
-      {isAnonymous && !showPreferences && (
+      {isAnonymous && !showPreferences && !isMatched && (
         <div className="fixed right-0 bottom-0 left-0 border-t border-gray-200 bg-linear-to-t from-white via-white to-transparent p-4 md:hidden dark:border-gray-800 dark:from-gray-900 dark:via-gray-900">
           {isSearching ? (
             <Button

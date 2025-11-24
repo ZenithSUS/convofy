@@ -43,6 +43,9 @@ export type RoomMembers = {
   anonAlias?: string;
   status?: "online" | "offline";
   role: "user" | "anonymous" | "admin";
+  preferences: {
+    hideStatus: boolean;
+  };
 };
 
 export type RoomContent = Omit<Room, "members" | "lastMessage"> & {

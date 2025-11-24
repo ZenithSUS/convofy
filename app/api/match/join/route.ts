@@ -39,8 +39,10 @@ export async function POST(req: NextRequest) {
       typeof preferences === "object" && !Array.isArray(preferences)
         ? preferences
         : {
-            interests: Array.isArray(preferences) ? preferences : [],
-            language: undefined,
+            interests: Array.isArray(preferences.interests)
+              ? preferences.interests
+              : [],
+            language: preferences.language,
           };
 
     // Remove stale / duplicate queue entries
@@ -57,7 +59,8 @@ export async function POST(req: NextRequest) {
     const matched = await matchQueueService.tryMatchNow({
       userId: userEntry.userId.toString(),
       _id: userEntry._id.toString(),
-      preferences: normalizedPreferences,
+      preferences: normalizedPreferences.interests || [],
+      language: normalizedPreferences.language || "",
     });
 
     if (matched) {

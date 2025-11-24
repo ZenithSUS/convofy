@@ -27,6 +27,10 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
     [room, userId, isPrivate],
   );
 
+  const hideOnlineStatus = useMemo(() => {
+    return otherUser?.preferences?.hideStatus;
+  }, [otherUser]);
+
   const displayName = useMemo(() => {
     if (isPrivate && otherUser?.isAnonymous && otherUser.role === "user") {
       return room.isAnonymous
@@ -38,8 +42,34 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
       return otherUser?.name || "Anonymous User";
     }
 
+    if (isPrivate && !otherUser?.isAnonymous) {
+      return otherUser?.name || "Unknown User";
+    }
+
     return room.name || "Unknown Room";
   }, [room, otherUser, isPrivate]);
+
+  const isAvailable = useMemo(() => {
+    return isPrivate ? otherUser?.isAvailable || false : false;
+  }, [otherUser, isPrivate]);
+
+  const displayImage = useMemo(() => {
+    if (isPrivate && otherUser?.isAnonymous) {
+      return room.isAnonymous
+        ? otherUser.anonAvatar || "/default-avatar.png"
+        : otherUser?.avatar || "/default-avatar.png";
+    }
+
+    if (isPrivate && !otherUser?.isAnonymous) {
+      return otherUser?.avatar || "/default-avatar.png";
+    }
+
+    return room.image || "/default-avatar.png";
+  }, [room, otherUser, isPrivate]);
+
+  const isOnline = useMemo(() => {
+    return isPrivate ? otherUser?.status === "online" : false;
+  }, [otherUser, isPrivate]);
 
   const handleLeave = useCallback(
     async (isAnonymous: boolean) => {
@@ -66,28 +96,6 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
     [router, room._id],
   );
 
-  const isAvailable = useMemo(() => {
-    return isPrivate ? otherUser?.isAvailable || false : false;
-  }, [otherUser, isPrivate]);
-
-  const displayImage = useMemo(() => {
-    if (isPrivate && otherUser?.isAnonymous) {
-      return room.isAnonymous
-        ? otherUser.anonAvatar || "/default-avatar.png"
-        : otherUser?.avatar || "/default-avatar.png";
-    }
-
-    if (isPrivate && !otherUser?.isAnonymous) {
-      return otherUser?.avatar || "/default-avatar.png";
-    }
-
-    return room.image || "/default-avatar.png";
-  }, [room, otherUser, isPrivate]);
-
-  const isOnline = useMemo(() => {
-    return isPrivate ? otherUser?.status === "online" : false;
-  }, [otherUser, isPrivate]);
-
   if (!room) return null;
 
   return (
@@ -113,7 +121,7 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
                   height={48}
                   className="ring-border h-12 w-12 rounded-full object-cover ring-2"
                 />
-                {isPrivate && (
+                {isPrivate && !hideOnlineStatus && (
                   <div
                     className={`ring-background absolute right-0 bottom-0 h-3 w-3 rounded-full ${isOnline ? "bg-green-500 ring-2 dark:bg-green-400" : "bg-gray-400 ring-2 dark:bg-gray-600"}`}
                   />
@@ -123,16 +131,16 @@ function RoomHeader({ room, userId, isAnonymous }: RoomHeaderProps) {
 
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold">{displayName}</h1>
-              {isPrivate && isAvailable ? (
+              {isPrivate && isAvailable && !hideOnlineStatus ? (
                 <p className="text-muted-foreground text-xs">
                   {otherUser?.status === "online" ? "Online" : "Offline"}
                 </p>
-              ) : (
+              ) : !isPrivate ? (
                 <p className="text-muted-foreground text-xs">
                   {room.members.length}{" "}
                   {room.members.length === 1 ? "member" : "members"}
                 </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

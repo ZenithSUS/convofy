@@ -10,6 +10,7 @@ interface AnonymousContentProps {
   currentInterest: string;
   interests: string[];
   showPreferences: boolean;
+  hideWelcome?: boolean;
   setShowPreferences: (showPreferences: boolean) => void;
   setCurrentInterest: (interest: string) => void;
   handleRemoveInterest: (interest: string) => void;
@@ -26,6 +27,7 @@ function AnonymousContent({
   currentInterest,
   interests,
   showPreferences,
+  hideWelcome,
   setCurrentInterest,
   setShowPreferences,
   handleRemoveInterest,
@@ -44,7 +46,7 @@ function AnonymousContent({
   );
 
   return (
-    <div className="flex flex-col items-center justify-center px-4 py-20 text-center">
+    <div className="flex flex-col items-center justify-center px-4 py-10 text-center">
       {showPreferences ? (
         <>
           {/* Preferences Form */}
@@ -84,6 +86,8 @@ function AnonymousContent({
                 <option value="ar">Arabic</option>
                 <option value="hi">Hindi</option>
                 <option value="tl">Tagalog</option>
+                <option value="bi">Bisaya</option>
+                <option value="il">Ilocano</option>
               </select>
             </div>
 
@@ -217,19 +221,21 @@ function AnonymousContent({
           </Button>
         </>
       ) : (
-        <>
-          {/* Default State */}
-          <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
-            <Users size={40} className="text-blue-500 dark:text-blue-400" />
-          </div>
-          <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
-            Welcome, Guest!
-          </h3>
-          <p className="mb-6 max-w-sm text-sm text-gray-600 dark:text-gray-400">
-            Connect with random users instantly for one-on-one conversations.
-            Click the button below to start chatting!
-          </p>
-        </>
+        !hideWelcome && (
+          <>
+            {/* Default State */}
+            <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
+              <Users size={40} className="text-blue-500 dark:text-blue-400" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-gray-700 dark:text-gray-300">
+              Welcome, Guest!
+            </h3>
+            <p className="mb-6 max-w-sm text-sm text-gray-600 dark:text-gray-400">
+              Connect with random users instantly for one-on-one conversations.
+              Click the button below to start chatting!
+            </p>
+          </>
+        )
       )}
     </div>
   );

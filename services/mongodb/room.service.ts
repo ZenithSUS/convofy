@@ -85,6 +85,7 @@ export const roomService = {
         "anonAlias",
         "isAnonymous",
         "role",
+        "preferences.hideStatus",
       ])
       .populate({
         path: "lastMessage",

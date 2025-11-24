@@ -69,6 +69,7 @@ const matchQueueService = {
     userId: string;
     _id: string;
     preferences: string[];
+    language: string;
   }) {
     const useTransactions = process.env.NODE_ENV === "production";
     let session: mongoose.ClientSession | null = null;
@@ -95,10 +96,14 @@ const matchQueueService = {
       );
 
       // ATOMIC: Lock a partner
-      const partner = await MatchQueue.findOneAndUpdate(
+      let partner = await MatchQueue.findOneAndUpdate(
         {
           _id: { $ne: userEntry._id },
           status: "searching",
+          $or: [
+            { "preferences.interests": { $in: userEntry.preferences } },
+            { "preferences.language": userEntry.language },
+          ],
           lockedAt: null,
         },
         {
@@ -110,6 +115,24 @@ const matchQueueService = {
           ...(session && { session }),
         },
       );
+
+      if (!partner) {
+        partner = await MatchQueue.findOneAndUpdate(
+          {
+            _id: { $ne: userEntry._id },
+            status: "searching",
+            lockedAt: null,
+          },
+          {
+            $set: { status: "matching", lockedAt: new Date() },
+          },
+          {
+            new: true,
+            sort: { createdAt: 1 },
+            ...(session && { session }),
+          },
+        );
+      }
 
       if (!partner) {
         if (session) {
@@ -203,7 +226,9 @@ const matchQueueService = {
 
   async leaveRoom(room: IRoom, userId: string) {
     if (room && room.isPrivate && room.isAnonymous) {
-      const partner = room.members.find((id) => id !== room.owner)?._id;
+      const partner = room.members.find(
+        (id) => id._id.toString() !== userId,
+      )?._id;
 
       if (partner) {
         this.notifyUser(partner.toString(), "partner-left", {

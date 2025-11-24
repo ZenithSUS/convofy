@@ -50,6 +50,8 @@ import getFileDirectory from "@/helper/file-directories";
 import RoomRequest from "@/app/(views)/chat/[roomId]/components/room/room-request";
 import useAnonymousMatching from "@/hooks/use-anonymous-channel";
 import AnonyMouseLeavedModal from "../components/modals/anonymous-leaved.modal";
+import AnonymousContent from "../../components/chatpage/anonymous-content";
+import MatchFound from "../../components/chatpage/match-found";
 
 const schemaMessage = z.object({
   message: z.string(),
@@ -73,6 +75,12 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   const [isSending, setIsSending] = useState<boolean>(false);
   const [, setIsDetailsVisible] = useState<boolean>(false);
   const [actionType, setActionType] = useState<"edit" | "view">("view");
+
+  // Anonymous States
+  const [showPreferences, setShowPreferences] = useState(true);
+  const [interests, setInterests] = useState<string[]>([]);
+  const [currentInterest, setCurrentInterest] = useState("");
+  const [language, setLanguage] = useState("en");
 
   const userPreferences = useMemo(() => {
     return session?.user.preferences;
@@ -110,12 +118,30 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   }, [session.user]);
 
   // Anonymous User Channel
-  const { isOtherUserLeft } = useAnonymousMatching(
+  const {
+    isSearching,
+    isCancelling,
+    isMatched,
+    startSearching,
+    cancelSearch,
+    isOtherUserLeft,
+  } = useAnonymousMatching(
     session.user.id,
     isAnonymous,
     isAnonymous && isMember,
   );
 
+  // IMPORTANT: Define these BEFORE useGetMessagesByRoom
+  const isOnlyMemberInAnonymousRoom = useMemo(() => {
+    if (!roomData) return false;
+    return roomData.isAnonymous && roomData.members.length === 1;
+  }, [roomData]);
+
+  const isAnonymousChatInactive = useMemo(() => {
+    return isAnonymous && (isOtherUserLeft || isOnlyMemberInAnonymousRoom);
+  }, [isAnonymous, isOtherUserLeft, isOnlyMemberInAnonymousRoom]);
+
+  // Messages query - NOW with isAnonymousChatInactive check
   const {
     data: messages,
     isLoading: messagesLoading,
@@ -129,7 +155,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
   } = useGetMessagesByRoom(
     roomId as string,
     5,
-    isMember && session.user.isAvailable,
+    isMember && session.user.isAvailable && !isAnonymousChatInactive,
   );
 
   const { mutateAsync: sendMessage } = useSendLiveMessage();
@@ -216,12 +242,6 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       roomData.invitedUser === session.user.id
     );
   }, [roomData, session.user.id]);
-
-  const isOnlyMemberInAnonymousRoom = useMemo(() => {
-    if (!roomData) return false;
-
-    return roomData.isAnonymous && roomData.members.length === 1;
-  }, [roomData]);
 
   const handleRefresh = useCallback(async () => {
     queryClient.removeQueries({ queryKey: ["messages", roomId] });
@@ -387,6 +407,40 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     }
   };
 
+  // Anonymous Functions
+  const handleStartSearching = useCallback(async () => {
+    if (!language) {
+      toast.error("Please select a language");
+      return;
+    }
+
+    const preferences = {
+      interests: interests.map((interest) => interest.trim()),
+      language: language,
+    };
+
+    setShowPreferences(false);
+    await startSearching(preferences);
+  }, [interests, language, startSearching]);
+
+  const handleStopSearching = useCallback(async () => {
+    await cancelSearch();
+  }, [cancelSearch]);
+
+  const handleAddInterest = useCallback(() => {
+    if (currentInterest.trim() && !interests.includes(currentInterest.trim())) {
+      setInterests([...interests, currentInterest.trim()]);
+      setCurrentInterest("");
+    }
+  }, [currentInterest, interests]);
+
+  const handleRemoveInterest = useCallback(
+    (interest: string) => {
+      setInterests(interests.filter((i) => i !== interest));
+    },
+    [interests],
+  );
+
   // Loading state
   if (!isAllDataLoaded || isAllLoading) {
     return <LoadingConvo theme={session.user.preferences.theme} />;
@@ -412,108 +466,135 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
       )}
 
       {/* Enhanced Messages Area */}
-      <div className="flex-1 flex-col-reverse overflow-y-auto p-4 md:p-6">
-        {hasNextPage && (
-          <div className="mb-6 flex items-center justify-center">
-            {!isFetchingNextPage && !messagesError && isMember && (
-              <Button
-                onClick={() => fetchNextPage()}
-                variant="outline"
-                className="border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-600 dark:hover:shadow-md"
-              >
-                {isFetchingNextPage ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Loading...
-                  </>
-                ) : (
-                  "Load Previous Messages"
-                )}
-              </Button>
+      {!isAnonymousChatInactive && (
+        <div className="flex-1 flex-col-reverse overflow-y-auto p-4 md:p-6">
+          {hasNextPage && (
+            <div className="mb-6 flex items-center justify-center">
+              {!isFetchingNextPage && !messagesError && isMember && (
+                <Button
+                  onClick={() => fetchNextPage()}
+                  variant="outline"
+                  className="border-2 border-gray-200 bg-white shadow-sm transition-all duration-300 hover:border-blue-300 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-600 dark:hover:shadow-md"
+                >
+                  {isFetchingNextPage ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Load Previous Messages"
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {messagesError && (
+            <div className="my-8">
+              <ErrorMessage
+                error={messagesErrorData as AxiosError}
+                onClick={handleRefresh}
+              />
+            </div>
+          )}
+
+          {isAllFetching && !isAnonymousChatInactive && (
+            <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
+              <Loader2
+                className="animate-spin text-blue-600 dark:text-blue-400"
+                size={24}
+              />
+              <h1 className="text-base font-medium text-blue-900 dark:text-blue-300">
+                Loading messages...
+              </h1>
+            </div>
+          )}
+
+          {/* Show messages only if NOT in inactive anonymous chat */}
+          {!messagesError && !isAllFetching && messagesData.length === 0
+            ? !isAnonymousChatInactive && <StartMessage />
+            : !isAnonymousChatInactive && (
+                <div className="space-y-4">
+                  {messagesData.map((msg: Message, index: number) => (
+                    <div
+                      key={msg._id}
+                      style={{
+                        animation: `slideUp 0.4s ease-out ${index * 0.05}s both`,
+                      }}
+                    >
+                      <MessageCard
+                        message={msg}
+                        session={session as Session}
+                        isThisEditing={currentEditId === msg._id}
+                        isAnyEditing={!!currentEditId}
+                        isDetailsVisible={
+                          currentEditId === msg._id && actionType === "view"
+                        }
+                        isPrivate={roomData?.isPrivate || false}
+                        actionType={actionType}
+                        setActionType={setActionType}
+                        setIsDetailsVisible={setIsDetailsVisible}
+                        isLatestSeenMessage={msg._id === getLatestSeenMessageId}
+                        onEditComplete={() => setCurrentEditId(null)}
+                        onCancelEdit={() => setCurrentEditId(null)}
+                        setCurrentEditId={setCurrentEditId}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+          {/* Match Found Modal */}
+          {isMatched && <MatchFound theme={session.user.preferences.theme} />}
+
+          {/* Enhanced Typing Indicator - Only show if chat is active */}
+          {!messagesError &&
+            !isAnonymousChatInactive &&
+            typingUsers.size > 0 && (
+              <TypingIndicator
+                typingUsers={typingUsers}
+                typingIndicatorRef={typingIndicatorRef}
+              />
             )}
-          </div>
-        )}
+        </div>
+      )}
 
-        {messagesError && (
-          <div className="my-8">
-            <ErrorMessage
-              error={messagesErrorData as AxiosError}
-              onClick={handleRefresh}
-            />
-          </div>
-        )}
-
-        {isAllFetching && (
-          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
-            <Loader2
-              className="animate-spin text-blue-600 dark:text-blue-400"
-              size={24}
-            />
-            <h1 className="text-base font-medium text-blue-900 dark:text-blue-300">
-              Loading messages...
-            </h1>
-          </div>
-        )}
-
-        {!messagesError && !isAllFetching && messagesData.length === 0 ? (
-          <StartMessage />
-        ) : (
-          <div className="space-y-4">
-            {messagesData.map((msg: Message, index: number) => (
-              <div
-                key={msg._id}
-                style={{
-                  animation: `slideUp 0.4s ease-out ${index * 0.05}s both`,
-                }}
-              >
-                <MessageCard
-                  message={msg}
-                  session={session as Session}
-                  isThisEditing={currentEditId === msg._id}
-                  isAnyEditing={!!currentEditId}
-                  isDetailsVisible={
-                    currentEditId === msg._id && actionType === "view"
-                  }
-                  isPrivate={roomData?.isPrivate || false}
-                  actionType={actionType}
-                  setActionType={setActionType}
-                  setIsDetailsVisible={setIsDetailsVisible}
-                  isLatestSeenMessage={msg._id === getLatestSeenMessageId}
-                  onEditComplete={() => setCurrentEditId(null)}
-                  onCancelEdit={() => setCurrentEditId(null)}
-                  setCurrentEditId={setCurrentEditId}
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Enhanced Typing Indicator */}
-        {!messagesError && typingUsers.size > 0 && (
-          <TypingIndicator
-            typingUsers={typingUsers}
-            typingIndicatorRef={typingIndicatorRef}
+      {/* Anonymous Mode - Content */}
+      {isAnonymousChatInactive && (
+        <div className="flex-1 items-center justify-center overflow-y-auto">
+          <AnonymousContent
+            isSearching={isSearching}
+            isCancelling={isCancelling}
+            language={language}
+            setLanguage={setLanguage}
+            currentInterest={currentInterest}
+            interests={interests}
+            hideWelcome={true}
+            showPreferences={showPreferences}
+            setCurrentInterest={setCurrentInterest}
+            setShowPreferences={setShowPreferences}
+            handleRemoveInterest={handleRemoveInterest}
+            handleAddInterest={handleAddInterest}
+            handleStartSearching={handleStartSearching}
+            handleStopSearching={handleStopSearching}
           />
-        )}
-      </div>
-
-      {/* Anonymouse Mode if other person is unavailable or left */}
-      {isAnonymous && (isOtherUserLeft || isOnlyMemberInAnonymousRoom) && (
-        <div className="mb-6 flex items-center justify-center">
-          <div className="mb-6 flex items-center justify-center gap-3 rounded-xl border border-blue-100 bg-blue-50 px-6 py-4 dark:border-blue-800 dark:bg-blue-900">
-            <UnplugIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            <h1 className="text-base font-medium text-blue-900 dark:text-blue-300">
-              Your partner is left the conversation.
-            </h1>
+          <div className="mb-6 flex items-center justify-center">
+            <div className="flex items-center justify-center gap-3 rounded-xl border border-orange-100 bg-orange-50 px-6 py-4 dark:border-orange-800 dark:bg-orange-900">
+              <UnplugIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <h1 className="text-base font-medium text-orange-900 dark:text-orange-300">
+                Your partner has left the conversation.
+              </h1>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Input Area */}
+      {/* Input Area - Hide for inactive anonymous chats */}
       {isMember &&
       !isOtherPersonUnavailable &&
       !isUnavailable &&
-      !isPendingPrivateRoom ? (
+      !isPendingPrivateRoom &&
+      !isAnonymousChatInactive ? (
         <div className="border-t bg-white shadow-lg dark:bg-gray-800 dark:shadow-gray-900">
           {/* File Preview Section */}
           {selectedFiles.length > 0 && (

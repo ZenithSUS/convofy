@@ -76,7 +76,9 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         )}
 
         {/* Change Email */}
-        {!isAnonymous && isCredentialsAuth && <ChangeEmail session={session} />}
+        {!isAnonymous && (
+          <ChangeEmail session={session} isAnyOAuth={isAnyOAuth} />
+        )}
 
         {/* Connected Accounts */}
         {!isAnonymous && (
@@ -92,7 +94,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
         )}
 
         {/* Session Management */}
-        <SessionManagement session={session} />
+        {!isAnonymous && <SessionManagement session={session} />}
 
         {/* Danger Zone */}
         {!isAnonymous && (

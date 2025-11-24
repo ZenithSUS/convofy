@@ -22,6 +22,7 @@ import Image from "next/image";
 import Link from "next/link";
 import anonymousName from "@/helper/anonymous-name";
 import generateAnonymousAvatar from "@/helper/anonymous-avatar";
+import DOMPurify from "dompurify";
 
 const schema = z.object({
   email: z
@@ -61,8 +62,16 @@ function LoginPage() {
       localStorage.removeItem("rememberedEmail");
     }
 
+    const cleanData = {
+      email: DOMPurify.sanitize(data.email),
+      password: DOMPurify.sanitize(data.password),
+    };
+
     startCredentialsTransition(async () => {
-      const res = await signIn("credentials", { ...data, redirect: false });
+      const res = await signIn("credentials", {
+        ...cleanData,
+        redirect: false,
+      });
 
       if (res?.error) {
         setAuthError(res.error);

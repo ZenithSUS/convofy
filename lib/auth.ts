@@ -26,6 +26,7 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
+import { AxiosErrorMessage } from "@/types/error";
 
 declare module "next-auth" {
   interface Session {
@@ -151,8 +152,8 @@ export const authOptions: NextAuthOptions = {
             role: u.role,
           };
         } catch (err: unknown) {
-          const error = err as { response: { data: string } };
-          const message = error.response.data || "Invalid credentials";
+          const error = err as AxiosErrorMessage;
+          const message = error.response.data.error || "Invalid credentials";
           throw new Error(message);
         }
       },
@@ -197,8 +198,8 @@ export const authOptions: NextAuthOptions = {
             role: anonymous.role,
           };
         } catch (err: unknown) {
-          const error = err as { response: { data: string } };
-          const message = error.response.data || "Invalid credentials";
+          const error = err as AxiosErrorMessage;
+          const message = error.response.data.error || "Invalid credentials";
           throw new Error(message);
         }
       },
@@ -510,6 +511,7 @@ export const authOptions: NextAuthOptions = {
         token.anonAlias = newSession.user.anonAlias ?? token.anonAlias;
         token.anonAvatar = newSession.user.anonAvatar ?? token.anonAvatar;
         token.role = newSession.user.role ?? token.role;
+        token.lastRefresh = 0;
       }
 
       // ---- Populate session from token ----
@@ -553,6 +555,7 @@ export const authOptions: NextAuthOptions = {
           anonAvatar: session.user.anonAvatar ?? token.anonAvatar,
           role: session.user.role ?? token.role,
           sessionRevoked: session.user.sessionRevoked ?? token.sessionRevoked,
+          lastRefresh: 0,
         };
       }
 
@@ -621,17 +624,17 @@ export const authOptions: NextAuthOptions = {
           return { ...token, sessionRevoked: true, invalidated: true };
         }
 
-        // Only refresh from DB periodically (every 5 minutes)
-        const lastRefresh = (token.lastRefresh as number) || 0;
-        const now = Date.now();
-        const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
-
-        // Skip DB call if recently refreshed
-        if (now - lastRefresh < REFRESH_INTERVAL) {
-          return token;
-        }
-
         try {
+          // Only refresh from DB periodically (every 5 minutes)
+          const lastRefresh = (token.lastRefresh as number) || 0;
+          const now = Date.now();
+          const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+          // Skip DB call if recently refreshed
+          if (now - lastRefresh < REFRESH_INTERVAL) {
+            return token;
+          }
+
           const dbUser = await userService.getUserByEmail(token.email);
 
           if (!dbUser) {

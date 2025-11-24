@@ -241,13 +241,18 @@ export const useRemoveAllUserSessions = (): UseMutationResult<
 export const useChangeUserEmail = (): UseMutationResult<
   void,
   Error,
-  { newEmail: string; currentPassword: string }
+  { newEmail: string; currentPassword: string; isAnyOAuth: boolean }
 > => {
-  const changeUserEmail = async (newEmail: string, currentPassword: string) => {
+  const changeUserEmail = async (
+    newEmail: string,
+    currentPassword: string,
+    isAnyOAuth: boolean,
+  ) => {
     const response = await client
       .post("/users/email/change", {
         newEmail,
         currentPassword,
+        isAnyOAuth,
       })
       .then((res) => res.data)
       .catch((err) => {
@@ -260,8 +265,11 @@ export const useChangeUserEmail = (): UseMutationResult<
 
   return useMutation({
     mutationKey: ["changeEmail"],
-    mutationFn: async (data: { newEmail: string; currentPassword: string }) =>
-      changeUserEmail(data.newEmail, data.currentPassword),
+    mutationFn: async (data: {
+      newEmail: string;
+      currentPassword: string;
+      isAnyOAuth: boolean;
+    }) => changeUserEmail(data.newEmail, data.currentPassword, data.isAnyOAuth),
   });
 };
 

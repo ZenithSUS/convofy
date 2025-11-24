@@ -31,7 +31,7 @@ export const POST = async (req: NextRequest) => {
       reset,
     } = await emailChangeLimit.limit(userId);
 
-    if (!success) {
+    if (success) {
       return NextResponse.json(
         { error: "Too many email change requests. Please try again later." },
         {
@@ -56,7 +56,8 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    const { newEmail, currentPassword } = data;
+    const { newEmail, currentPassword, isAnyOAuth } = data;
+    console.log("Data:", newEmail, currentPassword, isAnyOAuth);
 
     // Validate new email
     if (!newEmail || typeof newEmail !== "string") {
@@ -76,7 +77,10 @@ export const POST = async (req: NextRequest) => {
     }
 
     // Require current password for security
-    if (!currentPassword || typeof currentPassword !== "string") {
+    if (
+      (!currentPassword || typeof currentPassword !== "string") &&
+      !isAnyOAuth
+    ) {
       return NextResponse.json(
         { error: "Current password is required to change email" },
         { status: 400 },
@@ -90,20 +94,22 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Verify current password
-    const isPasswordValid = await userService.verifyPassword(
-      userId,
-      currentPassword,
-    );
+    // Verify current password (if there is no OAuth provider)
+    if (!isAnyOAuth) {
+      const isPasswordValid = await userService.verifyPassword(
+        userId,
+        currentPassword,
+      );
 
-    if (!isPasswordValid) {
-      console.warn(
-        `Failed email change attempt: User ${userId} - Incorrect password`,
-      );
-      return NextResponse.json(
-        { error: "Incorrect password" },
-        { status: 401 },
-      );
+      if (!isPasswordValid) {
+        console.warn(
+          `Failed email change attempt: User ${userId} - Incorrect password`,
+        );
+        return NextResponse.json(
+          { error: "Incorrect password" },
+          { status: 401 },
+        );
+      }
     }
 
     // Check if new email is same as current

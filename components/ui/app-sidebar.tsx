@@ -10,6 +10,7 @@ import {
   MessageSquare,
   Clock,
   FileImageIcon,
+  Glasses,
 } from "lucide-react";
 
 import {
@@ -219,9 +220,9 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
 
         {/* Recent Chats Section */}
 
-        {!isAnonymous && <SidebarSeparator className="my-2 dark:bg-gray-800" />}
+        <SidebarSeparator className="my-2 dark:bg-gray-800" />
 
-        {!isAnonymous && (
+        {!isAnonymous ? (
           <SidebarGroup className="relative space-y-4 overflow-y-auto">
             <SidebarGroupLabel className="flex items-center justify-between px-2">
               <div className="flex items-center gap-2">
@@ -351,6 +352,18 @@ export function AppSidebar({ serverSession }: { serverSession: Session }) {
                 </Link>
               </div>
             )}
+          </SidebarGroup>
+        ) : (
+          <SidebarGroup>
+            <SidebarContent className="flex items-center justify-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50">
+                <Glasses className="h-10 w-10 text-blue-500 dark:text-blue-400" />
+              </div>
+
+              <h1 className="mt-2 text-lg font-semibold text-gray-800 dark:text-gray-100">
+                Anonymous Mode
+              </h1>
+            </SidebarContent>
           </SidebarGroup>
         )}
       </SidebarContent>

@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import authRatelimit from "@/lib/redis/redis-auth-limit";
 import uploadLimit from "./lib/redis/redis-upload.limit";
 import { getUserToken } from "./lib/utils";
+import anonymousLimit from "./lib/redis/redis-anonymous-limit";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -47,8 +48,43 @@ export async function middleware(request: NextRequest) {
       console.log(`Auth rate limit for ${ip}: ${remaining}/${limit} remaining`);
     } catch (error) {
       console.error("Error applying auth rate limit:", error);
-      // Fail open - allow request to continue rather than blocking all traffic
-      // Alternatively, fail closed for stricter security: return error response
+      // Fail open - allow request to continue
+    }
+  }
+
+  // Anonymous route rate limit
+  if (pathname === "/api/auth/anonymous") {
+    try {
+      const { success, limit, reset, remaining } =
+        await anonymousLimit.limit(ip);
+      if (!success) {
+        return NextResponse.json(
+          {
+            error: `Too many requests. Please Try again at ${new Date(
+              reset,
+            ).toLocaleString("en-US", {
+              hour12: true,
+              timeStyle: "short",
+            })}`,
+          },
+          {
+            status: 429,
+            headers: {
+              "X-RateLimit-Limit": limit.toString(),
+              "x-RateLimit-Remaining": remaining.toString(),
+              "X-RateLimit-Reset": reset.toString(),
+              "Retry-After": Math.ceil((reset - Date.now()) / 1000).toString(),
+            },
+          },
+        );
+      }
+
+      console.log(
+        `Anonymous rate limit for ${ip}: ${remaining}/${limit} remaining`,
+      );
+    } catch (error) {
+      console.error("Error applying anonymous rate limit:", error);
+      // Fail open - allow request to continue
     }
   }
 

@@ -17,7 +17,13 @@ import { useChangeUserEmail } from "@/hooks/use-user";
 import { AxiosError } from "axios/";
 import { AxiosErrorMessage } from "@/types/error";
 
-function ChangeEmail({ session }: { session: Session }) {
+function ChangeEmail({
+  session,
+  isAnyOAuth,
+}: {
+  session: Session;
+  isAnyOAuth: boolean;
+}) {
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
   const [apiError, setApiError] = useState<string | null>(null);
@@ -32,7 +38,7 @@ function ChangeEmail({ session }: { session: Session }) {
       return;
     }
 
-    if (!password) {
+    if (!isAnyOAuth && !password) {
       toast.error("Please enter your password");
       return;
     }
@@ -41,6 +47,7 @@ function ChangeEmail({ session }: { session: Session }) {
       const data = {
         newEmail,
         currentPassword: password,
+        isAnyOAuth,
       };
       await changeEmail(data);
 
@@ -50,7 +57,6 @@ function ChangeEmail({ session }: { session: Session }) {
     } catch (error: unknown) {
       const err = error as AxiosErrorMessage;
 
-      console.error("Error changing email:", err.message);
       setApiError(
         err instanceof AxiosError
           ? err.response?.data?.error || err.message
@@ -108,25 +114,27 @@ function ChangeEmail({ session }: { session: Session }) {
           </div>
         </div>
 
-        <div>
-          <Label
-            htmlFor="password"
-            className="text-xs font-semibold sm:text-sm"
-          >
-            Password
-          </Label>
-          <div className="relative mt-1">
-            <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400 sm:h-5 sm:w-5" />
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="h-10 rounded-xl border-2 pl-9 text-sm sm:h-11 sm:pl-10"
-            />
+        {!isAnyOAuth && (
+          <div>
+            <Label
+              htmlFor="password"
+              className="text-xs font-semibold sm:text-sm"
+            >
+              Password
+            </Label>
+            <div className="relative mt-1">
+              <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400 sm:h-5 sm:w-5" />
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                className="h-10 rounded-xl border-2 pl-9 text-sm sm:h-11 sm:pl-10"
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {apiError && (
           <Alert className="flex items-center border-red-200 bg-red-50 dark:border-red-400 dark:bg-red-100">

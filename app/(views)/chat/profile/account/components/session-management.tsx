@@ -9,7 +9,7 @@ import {
 import { useGetUserSessions, useRemoveAllUserSessions } from "@/hooks/use-user";
 import { Chrome, Loader2, LogOut, Monitor } from "lucide-react";
 
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Session } from "@/app/(views)/chat/components/chatpage/chat-header";
 import { signOut, useSession } from "next-auth/react";
 import SessionRemoveWarning from "./session-remove-warning";
@@ -32,10 +32,18 @@ function SessionManagement({ session }: { session: Session }) {
 
   const handleLogoutAllDevices = async () => {
     try {
-      await removeAllUserSessions({ exceptCurrent: false });
+      toast.promise(
+        async () => {
+          await removeAllUserSessions({ exceptCurrent: false });
+        },
+        {
+          loading: "Logging out from all devices...",
+          success: "Logged out from all devices",
+          error: "Error logging out from all devices",
+        },
+      );
 
       signOut({ callbackUrl: "/auth/login" });
-      toast.success("Logged out from all devices");
     } catch (error) {
       toast.error("Failed to logout from all devices");
       console.error("Error logging out from all devices:", error);
@@ -44,10 +52,18 @@ function SessionManagement({ session }: { session: Session }) {
 
   const handleLogoutExceptCurrent = async () => {
     try {
-      await removeAllUserSessionsExceptCurrent({ exceptCurrent: true });
-      await update();
+      toast.promise(
+        async () => {
+          await removeAllUserSessionsExceptCurrent({ exceptCurrent: true });
+          await update();
+        },
+        {
+          loading: "Logging out from all devices except current...",
+          success: "Logged out from all devices except current",
+          error: "Error logging out from all devices except current",
+        },
+      );
       refetch();
-      toast.success("Logged out from all devices except current");
     } catch (error) {
       toast.error("Failed to logout from all devices");
       console.error("Error logging out from all devices:", error);

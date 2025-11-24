@@ -4,7 +4,7 @@ import { RoomContent } from "@/types/room";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import timeFormat from "@/helper/time-format";
 
 interface RoomCardProps {
@@ -27,6 +27,10 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
   const otherUser = isPrivate
     ? room.members.find((m) => m._id !== currentUserId)
     : null;
+
+  const otherHideOnlineStatus = useMemo(() => {
+    return otherUser?.preferences?.hideStatus;
+  }, [otherUser]);
 
   const displayName = isPrivate ? otherUser?.name || "Unknown User" : room.name;
 
@@ -62,7 +66,7 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
             height={48}
             className="h-12 w-12 rounded-full object-cover"
           />
-          {isAvailable && isPrivate && (
+          {isAvailable && isPrivate && !otherHideOnlineStatus && (
             <div
               className={`ring-background absolute right-0 bottom-0 h-3 w-3 rounded-full ${otherUser?.status === "online" ? "bg-green-500 ring-2 dark:bg-green-400" : "bg-gray-400 ring-2 dark:bg-gray-600"}`}
             />
@@ -140,4 +144,4 @@ const RoomCard = ({ room, currentUserId, isSearchMode }: RoomCardProps) => {
   );
 };
 
-export default RoomCard;
+export default memo(RoomCard);

@@ -144,7 +144,14 @@ export const roomService = {
       }
       await connectToDatabase();
       const rooms = await Room.find(query)
-        .populate("members", ["name", "avatar", "_id", "status", "isAvailable"])
+        .populate("members", [
+          "name",
+          "avatar",
+          "_id",
+          "status",
+          "isAvailable",
+          "preferences.hideStatus",
+        ])
         .populate("lastMessage", [
           "content",
           "type",

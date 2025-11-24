@@ -19,6 +19,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_002",
@@ -27,6 +30,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_003",
@@ -35,6 +41,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -68,6 +77,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_005",
@@ -76,6 +88,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -109,6 +124,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_007",
@@ -117,6 +135,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_008",
@@ -125,6 +146,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_009",
@@ -133,6 +157,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -166,6 +193,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_010",
@@ -174,6 +204,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -207,6 +240,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_012",
@@ -215,6 +251,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_013",
@@ -223,6 +262,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_014",
@@ -231,6 +273,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_015",
@@ -239,6 +284,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -272,6 +320,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_016",
@@ -280,6 +331,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -313,6 +367,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_018",
@@ -321,6 +378,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_019",
@@ -329,6 +389,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -362,6 +425,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_021",
@@ -370,6 +436,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_022",
@@ -378,6 +447,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_023",
@@ -386,6 +458,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_024",
@@ -394,6 +469,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_025",
@@ -402,6 +480,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -435,6 +516,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_026",
@@ -443,6 +527,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -476,6 +563,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_028",
@@ -484,6 +574,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_029",
@@ -492,6 +585,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_030",
@@ -500,6 +596,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -533,6 +632,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_031",
@@ -541,6 +643,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -574,6 +679,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_051",
@@ -582,6 +690,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -615,6 +726,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "admin",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_053",
@@ -623,6 +737,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_054",
@@ -631,6 +748,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_055",
@@ -639,6 +759,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_056",
@@ -647,6 +770,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {
@@ -680,6 +806,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: true,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
       {
         _id: "user_057",
@@ -688,6 +817,9 @@ const roomContentSamples: RoomContent[] = [
         isAvailable: false,
         isAnonymous: false,
         role: "user",
+        preferences: {
+          hideStatus: false,
+        },
       },
     ],
     lastMessage: {

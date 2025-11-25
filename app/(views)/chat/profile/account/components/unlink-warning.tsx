@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import useHybridSession from "@/hooks/use-hybrid-session";
 import { UserLinkedAccount, UserOAuthProviders } from "@/types/user";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface UnlinkWarningProps {
   session: Session;
@@ -52,10 +52,19 @@ function UnlinkWarning({
         providerAccountId: account.providerAccountId,
       };
 
-      await unlinkAuth({
-        id: session.user.id,
-        accountType: accountData,
-      });
+      toast.promise(
+        async () => {
+          await unlinkAuth({
+            id: session.user.id,
+            accountType: accountData,
+          });
+        },
+        {
+          loading: "Unlinking...",
+          success: "Unlinked successfully!",
+          error: "Failed to unlink",
+        },
+      );
 
       update({
         user: {
@@ -65,8 +74,6 @@ function UnlinkWarning({
           ),
         },
       });
-
-      toast.success("Account unlinked successfully!");
     } catch (err) {
       console.error("Unlink error:", err);
       setError("An unexpected error occurred. Please try again.");
@@ -88,7 +95,7 @@ function UnlinkWarning({
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-500 hover:bg-red-600"
+            className="bg-red-500 text-white transition-all duration-300 hover:bg-red-600 dark:bg-red-500 dark:hover:bg-red-600"
             onClick={() => handleUnlink(provider)}
           >
             Unlink

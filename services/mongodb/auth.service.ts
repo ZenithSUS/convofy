@@ -4,14 +4,6 @@ import { User as UserType } from "@/types/user";
 import { connectToDatabase } from "@/lib/mongodb";
 
 export const authService = {
-  /**
-   * Registers a new user in the database.
-   * If the email is already registered, an error will be thrown.
-   * If a password is provided, it will be hashed before being stored.
-   * @param {UserType} data - The user data to be registered.
-   * @returns {Promise<{ id: string, email: string, name: string }>} - A promise that resolves with the newly created user.
-   * @throws {Error} - If there was an error while registering the user.
-   */
   async registerUser(data: UserType) {
     try {
       await connectToDatabase();
@@ -44,13 +36,6 @@ export const authService = {
     }
   },
 
-  /**
-   * Logs a user in.
-   * Checks if the user exists and if the password matches the stored hash.
-   * If the user is valid, it updates the user's status to "online" and last active date.
-   * Returns the logged in user, excluding the password.
-   * @throws {Error} - If the email or password is invalid.
-   */
   async loginUser(email: string, password: string) {
     try {
       await connectToDatabase();
@@ -73,12 +58,21 @@ export const authService = {
     }
   },
 
-  /**
-   * Logs out a user by updating their status to "offline" and last active date to the current time.
-   * @param {string} id - The ID of the user to log out.
-   * @returns {Promise<UserType>} - A promise that resolves with the logged out user, excluding the password.
-   * @throws {Error} - If the user is not found.
-   */
+  async setUserOnline(id: string) {
+    try {
+      await connectToDatabase();
+      const user = await User.findOneAndUpdate(
+        { _id: id },
+        { status: "online", lastActive: new Date() },
+        { new: true, fields: "-password" },
+      );
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   async logoutUser(id: string) {
     try {
       await connectToDatabase();

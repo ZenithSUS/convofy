@@ -39,8 +39,9 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
     try {
       toast.promise(
         async () => {
+          await client.post(`/sessions/${userId}/revoke`, { sessionId });
+
           await Promise.all([
-            client.post(`/sessions/${userId}/revoke`, { sessionId }),
             client.post("/auth/logout", { id: userId }),
             signOut({ callbackUrl: "/auth/login" }),
           ]);

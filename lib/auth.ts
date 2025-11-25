@@ -27,6 +27,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GithubProvider from "next-auth/providers/github";
 import DiscordProvider from "next-auth/providers/discord";
 import { AxiosErrorMessage } from "@/types/error";
+import authService from "@/services/mongodb/auth.service";
 
 declare module "next-auth" {
   interface Session {
@@ -321,23 +322,33 @@ export const authOptions: NextAuthOptions = {
             providerAccountId: currentProviderAccountId,
           });
 
+          // Fetch updated user
+          const updatedUser = await userService.getUserById(
+            currentUser._id.toString(),
+          );
+
+          if (!updatedUser) {
+            console.error("Failed to fetch updated user after linking account");
+            return false;
+          }
+
           // Populate user object
           Object.assign(user, {
             sessionId: currentSession,
-            id: currentUser._id.toString(),
-            name: currentUser.name,
-            email: currentUser.email,
-            image: currentUser.avatar,
-            status: currentUser.status,
-            isAvailable: currentUser.isAvailable,
-            lastActive: currentUser.lastActive,
-            createdAt: currentUser.createdAt,
-            isAnonymous: currentUser.isAnonymous,
-            linkedAccounts: currentUser.linkedAccounts,
-            preferences: currentUser.preferences,
-            role: currentUser.role,
-            anonAlias: currentUser.anonAlias,
-            anonAvatar: currentUser.anonAvatar,
+            id: updatedUser._id.toString(),
+            name: updatedUser.name,
+            email: updatedUser.email,
+            image: updatedUser.avatar,
+            status: updatedUser.status,
+            isAvailable: updatedUser.isAvailable,
+            lastActive: updatedUser.lastActive,
+            createdAt: updatedUser.createdAt,
+            isAnonymous: updatedUser.isAnonymous,
+            linkedAccounts: updatedUser.linkedAccounts,
+            preferences: updatedUser.preferences,
+            role: updatedUser.role,
+            anonAlias: updatedUser.anonAlias,
+            anonAvatar: updatedUser.anonAvatar,
           });
 
           return true;
@@ -688,6 +699,19 @@ export const authOptions: NextAuthOptions = {
       }
 
       return token;
+    },
+  },
+
+  events: {
+    async signIn({ user }) {
+      if (!user.id) return;
+      await authService.setUserOnline(user.id);
+    },
+    async signOut({ token }) {
+      await userService.updateSessionActivity(
+        token.userId as string,
+        token.sessionId as string,
+      );
     },
   },
 

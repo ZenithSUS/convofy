@@ -11,7 +11,7 @@ function Hero() {
   };
 
   return (
-    <section className="md:px-16lg:px-24 relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-linear-to-br from-white via-blue-50 to-purple-50 px-6 py-4 md:grid-cols-2">
+    <section className="relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-linear-to-br from-white via-blue-50 to-purple-50 px-6 py-4 md:grid-cols-2 md:px-16 lg:px-24">
       {/* Animated background elements */}
       <div className="absolute top-20 left-10 h-72 w-72 animate-pulse rounded-full bg-blue-400/20 blur-3xl"></div>
       <div

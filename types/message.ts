@@ -9,6 +9,7 @@ export type Sender = {
   isAnonymous: boolean;
   anonAvatar?: string;
   anonAlias?: string;
+  role: "user" | "anonymous" | "admin";
 };
 
 export type Message = {

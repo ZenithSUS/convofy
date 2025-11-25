@@ -225,6 +225,7 @@ export const getMessagesByUserAndFileType = async (
       .limit(limit)
       .skip(offset)
       .populate("sender", "name")
+      .populate("room", ["name", "avatar", "members", "isPrivate"])
       .sort({ createdAt: -1 });
 
     return messages;

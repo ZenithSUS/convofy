@@ -10,6 +10,7 @@ interface UserMessageCardProps {
 
 function UserMessageCard({ message }: UserMessageCardProps) {
   const isPrivate = useMemo<boolean>(() => {
+    if (!message.room) return true;
     return (
       message.room.isPrivate ||
       (message.room.members.length === 2 && !message.room.name)
@@ -17,8 +18,17 @@ function UserMessageCard({ message }: UserMessageCardProps) {
   }, [message.room]);
 
   const displayName = useMemo(() => {
-    return isPrivate ? message.sender.name || "Unkown User" : message.room.name;
-  }, [isPrivate, message.sender.name, message.room.name]);
+    if (!message.room) return message.sender.name;
+
+    if (isPrivate) return message.sender.name;
+
+    if (isPrivate && message.room.isAnonymous && message.sender.role === "user")
+      return message.room.isAnonymous
+        ? message.sender.anonAlias || "Anonymous User"
+        : message.sender.name;
+
+    return `${message.sender.name} - ${message.room.name}`;
+  }, [isPrivate, message]);
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border bg-white p-4 shadow-sm hover:border-gray-300 hover:shadow-md dark:bg-gray-800">

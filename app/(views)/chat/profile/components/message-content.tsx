@@ -6,6 +6,9 @@ import { memo } from "react";
 import Link from "next/link";
 
 const MessageContent = ({ message }: { message: UserMessage }) => {
+  const str = message.content;
+  const fileName = decodeURIComponent(str.substring(str.indexOf("_") + 1));
+
   switch (message.type) {
     case "text":
       return (
@@ -40,7 +43,7 @@ const MessageContent = ({ message }: { message: UserMessage }) => {
             rel="noopener noreferrer"
             className="text-blue-500 hover:underline dark:text-blue-400"
           >
-            {message.content.split("/").pop()}
+            {fileName}
           </Link>
         </div>
       );

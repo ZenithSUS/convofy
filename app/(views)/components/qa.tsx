@@ -6,7 +6,7 @@ function QA() {
   return (
     <section
       id="qa"
-      className="bg-gradient-to-br from-gray-50 to-white px-6 py-24 md:px-16"
+      className="bg-linear-to-br from-gray-50 to-white px-6 py-24 md:px-16"
     >
       <div className="mx-auto max-w-6xl">
         <div className="mb-16 text-center">
@@ -28,7 +28,7 @@ function QA() {
               }}
             >
               <h3 className="mb-2 flex items-start gap-2 text-lg font-bold text-gray-900">
-                <span className="flex-shrink-0 text-blue-600">Q:</span>
+                <span className="shrink-0 text-blue-600">Q:</span>
                 <span>{item.q}</span>
               </h3>
               <p className="pl-6 text-gray-600">{item.a}</p>

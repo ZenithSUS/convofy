@@ -27,9 +27,15 @@ function Header() {
   ];
 
   const handleNavClick = (href: string) => {
-    setIsOpen(false);
     const element = document.querySelector(href);
-    element?.scrollIntoView({ behavior: "smooth" });
+
+    if (element) {
+      setIsOpen(false);
+
+      setTimeout(() => {
+        element.scrollIntoView({ behavior: "smooth" });
+      }, 500);
+    }
   };
 
   return (
@@ -37,11 +43,11 @@ function Header() {
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8">
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
             <MessageCircle className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
+            <h1 className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
               Convofy
             </h1>
             <p className="hidden text-xs text-gray-500 sm:block">
@@ -64,12 +70,12 @@ function Header() {
                 className="group relative text-sm font-semibold text-gray-700 transition-colors hover:text-blue-600"
               >
                 {link.label}
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full"></span>
+                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-linear-to-r from-blue-600 to-purple-600 transition-all duration-300 group-hover:w-full"></span>
               </a>
             ))}
             <Button
               onClick={() => router.push("/auth/login")}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+              className="bg-linear-to-r from-blue-600 to-purple-600 px-6 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
             >
               <Sparkles className="mr-2 h-4 w-4" />
               Get Started
@@ -95,11 +101,11 @@ function Header() {
               <SheetHeader className="border-b border-gray-200 pb-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 shadow-lg">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-blue-600 to-purple-600 shadow-lg">
                       <MessageCircle className="h-6 w-6 text-white" />
                     </div>
                     <div>
-                      <SheetTitle className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">
+                      <SheetTitle className="bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">
                         Convofy
                       </SheetTitle>
                       <SheetDescription className="text-xs">
@@ -128,12 +134,12 @@ function Header() {
                         e.preventDefault();
                         handleNavClick(link.href);
                       }}
-                      className="group flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600"
+                      className="group flex items-center gap-3 rounded-xl px-4 py-3 text-base font-semibold text-gray-700 transition-all duration-300 hover:bg-linear-to-r hover:from-blue-50 hover:to-purple-50 hover:text-blue-600"
                       style={{
                         animation: `slideIn 0.3s ease-out ${index * 0.1}s both`,
                       }}
                     >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-sm font-bold text-gray-600 transition-all duration-300 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-purple-500 group-hover:text-white">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-sm font-bold text-gray-600 transition-all duration-300 group-hover:bg-linear-to-br group-hover:from-blue-500 group-hover:to-purple-500 group-hover:text-white">
                         {index + 1}
                       </span>
                       {link.label}
@@ -147,7 +153,7 @@ function Header() {
                 <SheetClose asChild>
                   <Button
                     onClick={() => router.push("/auth/login")}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 py-6 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+                    className="w-full bg-linear-to-r from-blue-600 to-purple-600 py-6 font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
                   >
                     <Sparkles className="mr-2 h-5 w-5" />
                     Get Started Free

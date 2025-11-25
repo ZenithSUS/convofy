@@ -4,8 +4,8 @@ export const QAData = [
     a: "Yes, Convofy is completely free to use with no hidden charges.",
   },
   {
-    q: "How secure are my messages?",
-    a: "All messages are end-to-end encrypted for maximum security.",
+    q: "How do matches work?",
+    a: "Convofy matches you with other users based on your selected preferences using a real-time match queue system. You’ll only be paired with users who meet your chosen criteria.",
   },
   {
     q: "Can I use it on mobile?",
@@ -13,7 +13,7 @@ export const QAData = [
   },
   {
     q: "What is Convofy?",
-    a: "A real-time chat application for instant messaging with friends and groups.",
+    a: "A real-time chat application for instant messaging with friends, groups, or anonymous matches.",
   },
   {
     q: "How do I sign up?",

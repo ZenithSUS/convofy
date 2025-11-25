@@ -11,7 +11,7 @@ function Hero() {
   };
 
   return (
-    <section className="relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-linear-to-br from-white via-blue-50 to-purple-50 px-6 md:grid-cols-2 md:px-16 lg:px-24">
+    <section className="md:px-16lg:px-24 relative grid min-h-[90vh] grid-cols-1 place-content-center gap-8 bg-linear-to-br from-white via-blue-50 to-purple-50 px-6 py-4 md:grid-cols-2">
       {/* Animated background elements */}
       <div className="absolute top-20 left-10 h-72 w-72 animate-pulse rounded-full bg-blue-400/20 blur-3xl"></div>
       <div
@@ -67,15 +67,15 @@ function Hero() {
         <div className="mt-6 flex items-center gap-6 text-sm text-gray-600">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="text-green-500" size={20} />
-            <span>100% Free</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="text-green-500" size={20} />
             <span>Secure & Private</span>
           </div>
           <div className="flex items-center gap-2">
             <CheckCircle2 className="text-green-500" size={20} />
-            <span>No Ads</span>
+            <span>Anonymous Messaging</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="text-green-500" size={20} />
+            <span>Instant Messaging</span>
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ function Hero() {
             alt="Chat Interface"
             width={500}
             height={400}
-            className="relative drop-shadow-2xl transition-transform duration-500 hover:scale-105"
+            className="relative rounded-md drop-shadow-2xl transition-transform duration-500 hover:scale-105"
             priority
           />
         </div>

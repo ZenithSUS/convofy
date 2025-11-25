@@ -1,12 +1,12 @@
 "use client";
 
-import { Globe, Lock, MessageCircle, Shield, Users, Zap } from "lucide-react";
+import { Globe, Heart, Lock, MessageCircle, Users, Zap } from "lucide-react";
 
 function Features() {
   return (
     <section
       id="features"
-      className="relative flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50 px-6 py-24 md:px-16"
+      className="relative flex min-h-screen items-center justify-center bg-linear-to-br from-gray-50 via-white to-blue-50 px-6 py-24 md:px-16"
     >
       <div className="mx-auto w-full max-w-7xl">
         <div className="animate-in fade-in slide-in-from-bottom mb-16 text-center duration-700">
@@ -24,7 +24,7 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-blue-300 hover:shadow-2xl"
             style={{ animationDelay: "0.1s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
               <MessageCircle className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">
@@ -41,15 +41,15 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-purple-300 hover:shadow-2xl"
             style={{ animationDelay: "0.2s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
-              <Shield className="text-white" size={32} />
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-purple-500 to-purple-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+              <Heart className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">
-              Secure & Private
+              Omegle Like Messaging
             </h3>
             <p className="leading-relaxed text-gray-600">
-              Your conversations are protected with end-to-end encryption.
-              Privacy is our top priority.
+              Match with anonymous users and start conversations without
+              revealing your identity. Stay anonymous and secure.
             </p>
           </div>
 
@@ -58,7 +58,7 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-green-300 hover:shadow-2xl"
             style={{ animationDelay: "0.3s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-green-500 to-green-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-green-500 to-green-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
               <Globe className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">
@@ -75,7 +75,7 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-orange-300 hover:shadow-2xl"
             style={{ animationDelay: "0.4s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-orange-500 to-orange-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
               <Zap className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">
@@ -91,7 +91,7 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-pink-300 hover:shadow-2xl"
             style={{ animationDelay: "0.5s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-pink-500 to-pink-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
               <Users className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">
@@ -107,7 +107,7 @@ function Features() {
             className="group animate-in fade-in slide-in-from-bottom rounded-2xl border border-gray-100 bg-white p-8 shadow-lg transition-all duration-300 hover:-translate-y-2 hover:border-indigo-300 hover:shadow-2xl"
             style={{ animationDelay: "0.6s" }}
           >
-            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-500 to-indigo-600 shadow-lg transition-transform duration-300 group-hover:scale-110">
               <Lock className="text-white" size={32} />
             </div>
             <h3 className="mb-3 text-2xl font-bold text-gray-900">

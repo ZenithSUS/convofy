@@ -1,4 +1,3 @@
-// components/theme-handler.tsx
 "use client";
 
 import { useEffect } from "react";

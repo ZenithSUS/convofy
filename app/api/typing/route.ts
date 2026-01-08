@@ -5,6 +5,7 @@ import roomService from "@/services/mongodb/room.service";
 import userService from "@/services/mongodb/user.service";
 import { NextRequest, NextResponse } from "next/server";
 import { Types } from "mongoose";
+import typingIndicatorName from "@/helper/typing-indicator-name";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -107,7 +108,7 @@ export const POST = async (req: NextRequest) => {
     // Safe user data
     const safeUserData = {
       _id: user._id.toString(),
-      name: user.name,
+      name: typingIndicatorName(user),
       avatar: user.avatar || null,
     };
 

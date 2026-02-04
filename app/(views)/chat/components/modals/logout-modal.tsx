@@ -48,18 +48,18 @@ function LogoutModal({ userId, sessionId, role }: LogoutModalProps) {
       setIsLoggingOut(true);
       toast.promise(
         async () => {
+          // If the user's role is anonymous, delete all data associated with the user
+          if (role === "anonymous") {
+            await client.delete(`/users/${userId}/media`);
+            await client.delete(`/users/${userId}`);
+            await signOut({ callbackUrl: "/auth/login" });
+            return;
+          }
+
+          // If the user's role is user or admin, log them out
           await client.post(`/sessions/${userId}/revoke`, {
             sessionId,
           });
-
-          // If the user's role is anonymous, delete all data associated with the user
-          if (role === "anonymous") {
-            await Promise.all([
-              client.delete(`/users/${userId}/media`),
-              client.delete(`/users/${userId}`),
-            ]);
-          }
-
           await Promise.all([
             signOut({ callbackUrl: "/auth/login" }),
             client.post("/auth/logout", { id: userId }),

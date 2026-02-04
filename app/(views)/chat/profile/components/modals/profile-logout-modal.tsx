@@ -54,16 +54,16 @@ function ProfileLogoutModal({
     try {
       toast.promise(
         async () => {
-          await client.post(`/sessions/${userId}/revoke`, { sessionId });
-
           // If the user's role is anonymous, delete all data associated with the user
           if (role === "anonymous") {
-            await Promise.all([
-              client.delete(`/users/${userId}/media`),
-              client.delete(`/users/${userId}`),
-            ]);
+            await client.delete(`/users/${userId}/media`);
+            await client.delete(`/users/${userId}`);
+            await signOut({ callbackUrl: "/auth/login" });
+            return;
           }
 
+          // Do normal logout process
+          await client.post(`/sessions/${userId}/revoke`, { sessionId });
           await Promise.all([
             client.post("/auth/logout", { id: userId }),
             signOut({ callbackUrl: "/auth/login" }),

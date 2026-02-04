@@ -18,6 +18,7 @@ import { ChangeEvent, KeyboardEventHandler, useCallback, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 interface MessageFormProps {
+  role: "user" | "anonymous" | "admin";
   messageForm: UseFormReturn<{ message: string }>;
   isSending: boolean;
   isUploading: boolean;
@@ -31,6 +32,7 @@ interface MessageFormProps {
 }
 
 function MessageForm({
+  role,
   messageForm,
   isSending,
   isUploading,
@@ -103,11 +105,13 @@ function MessageForm({
         />
 
         <div className="flex items-end gap-2">
-          <MediaUpload
-            onChange={handleAppendFile}
-            isUploading={isUploading}
-            disabled={isAnyTransactionInProgress}
-          />
+          {role !== "anonymous" && (
+            <MediaUpload
+              onChange={handleAppendFile}
+              isUploading={isUploading}
+              disabled={isAnyTransactionInProgress}
+            />
+          )}
           <EmojiSelection
             onEmojiAppend={handleEmojiAppend}
             disabled={isAnyTransactionInProgress}

@@ -50,7 +50,6 @@ function LogoutModal({ userId, sessionId, role }: LogoutModalProps) {
         async () => {
           // If the user's role is anonymous, delete all data associated with the user
           if (role === "anonymous") {
-            await client.delete(`/users/${userId}/media`);
             await client.delete(`/users/${userId}`);
             await signOut({ callbackUrl: "/auth/login" });
             return;

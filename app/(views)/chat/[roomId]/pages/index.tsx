@@ -622,6 +622,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
 
           {/* Message Form Section */}
           <MessageForm
+            role={session.user.role}
             messageForm={messageForm}
             isSending={isSending}
             isUploading={isUploading}

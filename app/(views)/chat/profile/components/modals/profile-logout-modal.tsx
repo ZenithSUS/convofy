@@ -21,9 +21,14 @@ import { toast } from "sonner";
 interface ProfileLogoutModalProps {
   userId: string;
   sessionId: string;
+  role: "user" | "anonymous" | "admin";
 }
 
-function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
+function ProfileLogoutModal({
+  userId,
+  sessionId,
+  role,
+}: ProfileLogoutModalProps) {
   const [isClient, setIsClient] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -34,6 +39,16 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
   const handleLogout = useCallback(async () => {
     if (!isClient || isLoggingOut) return;
 
+    const promiseMessage =
+      role === "user" || role === "admin"
+        ? "Logging out..."
+        : "Ending session...";
+
+    const successMessage =
+      role === "user" || role === "admin"
+        ? "Logged out successfully"
+        : "Session ended successfully";
+
     setIsLoggingOut(true);
 
     try {
@@ -41,14 +56,22 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
         async () => {
           await client.post(`/sessions/${userId}/revoke`, { sessionId });
 
+          // If the user's role is anonymous, delete all data associated with the user
+          if (role === "anonymous") {
+            await Promise.all([
+              client.delete(`/users/${userId}/media`),
+              client.delete(`/users/${userId}`),
+            ]);
+          }
+
           await Promise.all([
             client.post("/auth/logout", { id: userId }),
             signOut({ callbackUrl: "/auth/login" }),
           ]);
         },
         {
-          success: "Logged out successfully",
-          loading: "Logging out...",
+          success: successMessage,
+          loading: promiseMessage,
           error: "Failed to log out. Please try again.",
         },
       );
@@ -57,7 +80,7 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
       toast.error("Failed to log out. Please try again.");
       setIsLoggingOut(false);
     }
-  }, [isClient, isLoggingOut, userId, sessionId]);
+  }, [isClient, isLoggingOut, userId, sessionId, role]);
 
   if (!isClient || !userId || !sessionId) return null;
 
@@ -83,8 +106,11 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
             Log Out?
           </AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground text-center">
-            Are you sure you want to log out? You&apos;ll need to sign in again
-            to access your account.
+            {role === "user" ||
+              (role === "admin" &&
+                "Are you sure you want to log out? You'll need to sign in again to access your account.")}
+            {role === "anonymous" &&
+              "Are you sure you want to log out? This will delete all your data."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -103,12 +129,16 @@ function ProfileLogoutModal({ userId, sessionId }: ProfileLogoutModalProps) {
             {isLoggingOut ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Logging out...
+                {role === "user" || role === "admin"
+                  ? "Logging out..."
+                  : "Ending session..."}
               </>
             ) : (
               <>
                 <LogOut className="mr-2 h-4 w-4" />
-                Log out
+                {role === "user" || role === "admin"
+                  ? "Log out"
+                  : "End session"}
               </>
             )}
           </AlertDialogAction>

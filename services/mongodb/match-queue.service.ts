@@ -3,6 +3,7 @@ import Room, { IRoom } from "@/models/Room";
 import { CreateQueue, IMatchQueue } from "@/types/match-queue";
 import mongoose from "mongoose";
 import { pusherServer } from "@/lib/pusher/pusher-server";
+import Message from "@/models/Message";
 
 const matchQueueService = {
   async createMatchQueue(userId: string, data: CreateQueue) {
@@ -237,7 +238,19 @@ const matchQueueService = {
       }
     }
 
-    await Room.updateOne({ _id: room._id }, { $pull: { members: userId } });
+    // Remove the user from the room
+    const updatedRoom = await Room.findOneAndUpdate(
+      { _id: room._id },
+      { $pull: { members: userId } },
+      { new: true },
+    );
+
+    // Delete the room only if it's completely empty (0 members)
+    if (updatedRoom?.isAnonymous && updatedRoom?.members.length === 0) {
+      // delete all messages (for privacy reasons)
+      await Message.deleteMany({ room: room._id });
+      await Room.deleteOne({ _id: room._id });
+    }
   },
 
   /**

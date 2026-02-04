@@ -176,6 +176,7 @@ function PreferencesPageClient({ serverSession }: PreferencesPageProps) {
       <ProfileHeader
         sessionId={session.user.sessionId}
         userId={session.user.id}
+        role={session.user.role}
       />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">

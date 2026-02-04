@@ -100,6 +100,7 @@ function MessagesPageClient({ serverSession }: MessagesPageClientProps) {
       <ProfileHeader
         userId={session.user.id}
         sessionId={session.user.sessionId}
+        role={session.user.role}
       />
 
       <div className="relative mx-auto max-w-7xl px-4 pb-8">

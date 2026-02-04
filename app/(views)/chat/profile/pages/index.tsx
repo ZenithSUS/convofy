@@ -59,6 +59,7 @@ function ProfilePageClient({ serverSession }: { serverSession: Session }) {
       <ProfileHeader
         userId={session.user.id}
         sessionId={session.user.sessionId}
+        role={session.user.role}
       />
 
       {/* Profile Content */}

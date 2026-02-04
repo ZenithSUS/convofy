@@ -57,6 +57,7 @@ function AccountPageClient({ serverSession }: { serverSession: Session }) {
       <ProfileHeader
         userId={session.user.id}
         sessionId={session.user.sessionId}
+        role={session.user.role}
       />
 
       <div className="relative mx-auto max-w-7xl px-3 pb-8 sm:px-4 md:px-6">

@@ -35,11 +35,16 @@ function DeleteAccount({ userId, image }: { userId: string; image: string }) {
 
     try {
       const publicId = extractPublicId(image);
+
+      // Delete the user's profile image and related media from Cloudinary
       await Promise.all([
         deleteFile(publicId),
         client.delete(`/users/${userId}/media`),
       ]);
+
+      // Delete the user's account
       await client.delete(`/users/${userId}`);
+
       toast.success("Account deleted successfully");
       // Sign out the user after successful account deletion
       signOut({ callbackUrl: "/auth/login" });

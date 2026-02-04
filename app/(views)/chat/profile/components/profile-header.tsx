@@ -6,9 +6,10 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 interface ProfileHeaderProps {
   userId: string;
   sessionId: string;
+  role: "user" | "anonymous" | "admin";
 }
 
-function ProfileHeader({ userId, sessionId }: ProfileHeaderProps) {
+function ProfileHeader({ userId, sessionId, role }: ProfileHeaderProps) {
   return (
     <div className="relative h-40 overflow-hidden bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-900 dark:via-purple-900 dark:to-pink-900">
       {/* Animated background overlay */}
@@ -25,7 +26,7 @@ function ProfileHeader({ userId, sessionId }: ProfileHeaderProps) {
         <SidebarTrigger className="flex items-center gap-2" />
 
         {/* Logout Button - Positioned in header */}
-        <ProfileLogoutModal userId={userId} sessionId={sessionId} />
+        <ProfileLogoutModal userId={userId} sessionId={sessionId} role={role} />
       </div>
     </div>
   );

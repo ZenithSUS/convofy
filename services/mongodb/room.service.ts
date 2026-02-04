@@ -427,6 +427,22 @@ export const roomService = {
     return room;
   },
 
+  async deleteAnonymousRooms() {
+    try {
+      // Delete all rooms where the members is less than 2 and is anonymous
+      const result = await Room.deleteMany({
+        isAnonymous: true,
+        members: { $exists: true },
+        $or: [{ members: { $size: 0 } }, { members: { $size: 1 } }],
+      });
+
+      console.log(`Deleted ${result.deletedCount} anonymous rooms`);
+      return result.deletedCount;
+    } catch (error) {
+      console.error("Error deleting anonymous rooms:", error);
+    }
+  },
+
   /**
    * Debugging utility: Drops and recreates room collection indexes.
    */

@@ -142,6 +142,7 @@ function ChatHeader({ session: serverSession }: { session: Session }) {
               <LogoutModal
                 userId={session.user.id}
                 sessionId={session.user.sessionId}
+                role={session.user.role}
               />
             </div>
           </div>

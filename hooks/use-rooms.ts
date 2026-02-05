@@ -203,6 +203,7 @@ export const useLeaveAnonymousRoom = (): UseMutationResult<
   string,
   Room
 > => {
+  const queryClient = useQueryClient();
   const leaveRoom = async (roomId: string) => {
     const response = await client
       .post(`/match/leave`, { roomId })
@@ -220,6 +221,11 @@ export const useLeaveAnonymousRoom = (): UseMutationResult<
   return useMutation<Room, AxiosErrorMessage, string, Room>({
     mutationFn: async (roomId: string) => leaveRoom(roomId),
     mutationKey: ["leaveRoom"],
+    onSuccess: () => {
+      // Invalidate rooms query to refetch
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["room"] });
+    },
     onError: (err) => {
       console.error("Error leaving room:", err);
       throw err;

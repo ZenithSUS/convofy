@@ -82,7 +82,6 @@ const UserSchema = new Schema<IUser>(
           browser: { type: String },
           os: { type: String },
           device: { type: String },
-          ip: { type: String },
         },
         createdAt: { type: Date, required: true },
         lastActive: { type: Date, required: true },

@@ -88,8 +88,8 @@ function LogoutModal({ userId, sessionId, role }: LogoutModalProps) {
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription className="text-muted-foreground">
-            {role === "user" ||
-              (role === "admin" && "This will log you out of your account")}
+            {(role === "user" || role === "admin") &&
+              "This will log you out of your account"}
             {role === "anonymous" &&
               "This will log you out of your account and delete all your data"}
           </AlertDialogDescription>

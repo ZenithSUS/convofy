@@ -107,7 +107,7 @@ function MessageForm({
         />
 
         <div className="flex items-end gap-2">
-          {role !== "anonymous" && isAnonymous && (
+          {role !== "anonymous" && !isAnonymous && (
             <MediaUpload
               onChange={handleAppendFile}
               isUploading={isUploading}

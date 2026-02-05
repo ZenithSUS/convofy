@@ -435,7 +435,56 @@ export const userService = {
     );
   },
 
-  async getUserActiveSessions(userId: string) {
+  /**
+   *
+   * Removes all anonymous users that is inactive for long.
+   * Should be run as a cron job.
+   */
+  async cleanAnonymousUsers() {
+    await connectToDatabase();
+
+    const now = new Date();
+
+    // Find anonymous users with:
+    // 1. All sessions expired
+    // 2. No active sessions
+    // 3. Inactive for more than 2 hours
+    const result = await User.deleteMany({
+      role: "anonymous",
+      $or: [
+        // All sessions have expired
+        {
+          activeSessions: {
+            $not: {
+              $elemMatch: {
+                expiresAt: { $gte: now },
+              },
+            },
+          },
+        },
+        // No sessions at all
+        {
+          $or: [
+            { activeSessions: { $size: 0 } },
+            { activeSessions: { $exists: false } },
+          ],
+        },
+        // Inactive for more than 3 hours (buffer time)
+        {
+          lastActive: {
+            $lt: new Date(now.getTime() - 3 * 60 * 60 * 1000),
+          },
+        },
+      ],
+    });
+
+    console.log(`Cleaned up ${result.deletedCount} anonymous users`);
+    return result;
+  },
+
+  async getUserActiveSessions(
+    userId: string,
+  ): Promise<UserType["activeSessions"]> {
     await connectToDatabase();
     const user = await User.findById(userId).select("activeSessions");
     return user?.activeSessions || [];

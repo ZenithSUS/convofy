@@ -115,6 +115,15 @@ UserSchema.index(
   { unique: true, sparse: true },
 );
 
+// Remove session in anonymous mode
+UserSchema.index(
+  { lastActive: 1 },
+  {
+    expireAfterSeconds: 7200, // 2 hours after last activity
+    partialFilterExpression: { role: "anonymous" },
+  },
+);
+
 // Cascade delete messages when user is deleted
 UserSchema.post("findOneAndDelete", async (doc: User) => {
   if (doc) {

@@ -262,7 +262,7 @@ export const authOptions: NextAuthOptions = {
             deviceInfo,
             createdAt: new Date(),
             lastActive: new Date(),
-            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+            expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours
           };
 
           await userService.addUserSession(user.id, anonymousSession);
@@ -619,6 +619,37 @@ export const authOptions: NextAuthOptions = {
       if (account) {
         token.accessToken = account.access_token;
         token.provider = account.provider;
+      }
+
+      // ---- Handle anonymous user with expired session ----
+      if (token.role === "anonymous" && token.userId && token.sessionId) {
+        try {
+          const sessions = await userService.getUserActiveSessions(
+            token.userId,
+          );
+          const currentSession = sessions.find(
+            (s: UserSession) => s.sessionId === token.sessionId,
+          );
+
+          // Check if session expired
+          if (
+            !currentSession ||
+            new Date(currentSession.expiresAt) < new Date()
+          ) {
+            console.log(
+              `Anonymous session expired for user ${token.userId}, deleting user`,
+            );
+
+            // Delete the anonymous user
+            await userService.deleteUserById(token.userId);
+
+            // Invalidate token
+            return { ...token, sessionRevoked: true, invalidated: true };
+          }
+        } catch (error) {
+          console.error("Error checking anonymous session:", error);
+          return { ...token, sessionRevoked: true, invalidated: true };
+        }
       }
 
       // ---- Refresh token with caching ----

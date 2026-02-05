@@ -42,7 +42,7 @@ export const useGetRooms = (
 
 export const useGetRoomById = (
   id: string,
-): UseQueryResult<RoomContent, unknown> => {
+): UseQueryResult<RoomContent, AxiosErrorMessage> => {
   const getRoomById = async () => {
     const response = await client
       .get(`/rooms/${id}`)

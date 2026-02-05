@@ -19,6 +19,7 @@ import { UseFormReturn } from "react-hook-form";
 
 interface MessageFormProps {
   role: "user" | "anonymous" | "admin";
+  isAnonymous: boolean;
   messageForm: UseFormReturn<{ message: string }>;
   isSending: boolean;
   isUploading: boolean;
@@ -33,6 +34,7 @@ interface MessageFormProps {
 
 function MessageForm({
   role,
+  isAnonymous,
   messageForm,
   isSending,
   isUploading,
@@ -105,7 +107,7 @@ function MessageForm({
         />
 
         <div className="flex items-end gap-2">
-          {role !== "anonymous" && (
+          {role !== "anonymous" && isAnonymous && (
             <MediaUpload
               onChange={handleAppendFile}
               isUploading={isUploading}

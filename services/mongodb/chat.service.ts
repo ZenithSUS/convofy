@@ -45,7 +45,13 @@ export const chatService = {
         .lean();
 
       const populatedMessage = await Message.findById(message._id)
-        .populate("sender", ["name", "avatar", "isAnonymous", "anonAvatar"])
+        .populate("sender", [
+          "name",
+          "avatar",
+          "isAnonymous",
+          "anonAvatar",
+          "anonAlias",
+        ])
         .populate("status.seenBy", [
           "_id",
           "name",

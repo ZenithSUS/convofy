@@ -49,13 +49,12 @@ export function axiosErrorMessage(error: AxiosError): string {
   }
 }
 
-export function getDeviceInfo(userAgent: string, ip: string) {
+export function getDeviceInfo(userAgent: string) {
   const parser = new UAParser(userAgent);
   return {
     browser: `${parser.getBrowser().name} ${parser.getBrowser().version}`,
     os: `${parser.getOS().name} ${parser.getOS().version}`,
     device: parser.getDevice().type || "Desktop",
-    ip,
   };
 }
 

@@ -9,7 +9,6 @@ export interface UserSession {
     browser?: string;
     os?: string;
     device?: string;
-    ip?: string;
   };
   createdAt: Date;
   lastActive: Date;

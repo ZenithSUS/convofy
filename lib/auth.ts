@@ -245,13 +245,9 @@ export const authOptions: NextAuthOptions = {
         const headers = await import("next/headers");
         const headersList = await headers.headers();
         const userAgent = headersList.get("user-agent") || "";
-        const ip =
-          headersList.get("x-forwarded-for") ||
-          headersList.get("x-real-ip") ||
-          "unknown";
 
         const sessionId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-        const deviceInfo = getDeviceInfo(userAgent, ip);
+        const deviceInfo = getDeviceInfo(userAgent);
 
         // ---- Anonymous flow (early return) ----
         if (currentProvider === "anonymous" && user.role === "anonymous") {

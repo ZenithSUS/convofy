@@ -123,9 +123,6 @@ function SessionManagement({ session }: { session: Session }) {
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     {sessionItem.deviceInfo.os || "Unknown OS"}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {sessionItem.deviceInfo.ip || "Unknown IP"}
-                  </p>
                 </div>
               </div>
               {sessionItem.sessionId === session.user.sessionId && (

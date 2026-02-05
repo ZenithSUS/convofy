@@ -16,6 +16,7 @@ interface RoomHeaderProps {
   isAnonymous: boolean;
   startSearching: () => Promise<void>;
   isSearching: boolean;
+  isMatched: boolean;
 }
 
 function RoomHeader({
@@ -24,6 +25,7 @@ function RoomHeader({
   isAnonymous,
   startSearching,
   isSearching,
+  isMatched,
 }: RoomHeaderProps) {
   const router = useRouter();
   const { mutateAsync: leaveRoom, isPending: isLeaving } =
@@ -143,7 +145,7 @@ function RoomHeader({
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <Button
             variant="ghost"
-            disabled={isLeaving || isSearching}
+            disabled={isLeaving || isSearching || isMatched}
             onClick={() => handleLeave(isAnonymous)}
             className="hover:bg-accent dark:hover:bg-accent/50 shrink-0 rounded-lg p-2 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="Go back to chat list"
@@ -191,7 +193,7 @@ function RoomHeader({
               variant="ghost"
               className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-linear-to-br from-blue-500 to-purple-600 transition-all hover:from-blue-600 hover:to-purple-700 disabled:cursor-not-allowed disabled:opacity-50 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-500 dark:hover:to-purple-600"
               aria-label="Search new user"
-              disabled={isSearching || isLeaving}
+              disabled={isSearching || isLeaving || isMatched}
               onClick={handleSearchNewUser}
             >
               <SearchIcon className="cursor-pointer text-white" />
@@ -202,7 +204,7 @@ function RoomHeader({
           <div className="shrink-0 pr-2">
             <SidebarTrigger
               hideLabel={true}
-              disabled={isLeaving || isSearching}
+              disabled={isLeaving || isSearching || isMatched}
             />
           </div>
         </div>

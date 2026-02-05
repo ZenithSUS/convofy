@@ -141,9 +141,21 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     return roomData.isAnonymous && roomData.members.length <= 1;
   }, [roomData]);
 
+  // Update the isAnonymousChatInactive check to handle when room doesn't exist
   const isAnonymousChatInactive = useMemo(() => {
+    if (!isAnonymous) return false;
+
+    // If room doesn't exist (deleted), consider it inactive
+    if (!roomData && roomError) return true;
+
     return isAnonymous && (isOtherUserLeft || isOnlyMemberInAnonymousRoom);
-  }, [isAnonymous, isOtherUserLeft, isOnlyMemberInAnonymousRoom]);
+  }, [
+    isAnonymous,
+    isOtherUserLeft,
+    isOnlyMemberInAnonymousRoom,
+    roomData,
+    roomError,
+  ]);
 
   const {
     data: messages,
@@ -455,7 +467,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
     return <LoadingConvo theme={session.user.preferences.theme} />;
   }
 
-  if (roomError) {
+  if (roomError && !isAnonymous) {
     return (
       <RoomError roomErrorData={roomErrorData} handleRefresh={handleRefresh} />
     );
@@ -469,6 +481,7 @@ function RoomPageClient({ serverSession }: { serverSession: Session }) {
         isAnonymous={isAnonymous}
         startSearching={handleStartSearching}
         isSearching={isSearching}
+        isMatched={isMatched}
       />
 
       {/* Enhanced Connection Status Banner */}
